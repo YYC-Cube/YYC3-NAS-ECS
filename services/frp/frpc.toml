@@ -1,0 +1,58 @@
+serverAddr = "8.152.195.33"
+serverPort = 7001
+auth.method = "token"
+auth.token = "yyc3_nas"
+
+log.to = "/Volume1/www/frpc/logs/frpc.log"
+log.level = "debug"
+
+transport.tls.enable = true
+
+[[proxies]]
+name = "api-0379"
+type = "http"
+localIP = "127.0.0.1"
+localPort = 6000
+subdomain = "api"
+
+[[proxies]]
+name = "nas-0379"
+type = "http"
+localIP = "127.0.0.1"
+localPort = 6004
+subdomain = "nas"
+
+[[proxies]]
+name = "mail-0379"
+type = "http"
+localIP = "127.0.0.1"
+localPort = 6003
+subdomain = "mail"
+
+[[proxies]]
+name = "llm-0379"
+type = "http"
+localIP = "127.0.0.1"
+localPort = 6002
+subdomain = "llm"
+
+[[proxies]]
+name = "admin-0379"
+type = "http"
+localIP = "127.0.0.1"
+localPort = 6001
+subdomain = "admin"
+
+[[proxies]]
+name = "monitor-0379"
+type = "http"
+localIP = "127.0.0.1"
+localPort = 6006
+subdomain = "monitor"
+
+[[proxies]]
+name = "ddns-0379"
+type = "http"
+localIP = "127.0.0.1"
+localPort = 6007
+subdomain = "ddns"

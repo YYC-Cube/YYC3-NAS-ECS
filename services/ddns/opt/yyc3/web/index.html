@@ -1,0 +1,705 @@
+cat > /opt/yyc3/web/ddns/index.html << 'EOF'
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DDNS 管理面板 - ddns.0379.email</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .status-card {
+            border-left: 5px solid var(--primary-color);
+        }
+        
+        .status-success {
+            border-left-color: var(--success-color) !important;
+        }
+        
+        .status-warning {
+            border-left-color: var(--warning-color) !important;
+        }
+        
+        .status-error {
+            border-left-color: var(--danger-color) !important;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-weight: 600;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .log-entry {
+            padding: 10px;
+            margin-bottom: 5px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+        
+        .log-info {
+            background-color: #e8f4fd;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .log-success {
+            background-color: #e8f8ef;
+            border-left: 3px solid var(--success-color);
+        }
+        
+        .log-warning {
+            background-color: #fff8e1;
+            border-left: 3px solid var(--warning-color);
+        }
+        
+        .log-error {
+            background-color: #fdeaea;
+            border-left: 3px solid var(--danger-color);
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 15px;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--dark-color);
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .refresh-btn {
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        
+        .refresh-btn:hover {
+            transform: rotate(180deg);
+        }
+        
+        .last-update {
+            font-size: 0.8rem;
+            color: #888;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <!-- 标题栏 -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card p-4">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="h3 mb-1">
+                                <i class="bi bi-cloud-arrow-up-fill text-primary me-2"></i>
+                                DDNS 管理面板
+                            </h1>
+                            <p class="text-muted mb-0">
+                                <i class="bi bi-globe me-1"></i>
+                                ddns.0379.email
+                            </p>
+                        </div>
+                        <div class="text-end">
+                            <button id="refreshBtn" class="btn btn-primary">
+                                <i class="bi bi-arrow-clockwise me-2"></i>刷新状态
+                            </button>
+                            <button id="updateBtn" class="btn btn-success ms-2">
+                                <i class="bi bi-arrow-repeat me-2"></i>立即更新
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 状态卡片 -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card status-card p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">DDNS 状态</h6>
+                            <h4 id="ddnsStatus" class="mb-0">检查中...</h4>
+                        </div>
+                        <div class="icon">
+                            <i class="bi bi-cloud-check-fill text-primary" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="card status-card p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">当前 IP</h6>
+                            <h4 id="currentIp" class="mb-0">获取中...</h4>
+                        </div>
+                        <div class="icon">
+                            <i class="bi bi-globe text-success" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="card status-card p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">DNS 解析</h6>
+                            <h4 id="dnsStatus" class="mb-0">检查中...</h4>
+                        </div>
+                        <div class="icon">
+                            <i class="bi bi-link-45deg text-info" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-3 mb-3">
+                <div class="card status-card p-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-1">最后更新</h6>
+                            <h4 id="lastUpdate" class="mb-0">--:--</h4>
+                        </div>
+                        <div class="icon">
+                            <i class="bi bi-clock-history text-warning" style="font-size: 2rem;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 系统信息和配置 -->
+        <div class="row mb-4">
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-pc-display-horizontal me-2"></i>
+                            系统信息
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6 mb-3">
+                                <div class="stat-item">
+                                    <div class="stat-value" id="loadAvg">--</div>
+                                    <div class="stat-label">系统负载</div>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="stat-item">
+                                    <div class="stat-value" id="uptime">--</div>
+                                    <div class="stat-label">运行时间</div>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="stat-item">
+                                    <div class="stat-value" id="memoryUsage">--</div>
+                                    <div class="stat-label">内存使用</div>
+                                </div>
+                            </div>
+                            <div class="col-6 mb-3">
+                                <div class="stat-item">
+                                    <div class="stat-value" id="diskUsage">--</div>
+                                    <div class="stat-label">磁盘使用</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-3">
+                <div class="card h-100">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0">
+                            <i class="bi bi-gear-fill me-2"></i>
+                            DDNS 配置
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-borderless">
+                            <tbody>
+                                <tr>
+                                    <td><i class="bi bi-globe me-2"></i>域名</td>
+                                    <td id="configDomain" class="text-end">ddns.0379.email</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="bi bi-server me-2"></i>服务器 IP</td>
+                                    <td id="serverIp" class="text-end">8.152.195.33</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="bi bi-clock me-2"></i>检查间隔</td>
+                                    <td id="checkInterval" class="text-end">5 分钟</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="bi bi-shield-check me-2"></i>阿里云配置</td>
+                                    <td id="aliyunConfig" class="text-end">已配置</td>
+                                </tr>
+                                <tr>
+                                    <td><i class="bi bi-bell me-2"></i>通知状态</td>
+                                    <td id="notificationStatus" class="text-end">已启用</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 日志面板 -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-journal-text me-2"></i>
+                            最近日志
+                        </h5>
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="loadLogs(10)">
+                                最近10条
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary ms-2" onclick="loadLogs(50)">
+                                最近50条
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary ms-2" onclick="loadLogs(100)">
+                                最近100条
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="logContainer" class="log-container" style="max-height: 400px; overflow-y: auto;">
+                            <div class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">加载中...</span>
+                                </div>
+                                <p class="mt-3">正在加载日志...</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                <i class="bi bi-info-circle me-1"></i>
+                                日志每5分钟自动刷新
+                            </small>
+                            <small id="logCount" class="text-muted">加载中...</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 页脚 -->
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="text-center text-white">
+                    <p class="mb-1">
+                        <i class="bi bi-cpu me-1"></i>
+                        YYC3 DDNS 服务 | 服务器: 8.152.195.33
+                    </p>
+                    <p class="mb-0 last-update">
+                        最后更新: <span id="pageUpdateTime">--:--:--</span> | 
+                        页面版本: 1.0.0
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- 自定义JS -->
+    <script>
+        // API基础URL
+        const API_BASE = '/api/ddns';
+        
+        // 更新页面时间
+        function updatePageTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('zh-CN');
+            document.getElementById('pageUpdateTime').textContent = timeStr;
+        }
+        
+        // 格式化时间
+        function formatTime(timestamp) {
+            if (!timestamp) return '--:--';
+            const date = new Date(timestamp);
+            return date.toLocaleString('zh-CN');
+        }
+        
+        // 格式化时间差
+        function formatTimeAgo(timestamp) {
+            if (!timestamp) return '从未';
+            
+            const now = new Date();
+            const date = new Date(timestamp);
+            const diffMs = now - date;
+            const diffMins = Math.floor(diffMs / 60000);
+            
+            if (diffMins < 1) return '刚刚';
+            if (diffMins < 60) return `${diffMins}分钟前`;
+            
+            const diffHours = Math.floor(diffMins / 60);
+            if (diffHours < 24) return `${diffHours}小时前`;
+            
+            const diffDays = Math.floor(diffHours / 24);
+            return `${diffDays}天前`;
+        }
+        
+        // 加载状态
+        async function loadStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/status`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    // 更新DDNS状态
+                    const ddnsCard = document.querySelector('#ddnsStatus').closest('.card');
+                    ddnsCard.className = ddnsCard.className.replace(/status-\w+/g, '');
+                    
+                    if (data.ddns_running) {
+                        document.getElementById('ddnsStatus').innerHTML = 
+                            '<span class="text-success">运行中</span>';
+                        ddnsCard.classList.add('status-success');
+                    } else {
+                        document.getElementById('ddnsStatus').innerHTML = 
+                            '<span class="text-danger">已停止</span>';
+                        ddnsCard.classList.add('status-error');
+                    }
+                    
+                    // 更新IP
+                    document.getElementById('currentIp').textContent = 
+                        data.current_ip || '未知';
+                    
+                    // 更新DNS状态
+                    const dnsCard = document.querySelector('#dnsStatus').closest('.card');
+                    dnsCard.className = dnsCard.className.replace(/status-\w+/g, '');
+                    
+                    if (data.dns_resolved) {
+                        document.getElementById('dnsStatus').innerHTML = 
+                            '<span class="text-success">正常</span>';
+                        dnsCard.classList.add('status-success');
+                    } else {
+                        document.getElementById('dnsStatus').innerHTML = 
+                            '<span class="text-danger">异常</span>';
+                        dnsCard.classList.add('status-error');
+                    }
+                    
+                    // 更新最后更新时间
+                    document.getElementById('lastUpdate').textContent = 
+                        formatTimeAgo(data.last_update);
+                    
+                    // 更新系统信息
+                    document.getElementById('loadAvg').textContent = data.load || '--';
+                    document.getElementById('uptime').textContent = data.uptime || '--';
+                    document.getElementById('memoryUsage').textContent = data.memory_usage || '--';
+                    document.getElementById('diskUsage').textContent = data.disk_usage || '--';
+ 
+                    // 更新页面时间
+                updatePageTime();
+            }
+        } catch (error) {
+            console.error('加载状态失败:', error);
+            document.getElementById('ddnsStatus').innerHTML = 
+                '<span class="text-danger">连接失败</span>';
+        }
+    }
+    
+    // 加载配置
+    async function loadConfig() {
+        try {
+            const response = await fetch(`${API_BASE}/config`);
+            const data = await response.json();
+            
+            if (data.success) {
+                const config = data.config;
+                document.getElementById('configDomain').textContent = 
+                    `${config.subdomain}.${config.domain}`;
+                document.getElementById('serverIp').textContent = config.server_ip;
+                document.getElementById('checkInterval').textContent = 
+                    `${config.check_interval / 60} 分钟`;
+                document.getElementById('aliyunConfig').innerHTML = config.aliyun_configured ?
+                    '<span class="text-success">已配置</span>' :
+                    '<span class="text-danger">未配置</span>';
+                document.getElementById('notificationStatus').innerHTML = config.notification_enabled ?
+                    '<span class="text-success">已启用</span>' :
+                    '<span class="text-warning">已禁用</span>';
+            }
+        } catch (error) {
+            console.error('加载配置失败:', error);
+        }
+    }
+    
+    // 加载日志
+    async function loadLogs(lines = 50) {
+        try {
+            const response = await fetch(`${API_BASE}/logs/recent?lines=${lines}`);
+            const data = await response.json();
+            
+            if (data.success) {
+                const logContainer = document.getElementById('logContainer');
+                const logCount = document.getElementById('logCount');
+                
+                // 更新日志数量
+                logCount.textContent = `共 ${data.count} 条日志`;
+                
+                // 清空容器
+                logContainer.innerHTML = '';
+                
+                // 添加日志条目
+                if (data.logs.length === 0) {
+                    logContainer.innerHTML = `
+                        <div class="text-center py-5">
+                            <i class="bi bi-journal-x" style="font-size: 3rem; color: #ccc;"></i>
+                            <p class="mt-3 text-muted">暂无日志记录</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                data.logs.forEach(log => {
+                    const logDiv = document.createElement('div');
+                    logDiv.className = `log-entry log-${log.level}`;
+                    
+                    const time = new Date(log.timestamp).toLocaleTimeString('zh-CN');
+                    logDiv.innerHTML = `
+                        <div class="d-flex justify-content-between">
+                            <span class="log-time">${time}</span>
+                            <span class="log-level badge bg-${getLevelColor(log.level)}">
+                                ${getLevelText(log.level)}
+                            </span>
+                        </div>
+                        <div class="log-message mt-1">${log.message}</div>
+                    `;
+                    
+                    logContainer.appendChild(logDiv);
+                });
+                
+                // 滚动到底部
+                logContainer.scrollTop = logContainer.scrollHeight;
+            }
+        } catch (error) {
+            console.error('加载日志失败:', error);
+            document.getElementById('logContainer').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    加载日志失败: ${error.message}
+                </div>
+            `;
+        }
+    }
+    
+    // 获取日志级别颜色
+    function getLevelColor(level) {
+        switch(level) {
+            case 'error': return 'danger';
+            case 'warning': return 'warning';
+            case 'success': return 'success';
+            default: return 'info';
+        }
+    }
+    
+    // 获取日志级别文本
+    function getLevelText(level) {
+        switch(level) {
+            case 'error': return '错误';
+            case 'warning': return '警告';
+            case 'success': return '成功';
+            default: return '信息';
+        }
+    }
+    
+    // 手动触发DDNS更新
+    async function triggerUpdate() {
+        const updateBtn = document.getElementById('updateBtn');
+        const originalText = updateBtn.innerHTML;
+        
+        try {
+            updateBtn.disabled = true;
+            updateBtn.innerHTML = '<i class="bi bi-arrow-repeat me-2"></i>更新中...';
+            
+            const response = await fetch(`${API_BASE}/update`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                showAlert('DDNS更新成功！', 'success');
+                // 重新加载状态和日志
+                setTimeout(() => {
+                    loadStatus();
+                    loadLogs();
+                }, 1000);
+            } else {
+                showAlert(`更新失败: ${data.error}`, 'danger');
+            }
+        } catch (error) {
+            showAlert(`请求失败: ${error.message}`, 'danger');
+        } finally {
+            updateBtn.disabled = false;
+            updateBtn.innerHTML = originalText;
+        }
+    }
+    
+    // 显示提示消息
+    function showAlert(message, type = 'info') {
+        // 移除现有的提示
+        const existingAlert = document.querySelector('.alert-toast');
+        if (existingAlert) existingAlert.remove();
+        
+        // 创建新的提示
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-toast position-fixed`;
+        alertDiv.style.cssText = `
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            min-width: 300px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        `;
+        
+        const icon = type === 'success' ? 'check-circle' :
+                    type === 'danger' ? 'exclamation-triangle' :
+                    type === 'warning' ? 'exclamation-circle' : 'info-circle';
+        
+        alertDiv.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="bi bi-${icon} me-2" style="font-size: 1.2rem;"></i>
+                <div>${message}</div>
+                <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
+            </div>
+        `;
+        
+        document.body.appendChild(alertDiv);
+        
+        // 5秒后自动移除
+        setTimeout(() => {
+            if (alertDiv.parentNode) {
+                alertDiv.remove();
+            }
+        }, 5000);
+    }
+    
+    // 页面加载完成后的初始化
+    document.addEventListener('DOMContentLoaded', function() {
+        // 初始加载
+        loadStatus();
+        loadConfig();
+        loadLogs();
+        
+        // 更新页面时间
+        updatePageTime();
+        setInterval(updatePageTime, 1000);
+        
+        // 每30秒自动刷新状态
+        setInterval(loadStatus, 30000);
+        
+        // 每5分钟自动刷新日志
+        setInterval(() => loadLogs(), 300000);
+        
+        // 绑定按钮事件
+        document.getElementById('refreshBtn').addEventListener('click', function() {
+            loadStatus();
+            loadConfig();
+            loadLogs();
+            showAlert('状态已刷新', 'info');
+        });
+        
+        document.getElementById('updateBtn').addEventListener('click', triggerUpdate);
+        
+        // 添加键盘快捷键
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+R 刷新
+            if (e.ctrlKey && e.key === 'r') {
+                e.preventDefault();
+                loadStatus();
+                loadConfig();
+                loadLogs();
+                showAlert('状态已刷新 (Ctrl+R)', 'info');
+            }
+            
+            // F5 刷新
+            if (e.key === 'F5') {
+                e.preventDefault();
+                loadStatus();
+                loadConfig();
+                loadLogs();
+                showAlert('状态已刷新 (F5)', 'info');
+            }
+            
+            // Ctrl+U 触发更新
+            if (e.ctrlKey && e.key === 'u') {
+                e.preventDefault();
+                triggerUpdate();
+            }
+        });
+    });
+    
+    // 添加页面可见性变化监听
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            // 页面重新可见时刷新数据
+            loadStatus();
+            loadConfig();
+            loadLogs();
+        }
+    });
+</script>
+EOF

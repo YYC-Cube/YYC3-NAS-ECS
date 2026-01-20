@@ -1,0 +1,67 @@
+{
+  "name": "yyc3-ailp-intelligent-widget",
+  "version": "0.1.0",
+  "description": "YYC³可插拔式拖拽移动AI系统 - 教科书级企业级实现",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "dev": "bun --hot src/index.ts",
+    "build": "bun build src/index.ts --outdir ./dist --target node",
+    "build:widget": "bun build src/widget/IntelligentAIWidget.tsx --outdir ./dist/widget",
+    "test": "vitest",
+    "test:watch": "vitest --watch",
+    "test:coverage": "vitest --coverage",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "format": "prettier --write src/**/*.{ts,tsx}",
+    "type-check": "tsc --noEmit",
+    "clean": "rm -rf dist",
+    "setup": "bun run scripts/setup.ts",
+    "deploy": "bun run scripts/deploy.ts"
+  },
+  "keywords": [
+    "ai",
+    "widget",
+    "intelligent",
+    "pluggable",
+    "drag-drop",
+    "enterprise"
+  ],
+  "author": "YYC³ AI Team",
+  "license": "MIT",
+  "engines": {
+    "bun": ">=1.0.0",
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.24.0",
+    "openai": "^4.0.0",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
+    "react-draggable": "^4.4.6",
+    "uuid": "^13.0.0",
+    "zustand": "^4.4.0"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.1",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@types/uuid": "^10.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "@vitest/ui": "^4.0.16",
+    "bun-types": "^1.0.0",
+    "eslint": "^8.50.0",
+    "jsdom": "^27.4.0",
+    "prettier": "^3.0.0",
+    "typescript": "^5.2.0",
+    "vitest": "^4.0.16"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0"
+  }
+}

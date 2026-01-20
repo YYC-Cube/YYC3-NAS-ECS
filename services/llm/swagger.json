@@ -1,0 +1,8 @@
+{
+  "openapi": "3.0.0",
+  "info": { "title": "llm.0379.email API", "version": "1.0.0" },
+  "paths": {
+    "/api/hello": { "get": { "summary": "Hello", "responses": { "200": { "description": "OK" } } } },
+    "/api/healthcheck": { "get": { "summary": "Healthcheck", "responses": { "200": { "description": "OK" } } } }
+  }
+}

@@ -1,0 +1,74 @@
+# requirements.txt
+
+# ======================
+# Web 核心框架
+# ======================
+Flask==3.0.0
+Flask-CORS==4.0.0
+Flask-SQLAlchemy==3.1.1
+Flask-Migrate==4.0.5
+Flask-JWT-Extended==4.5.3
+Flask-Limiter==3.5.0
+Flask-Caching==2.1.0
+Werkzeug==3.0.1
+Flask-Login==0.6.3
+
+# ======================
+# 异步与 WebSocket
+# ======================
+Flask-SocketIO==5.3.5
+python-socketio==5.10.0
+eventlet==0.33.3
+gevent==23.9.1
+greenlet==3.0.1
+
+# ======================
+# 任务队列
+# ======================
+celery==5.3.4
+redis==5.0.1
+
+# ======================
+# 数据库驱动
+# ======================
+psycopg2-binary==2.9.9
+alembic==1.13.1
+
+# ======================
+# 监控与日志
+# ======================
+prometheus-flask-exporter==0.23.0
+prometheus-client==0.19.0
+sentry-sdk[flask]==1.39.1
+python-json-logger==2.0.7
+
+# ======================
+# 工具库
+# ======================
+requests==2.31.0
+cryptography==41.0.7
+pydantic==2.5.2
+python-dotenv==1.0.0
+gunicorn==21.2.0
+
+# ======================
+# 阿里云 SDK (DDNS)
+# ======================
+alibabacloud-tea-openapi==0.3.8
+alibabacloud-alidns20150109==3.0.1
+alibabacloud-tea-util==0.3.11
+alibabacloud-endpoint-util==0.0.3
+
+# ======================
+# 系统监控
+# ======================
+psutil==5.9.6
+dnspython==2.4.2
+pyyaml==6.0.1
+
+# ======================
+# 其他
+# ======================
+dnspython==2.4.2
+email-validator==2.1.0
+toml==0.10.2

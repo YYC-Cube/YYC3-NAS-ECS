@@ -1,0 +1,58 @@
+# 📦 Dockerfile.backend - 生产级后端Dockerfile
+# ==========================================
+# 阶段 1: 依赖安装 (利用缓存)
+# ==========================================
+FROM oven/bun:1 AS base
+WORKDIR /app
+
+# 安装依赖
+FROM base AS deps
+COPY package.json bun.lockb ./
+RUN bun install --frozen-lockfile --production
+
+# ==========================================
+# 阶段 2: 构建阶段 (编译TypeScript)
+# ==========================================
+FROM base AS builder
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+
+# 设置环境为生产，但不构建生产包（因为这是后端）
+ENV NODE_ENV=production
+
+# 构建TypeScript (如果需要tsc，或者直接运行)
+# 这里假设Bun可以直接运行TS，或者已经构建好了JS
+# 如果有build命令：
+# RUN bun run build
+
+# ==========================================
+# 阶段 3: 生产运行镜像 (极简镜像)
+# ==========================================
+FROM oven/bun:1-alpine AS runner
+WORKDIR /app
+
+# 创建非root用户
+RUN addgroup --system --gid 1001 bun && \
+    adduser --system --uid 1001 bun
+
+# 设置环境变量
+ENV NODE_ENV=production
+ENV PORT=3000
+
+# 复制依赖和代码
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=builder /app/src ./src
+COPY --from=builder /app/package.json ./
+
+# 切换用户
+USER bun
+
+# 暴露端口
+EXPOSE 3000
+
+# 健康检查
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD bun --version || exit 1
+
+# 启动命令
+CMD ["bun", "run", "src/index.ts"]

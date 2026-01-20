@@ -1,0 +1,26 @@
+bindAddr = "0.0.0.0"
+bindPort = 7001
+
+auth.method = "token"
+auth.token = "yyc3_nas"
+
+webServer.addr = "0.0.0.0"
+webServer.port = 7500
+webServer.user = "yyc3"
+webServer.password = "my151001"
+
+vhostHTTPPort = 18080
+vhostHTTPSPort = 4443
+
+transport.tls.certFile = "/etc/letsencrypt/live/0379.email/fullchain.pem"
+transport.tls.keyFile = "/etc/letsencrypt/live/0379.email/privkey.pem"
+
+allowPorts = [
+  { start = 6000, end = 6009 },
+  { start = 8080, end = 8080 }
+]
+
+subDomainHost = "0379.email"
+
+log.to = "/root/frps/frps.log"
+log.level = "warn"

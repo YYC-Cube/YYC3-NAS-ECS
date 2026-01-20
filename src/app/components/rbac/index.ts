@@ -1,0 +1,1 @@
+export { RBACManager } from './RBACManager';
