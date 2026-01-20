@@ -1,0 +1,25 @@
+# 1. Redis 日志/数据文件（本地/NAS存储，不提交）
+/var/log/redis/
+/opt/homebrew/var/log/redis/
+/mnt/nas/redis/
+/data/
+
+# 2. 本地备份文件（脚本自动生成的备份）
+config/backup_*/
+scripts/backup_*/
+
+# 3. Docker 相关（容器数据/日志，不提交）
+docker-data/
+docker-logs/
+.env
+*.dockerignore
+
+# 4. 临时文件
+/tmp/
+*.tmp
+*.swp
+.DS_Store  # Mac 系统隐藏文件
+
+# 5. 编译/缓存文件
+__pycache__/
+node_modules/

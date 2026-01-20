@@ -1,0 +1,180 @@
+# ==================== Node.js & Build ====================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+out/
+.vite/
+.next/
+.nuxt/
+.vuepress/dist/
+
+# ==================== Dependencies ====================
+.pnp
+.pnp.js
+
+# ==================== Testing ====================
+coverage/
+*.lcov
+.nyc_output/
+.vitest/
+
+# ==================== Editor & IDE ====================
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+*.sublime-project
+*.sublime-workspace
+
+# ==================== Environment Variables ====================
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+.env.production.local
+.env.staging.local
+**/.env
+
+# Keep .env.example for reference
+!.env.example
+
+# ==================== Config Secrets ====================
+config/secrets/
+
+# ==================== Logs ====================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Application logs
+api/logs/
+llm/logs/
+mail/logs/
+ddns/logs/
+redis/logs/
+frp/logs/
+*.log.*
+
+# ==================== Python Services ====================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+virtualenv/
+
+# Python testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# ==================== Redis ====================
+dump.rdb
+appendonly.aof
+
+# ==================== Docker ====================
+.dockerignore.local
+
+# ==================== Temporary & Cache Files ====================
+tmp/
+temp/
+*.tmp
+*.temp
+.cache/
+.parcel-cache/
+.sass-cache/
+.eslintcache
+
+# ==================== OS ====================
+Thumbs.db
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# ==================== Backup Files ====================
+*.bak
+*.backup
+*~
+.#*
+
+# ==================== Security & Secrets ====================
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets/
+credentials/
+.secrets/
+
+# ==================== Service-Specific ====================
+# FRP
+frp/frpc.log
+frp/frps.log
+frp/*.pid
+
+# Mail
+mail/queue/*
+!mail/queue/.gitkeep
+mail/logs/*
+
+# LLM
+llm/.env
+llm/cache/
+
+# DDNS
+ddns/logs/
+ddns/ddns.log
+
+# ==================== Misc ====================
+*.pid
+*.seed
+*.pid.lock
+.lock-wscript
+package-lock.json
+yarn.lock
+pnpm-lock.yaml

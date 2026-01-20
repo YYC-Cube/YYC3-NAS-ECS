@@ -1,0 +1,97 @@
+openapi: 3.0.0
+info:
+  title: RediOps API
+  description: 言语团队 API 服务接口文档
+  version: 1.0.0
+  contact:
+    name: Yu
+    email: admin@0379.email
+
+servers:
+  - url: https://api.0379.email
+
+paths:
+  /status:
+    get:
+      summary: 服务状态检查
+      responses:
+        '200':
+          description: 成功响应
+
+  /user/register:
+    post:
+      summary: 用户注册
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                name:
+                  type: string
+      responses:
+        '201':
+          description: 注册成功
+
+  /user/login:
+    post:
+      summary: 用户登录
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: 登录成功
+
+  /user/info:
+    get:
+      summary: 获取当前用户信息
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 成功响应
+
+  /user/update:
+    put:
+      summary: 修改用户信息
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              properties:
+                name:
+                  type: string
+      responses:
+        '200':
+          description: 修改成功
+
+  /user/logout:
+    post:
+      summary: 注销登录
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: 注销成功
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

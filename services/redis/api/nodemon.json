@@ -1,0 +1,14 @@
+{
+  "legacyWatch": true,
+  "watch": ["."],
+  "ext": "js,json,yaml",
+  "ignore": [
+    "node_modules/**",
+    "logs/**",
+    ".git/**",
+    "*.log",
+    "coverage/**",
+    "tmp/**"
+  ],
+  "delay": "200ms"
+}

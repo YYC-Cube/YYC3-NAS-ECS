@@ -1,0 +1,115 @@
+services:
+  # 开发环境Redis（192.168.3.0/24网段）
+  redis-dev:
+    image: redis:alpine
+    platform: ${DOCKER_PLATFORM:-linux/arm64/v8}
+    container_name: redis-dev
+    restart: unless-stopped
+    ports:
+      - "${REDIS_DEV_PORT:-6379}:6380"
+    networks:
+      - redis-dev-net
+    volumes:
+      - /Users/yanyu/Projects/redis-config/config/redis-base.conf:/etc/redis/redis-base.conf
+      - /Users/yanyu/Projects/redis-config/config/redis-dev.conf:/etc/redis/redis.conf
+      - /Users/yanyu/nas/volume2/redis/dev/data:/data
+      - /Users/yanyu/Projects/redis-config/logs/dev:/var/log/redis
+    command: ["/etc/redis/redis.conf"]
+    env_file:
+      - ../.env.local
+    environment:
+      - TZ=Asia/Shanghai
+    healthcheck:
+      test: ["CMD","redis-cli","-p","6380","ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+
+  # 生产环境Redis（安全配置）
+  redis-prod:
+    image: redis:alpine
+    platform: ${DOCKER_PLATFORM:-linux/arm64/v8}
+    container_name: redis-prod
+    restart: always
+    ports:
+      - "${REDIS_PROD_PORT:-6380}:6379"
+    networks:
+      - redis-prod-net
+    volumes:
+      - /Users/yanyu/Projects/redis-config/config/redis-base.conf:/etc/redis/redis-base.conf
+      - /Users/yanyu/Projects/redis-config/config/redis-prod.conf:/etc/redis/redis.conf
+      - /Users/yanyu/nas/volume2/redis/prod/data:/data
+      - /Users/yanyu/Projects/redis-config/logs/prod:/var/log/redis
+    command: ["/etc/redis/redis.conf"]
+    env_file:
+      - ../.env.local
+    environment:
+      - TZ=Asia/Shanghai
+    healthcheck:
+      test: ["CMD-SHELL","redis-cli -a \"$REDIS_PROD_PASSWORD\" -p 6379 ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    # 资源限制（适配Mac M4性能）
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 32G
+
+  # API 开发环境（与 redis-dev 同网络）
+  api-dev:
+    image: node:18-alpine
+    platform: ${DOCKER_PLATFORM:-linux/arm64/v8}
+    container_name: api-dev
+    restart: unless-stopped
+    working_dir: /usr/src/app
+    ports:
+      - "${API_DEV_PORT:-3000}:3000"
+    networks:
+      - redis-dev-net
+    volumes:
+      - /Users/yanyu/Projects/redis-config/api:/usr/src/app
+    env_file:
+      - ../.env.local
+    environment:
+      - TZ=Asia/Shanghai
+      - REDIS_HOST=redis-dev
+      - REDIS_PORT=6380
+      - REDIS_PASSWORD=
+      - REDIS_TLS=false
+    command: ["npm", "run", "dev"]
+    depends_on:
+      - redis-dev
+  # API 生产环境（与 redis-prod 同网络）
+  api-prod:
+    build:
+      context: /Users/yanyu/Projects/redis-config/api
+    
+      dockerfile: Dockerfile
+    platform: ${DOCKER_PLATFORM:-linux/arm64/v8}
+    container_name: api-prod
+    restart: always
+    ports:
+      - "${API_PROD_PORT:-3001}:3000"
+    networks:
+      - redis-prod-net
+    env_file:
+      - ../.env.local
+    environment:
+      - TZ=Asia/Shanghai
+      - REDIS_HOST=redis-prod
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PROD_PASSWORD}
+      - REDIS_TLS=false
+    depends_on:
+      - redis-prod
+
+# 网络隔离：开发与生产网络不互通
+networks:
+  redis-dev-net:
+    driver: bridge
+  redis-prod-net:
+    driver: bridge

@@ -1,0 +1,414 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+  --background: #ffffff;
+  --foreground: #334155;
+  --card: #ffffff;
+  --card-foreground: #334155;
+  --popover: oklch(1 0 0);
+  --popover-foreground: #334155;
+  --primary: #1e293b;
+  --primary-foreground: oklch(1 0 0);
+  --secondary: oklch(0.95 0.0058 264.53);
+  --secondary-foreground: #1e293b;
+  --muted: #ececf0;
+  --muted-foreground: #717182;
+  --accent: #e9ebef;
+  --accent-foreground: #1e293b;
+  --destructive: #d4183d;
+  --destructive-foreground: #ffffff;
+  --border: rgba(51, 65, 85, 0.15);
+  --input: transparent;
+  --input-background: #f3f3f5;
+  --switch-background: #cbced4;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: #334155;
+  --sidebar-primary: #1e293b;
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: #475569;
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+
+  /* 模块主题色系统 - CPU模块（蓝色） */
+  --module-cpu-primary: #2A6EBB;
+  --module-cpu-shadow: #1E5CA3;
+  --module-cpu-dark: #0D3A6A;
+  --module-cpu-light: #F0F7FF;
+  --module-cpu-light-rgb: 240, 247, 255;
+
+  /* 内存模块（绿色） */
+  --module-memory-primary: #27AE60;
+  --module-memory-shadow: #1E8449;
+  --module-memory-dark: #0E5C2F;
+  --module-memory-light: #F0F9F4;
+  --module-memory-light-rgb: 240, 249, 244;
+
+  /* 存储模块（紫色） */
+  --module-storage-primary: #8E44AD;
+  --module-storage-shadow: #703688;
+  --module-storage-dark: #4A235A;
+  --module-storage-light: #F8F0FF;
+  --module-storage-light-rgb: 248, 240, 255;
+
+  /* 网络模块（橙色） */
+  --module-network-primary: #E67E22;
+  --module-network-shadow: #C15811;
+  --module-network-dark: #8B3A0A;
+  --module-network-light: #FFF5EB;
+  --module-network-light-rgb: 255, 245, 235;
+
+  /* 安全模块（红色） */
+  --module-security-primary: #E74C3C;
+  --module-security-shadow: #C0392B;
+  --module-security-dark: #922B21;
+  --module-security-light: #FFF0EE;
+  --module-security-light-rgb: 255, 240, 238;
+
+  /* AI模块（紫色） */
+  --module-ai-primary: #9333EA;
+  --module-ai-shadow: #7E22CE;
+  --module-ai-dark: #5B21B6;
+  --module-ai-light: #F5F3FF;
+  --module-ai-light-rgb: 245, 243, 255;
+
+  /* 仪表盘模块（蓝色） */
+  --module-dashboard-primary: #2563EB;
+  --module-dashboard-shadow: #1D4ED8;
+  --module-dashboard-dark: #1E40AF;
+  --module-dashboard-light: #EFF6FF;
+  --module-dashboard-light-rgb: 239, 246, 255;
+
+  /* DDNS模块（橙色） */
+  --module-ddns-primary: #F97316;
+  --module-ddns-shadow: #EA580C;
+  --module-ddns-dark: #C2410C;
+  --module-ddns-light: #FFF7ED;
+  --module-ddns-light-rgb: 255, 247, 237;
+
+  /* 邮件模块（蓝色） */
+  --module-email-primary: #3B82F6;
+  --module-email-shadow: #2563EB;
+  --module-email-dark: #1D4ED8;
+  --module-email-light: #EFF6FF;
+  --module-email-light-rgb: 239, 246, 255;
+
+  /* Figma模块（粉色） */
+  --module-figma-primary: #EC4899;
+  --module-figma-shadow: #DB2777;
+  --module-figma-dark: #BE185D;
+  --module-figma-light: #FDF2F8;
+  --module-figma-light-rgb: 253, 242, 248;
+
+  /* FRP模块（绿色） */
+  --module-frp-primary: #10B981;
+  --module-frp-shadow: #059669;
+  --module-frp-dark: #047857;
+  --module-frp-light: #F0FDF4;
+  --module-frp-light-rgb: 240, 253, 244;
+
+  /* 日志模块（灰色） */
+  --module-logs-primary: #6B7280;
+  --module-logs-shadow: #4B5563;
+  --module-logs-dark: #374151;
+  --module-logs-light: #F3F4F6;
+  --module-logs-light-rgb: 243, 244, 246;
+
+  /* NAS模块（蓝色） */
+  --module-nas-primary: #0EA5E9;
+  --module-nas-shadow: #0284C7;
+  --module-nas-dark: #0369A1;
+  --module-nas-light: #F0F9FF;
+  --module-nas-light-rgb: 240, 249, 255;
+
+  /* 系统模块（紫色） */
+  --module-system-primary: #8B5CF6;
+  --module-system-shadow: #7C3AED;
+  --module-system-dark: #6D28D9;
+  --module-system-light: #F5F3FF;
+  --module-system-light-rgb: 245, 243, 255;
+
+  /* 当前活动模块色 - 默认为仪表盘 */
+  --module-primary: var(--module-dashboard-primary);
+  --module-shadow: var(--module-dashboard-shadow);
+  --module-dark: var(--module-dashboard-dark);
+  --module-light: var(--module-dashboard-light);
+  --module-light-rgb: var(--module-dashboard-light-rgb);
+}
+
+/* CPU主题 */
+.theme-cpu {
+  --module-primary: var(--module-cpu-primary);
+  --module-shadow: var(--module-cpu-shadow);
+  --module-dark: var(--module-cpu-dark);
+  --module-light: var(--module-cpu-light);
+  --module-light-rgb: var(--module-cpu-light-rgb);
+}
+
+/* 内存主题 */
+.theme-memory {
+  --module-primary: var(--module-memory-primary);
+  --module-shadow: var(--module-memory-shadow);
+  --module-dark: var(--module-memory-dark);
+  --module-light: var(--module-memory-light);
+  --module-light-rgb: var(--module-memory-light-rgb);
+}
+
+/* 存储主题 */
+.theme-storage {
+  --module-primary: var(--module-storage-primary);
+  --module-shadow: var(--module-storage-shadow);
+  --module-dark: var(--module-storage-dark);
+  --module-light: var(--module-storage-light);
+  --module-light-rgb: var(--module-storage-light-rgb);
+}
+
+/* 网络主题 */
+.theme-network {
+  --module-primary: var(--module-network-primary);
+  --module-shadow: var(--module-network-shadow);
+  --module-dark: var(--module-network-dark);
+  --module-light: var(--module-network-light);
+  --module-light-rgb: var(--module-network-light-rgb);
+}
+
+/* 安全主题 */
+.theme-security {
+  --module-primary: var(--module-security-primary);
+  --module-shadow: var(--module-security-shadow);
+  --module-dark: var(--module-security-dark);
+  --module-light: var(--module-security-light);
+  --module-light-rgb: var(--module-security-light-rgb);
+}
+
+/* AI主题 */
+.theme-ai {
+  --module-primary: var(--module-ai-primary);
+  --module-shadow: var(--module-ai-shadow);
+  --module-dark: var(--module-ai-dark);
+  --module-light: var(--module-ai-light);
+  --module-light-rgb: var(--module-ai-light-rgb);
+}
+
+/* 仪表盘主题 */
+.theme-dashboard {
+  --module-primary: var(--module-dashboard-primary);
+  --module-shadow: var(--module-dashboard-shadow);
+  --module-dark: var(--module-dashboard-dark);
+  --module-light: var(--module-dashboard-light);
+  --module-light-rgb: var(--module-dashboard-light-rgb);
+}
+
+/* DDNS主题 */
+.theme-ddns {
+  --module-primary: var(--module-ddns-primary);
+  --module-shadow: var(--module-ddns-shadow);
+  --module-dark: var(--module-ddns-dark);
+  --module-light: var(--module-ddns-light);
+  --module-light-rgb: var(--module-ddns-light-rgb);
+}
+
+/* 邮件主题 */
+.theme-email {
+  --module-primary: var(--module-email-primary);
+  --module-shadow: var(--module-email-shadow);
+  --module-dark: var(--module-email-dark);
+  --module-light: var(--module-email-light);
+  --module-light-rgb: var(--module-email-light-rgb);
+}
+
+/* Figma主题 */
+.theme-figma {
+  --module-primary: var(--module-figma-primary);
+  --module-shadow: var(--module-figma-shadow);
+  --module-dark: var(--module-figma-dark);
+  --module-light: var(--module-figma-light);
+  --module-light-rgb: var(--module-figma-light-rgb);
+}
+
+/* FRP主题 */
+.theme-frp {
+  --module-primary: var(--module-frp-primary);
+  --module-shadow: var(--module-frp-shadow);
+  --module-dark: var(--module-frp-dark);
+  --module-light: var(--module-frp-light);
+  --module-light-rgb: var(--module-frp-light-rgb);
+}
+
+/* 日志主题 */
+.theme-logs {
+  --module-primary: var(--module-logs-primary);
+  --module-shadow: var(--module-logs-shadow);
+  --module-dark: var(--module-logs-dark);
+  --module-light: var(--module-logs-light);
+  --module-light-rgb: var(--module-logs-light-rgb);
+}
+
+/* NAS主题 */
+.theme-nas {
+  --module-primary: var(--module-nas-primary);
+  --module-shadow: var(--module-nas-shadow);
+  --module-dark: var(--module-nas-dark);
+  --module-light: var(--module-nas-light);
+  --module-light-rgb: var(--module-nas-light-rgb);
+}
+
+/* 系统主题 */
+.theme-system {
+  --module-primary: var(--module-system-primary);
+  --module-shadow: var(--module-system-shadow);
+  --module-dark: var(--module-system-dark);
+  --module-light: var(--module-system-light);
+  --module-light-rgb: var(--module-system-light-rgb);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  /**
+  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
+  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
+  */
+
+  html {
+    font-size: var(--font-size);
+  }
+
+  h1 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h4 {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  label {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  input {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+  }
+}
