@@ -158,7 +158,7 @@ services/
 1. 实时监控 - MonitorPanel
 2. MAIL服务 - EmailService
 3. FRP服务 - ConfigManager
-4. LLM服务 - LLMService
+4. AI智能浮窗 - IntelligentAIWidget
 5. DDNS服务 - DDNSService
 6. NAS服务 - NasManager
 7. API服务 - APIModule
@@ -179,7 +179,7 @@ services/
 | 实时监控 | `src/app/components/dashboard/MonitorPanel.tsx` | ✅ 正确 |
 | MAIL服务 | `src/app/components/email/EmailService.tsx` + `mail/` | ⚠️ 分散 |
 | FRP服务 | `src/app/components/frp/ConfigManager.tsx` + `frp/` | ⚠️ 分散 |
-| LLM服务 | `src/app/components/ai/LLMService.tsx` + `llm/` | ⚠️ 分散 |
+| AI智能浮窗 | `src/components/ai-floating-widget/IntelligentAIWidget.tsx` + `src/lib/ai-components/` | ✅ 正确 |
 | DDNS服务 | `src/app/components/ddns/DDNSService.tsx` + `ddns/` | ⚠️ 分散 |
 | NAS服务 | `src/app/components/nas/NasManager.tsx` | ✅ 正确 |
 | API服务 | `src/app/components/api/APIModule.tsx` | ✅ 正确 |

@@ -116,13 +116,13 @@ App.tsx (应用入口)
 
 ---
 
-#### `/src/app/App.tsx` 🔄 需修改
+#### `/src/App.tsx` 🔄 需修改
 
 **原内容**：完整的组件库展示系统  
 **修改为**：
 
 ```tsx
-import { EmailApp } from './EmailApp';
+import { EmailApp } from './app/EmailApp';
 export default EmailApp;
 ```
 
@@ -259,14 +259,14 @@ primary  → shadow → dark → light
 
    ```bash
    # 备份原App.tsx
-   cp src/app/App.tsx src/app/App.backup.tsx
+   cp src/App.tsx src/App.backup.tsx
    
    # 复制示例内容到App.tsx
    # 或直接编辑App.tsx为：
    ```
 
    ```tsx
-   import { EmailApp } from './EmailApp';
+   import { EmailApp } from './app/EmailApp';
    export default EmailApp;
    ```
 

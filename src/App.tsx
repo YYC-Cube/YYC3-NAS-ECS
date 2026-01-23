@@ -12,6 +12,7 @@ import { ModuleTable } from './components/ModuleTable';
 import { ModuleTabs } from './components/ModuleTabs';
 import { ModuleBadge } from './components/ModuleBadge';
 import { LayoutDemo } from './components/LayoutDemo';
+import { AIWidgetProvider } from './components/ai-floating-widget';
 import { Plus, Download, Settings, RefreshCw, Mail } from 'lucide-react';
 
 type ModuleTheme = 'cpu' | 'memory' | 'storage' | 'network' | 'security';
@@ -61,7 +62,8 @@ export default function App() {
 
   return (
     <ThemeProvider>
-      <div className="min-h-screen bg-gray-50">
+      <AIWidgetProvider autoInit={false} enableShortcut={true} shortcut="Ctrl+K">
+        <div className="min-h-screen bg-gray-50">
         {/* 导航栏 */}
         <Navigation onThemeChange={handleThemeChange} />
 
@@ -353,7 +355,7 @@ export default function App() {
             </div>
           </div>
         </div>
-      </div>
+      </AIWidgetProvider>
     </ThemeProvider>
   );
 }
