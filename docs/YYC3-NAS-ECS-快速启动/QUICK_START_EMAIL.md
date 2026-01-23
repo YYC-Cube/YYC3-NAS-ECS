@@ -4,10 +4,10 @@
 
 ### 步骤1：修改App.tsx
 
-用以下内容**完全替换** `/src/app/App.tsx` 文件：
+用以下内容**完全替换** `/src/App.tsx` 文件：
 
 ```tsx
-import { EmailApp } from './EmailApp';
+import { EmailApp } from './app/EmailApp';
 
 export default EmailApp;
 ```

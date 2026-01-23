@@ -43,10 +43,10 @@ src/
 
 ### 方法1：修改App.tsx入口文件（推荐）
 
-替换 `/src/app/App.tsx` 的内容为：
+替换 `/src/App.tsx` 的内容为：
 
 ```tsx
-import { EmailApp } from './EmailApp';
+import { EmailApp } from './app/EmailApp';
 
 export default EmailApp;
 ```
