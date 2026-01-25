@@ -169,6 +169,8 @@ llm/cache/
 # DDNS
 ddns/logs/
 ddns/ddns.log
+services/ddns/opt/yyc3/YYC3-NAS-ECS-DDNS-1.md
+services/ddns/opt/yyc3/YYC3-NAS-ECS-DDNS-2.md
 
 # ==================== Misc ====================
 *.pid
