@@ -1,3 +1,12 @@
+/**
+ * @file MonitorPanel - 实时监控面板组件
+ * @description 提供系统实时监控功能，包括CPU、内存、磁盘、网络等核心指标展示
+ * @module components/dashboard
+ * @author YYC³
+ * @version 1.0.0
+ * @created 2026-01-24
+ */
+
 import React, { useState } from 'react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer 
@@ -139,7 +148,6 @@ export const MonitorPanel: React.FC = () => {
                     tick={{ fontSize: 12, fill: '#666' }} 
                     tickLine={false}
                     axisLine={false}
-                    splitLine={{ lineStyle: { type: 'dashed', color: '#E5E7EB' } }}
                   />
                   <Tooltip 
                     contentStyle={{ 

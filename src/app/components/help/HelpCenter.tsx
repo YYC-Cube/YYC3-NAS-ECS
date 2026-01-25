@@ -1,9 +1,18 @@
+/**
+ * @file HelpCenter - 帮助中心组件
+ * @description 提供FAQ、使用指南、技术支持等帮助功能
+ * @module components/help
+ * @author YYC³
+ * @version 1.0.0
+ * @created 2026-01-24
+ */
+
 import React, { useState, useEffect } from 'react';
 import { ModuleCard } from '../ModuleCard';
 import { 
   HelpCircle, BookOpen, MessageSquare, Search, ChevronDown,
-  ChevronUp, ThumbsUp, ThumbsDown, Clock, ExternalLink,
-  Send, Plus, Filter, Star, CheckCircle2, AlertCircle
+  ThumbsUp, ThumbsDown, Clock, ExternalLink,
+  Send, Plus, AlertCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { FAQ, Guide, SupportTicket } from '../../types/help';
@@ -334,7 +343,7 @@ export const HelpCenter: React.FC = () => {
 
         {/* FAQ Detail Modal */}
         {selectedFAQ && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setSelectedFAQ(null)}>
+          <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50" onClick={() => setSelectedFAQ(null)}>
             <div 
               className="bg-[#2d3748] rounded-lg border border-gray-600 max-w-2xl w-full mx-4 max-h-[80vh] overflow-auto"
               onClick={(e) => e.stopPropagation()}
@@ -380,7 +389,7 @@ export const HelpCenter: React.FC = () => {
 
         {/* Guide Detail Modal */}
         {selectedGuide && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setSelectedGuide(null)}>
+          <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50" onClick={() => setSelectedGuide(null)}>
             <div 
               className="bg-[#2d3748] rounded-lg border border-gray-600 max-w-4xl w-full mx-4 max-h-[80vh] overflow-auto"
               onClick={(e) => e.stopPropagation()}
@@ -417,7 +426,7 @@ export const HelpCenter: React.FC = () => {
 
         {/* New Ticket Modal */}
         {showNewTicket && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowNewTicket(false)}>
+          <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50" onClick={() => setShowNewTicket(false)}>
             <div 
               className="bg-[#2d3748] rounded-lg border border-gray-600 max-w-lg w-full mx-4"
               onClick={(e) => e.stopPropagation()}

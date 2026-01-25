@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { ModuleCard } from '../ModuleCard';
 import { 
-  Users, Shield, UserPlus, Edit, Trash2, Key, 
-  Lock, Unlock, Search, Filter, MoreVertical, 
-  ChevronDown, ChevronUp, RefreshCw, AlertCircle,
-  CheckCircle2, XCircle, FileText, Settings
+  Shield, UserPlus, Edit, Trash2, 
+  Lock, Unlock, Search, 
+  ChevronDown, ChevronUp, RefreshCw,
+  CheckCircle2, XCircle, FileText
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
-  User, Role, Permission, RolePermissions, AuditLog 
+  User, Role, RolePermissions, AuditLog 
 } from '../../types/rbac';
 import { rbacService } from '../../services/rbacService';
 
@@ -345,7 +345,7 @@ export const RBACManager: React.FC = () => {
 
         {/* Create User Modal */}
         {showCreateUser && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowCreateUser(false)}>
+          <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50" onClick={() => setShowCreateUser(false)}>
             <div 
               className="bg-[#2d3748] rounded-lg border border-gray-600 max-w-md w-full mx-4"
               onClick={(e) => e.stopPropagation()}
@@ -423,7 +423,7 @@ export const RBACManager: React.FC = () => {
 
         {/* User Detail Modal */}
         {selectedUser && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setSelectedUser(null)}>
+          <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50" onClick={() => setSelectedUser(null)}>
             <div 
               className="bg-[#2d3748] rounded-lg border border-gray-600 max-w-lg w-full mx-4"
               onClick={(e) => e.stopPropagation()}

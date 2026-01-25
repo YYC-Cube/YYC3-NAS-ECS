@@ -1,10 +1,9 @@
-import { expect, afterEach, vi, beforeAll } from 'vitest';
+import { afterEach, vi, beforeAll } from 'vitest';
 import { cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 afterEach(() => {
   cleanup();
-  vi.restoreAllMocks();
 });
 
 beforeAll(() => {
@@ -79,7 +78,7 @@ function setupEnvironmentVariables() {
   process.env.VITE_TIMEZONE = 'Asia/Shanghai';
   process.env.NODE_ENV = 'test';
 
-  global.import = {
+  (global as any).import = {
     meta: {
       env: {
         NODE_ENV: 'test',

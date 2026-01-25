@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Textarea } from '../ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Switch } from '../ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { Badge } from '../ui/badge';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { 
   Settings, 
   Download, 
@@ -27,7 +27,15 @@ import {
   Lock
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { configManager, Environment, ConfigCategory, ConfigDiff, ConfigValidationResult } from '@/services/configService';
+import { configManager, Environment, ConfigCategory, ConfigDiff, ConfigValidationResult } from '../../services/configService';
+
+interface ConfigValue {
+  value: string;
+  type: string;
+  description: string;
+  required: boolean;
+  isSecret: boolean;
+}
 
 export const ConfigManagerComponent: React.FC = () => {
   const [currentEnvironment, setCurrentEnvironment] = useState<Environment>(configManager.getEnvironment());
@@ -136,7 +144,7 @@ export const ConfigManagerComponent: React.FC = () => {
           <p className="text-muted-foreground">管理系统配置和环境变量</p>
         </div>
         <div className="flex gap-2">
-          <Select value={currentEnvironment} onValueChange={(value) => handleEnvironmentChange(value as Environment)}>
+          <Select value={currentEnvironment} onValueChange={(value: string) => handleEnvironmentChange(value as Environment)}>
             <SelectTrigger className="w-[180px]">
               <SelectValue />
             </SelectTrigger>
@@ -186,7 +194,7 @@ export const ConfigManagerComponent: React.FC = () => {
           <AlertTitle>配置验证失败</AlertTitle>
           <AlertDescription>
             <ul className="list-disc list-inside mt-2">
-              {validationResult.errors.map((error, index) => (
+              {validationResult.errors.map((error: any, index: number) => (
                 <li key={index}>{error.message}</li>
               ))}
             </ul>
@@ -212,50 +220,53 @@ export const ConfigManagerComponent: React.FC = () => {
                 <CardDescription>{category.description}</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {Object.entries(category.configs).map(([key, configValue]) => (
-                  <div key={key} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor={key} className="flex items-center gap-2">
-                        {key}
-                        {configValue.required && <Badge variant="destructive">必填</Badge>}
-                        {configValue.isSecret && <Lock className="h-3 w-3 text-muted-foreground" />}
-                      </Label>
-                      {configValue.type === 'boolean' && (
-                        <Switch
-                          checked={configValue.value === 'true'}
-                          onCheckedChange={(checked) => handleConfigChange(key, checked ? 'true' : 'false')}
+                {Object.entries(category.configs).map(([key, configValue]) => {
+                  const config = configValue as ConfigValue;
+                  return (
+                    <div key={key} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor={key} className="flex items-center gap-2">
+                          {key}
+                          {config.required && <Badge variant="destructive">必填</Badge>}
+                          {config.isSecret && <Lock className="h-3 w-3 text-muted-foreground" />}
+                        </Label>
+                        {config.type === 'boolean' && (
+                          <Switch
+                            checked={config.value === 'true'}
+                            onCheckedChange={(checked: boolean) => handleConfigChange(key, checked ? 'true' : 'false')}
+                          />
+                        )}
+                      </div>
+                      {config.type === 'boolean' ? (
+                        <p className="text-sm text-muted-foreground">{config.description}</p>
+                      ) : config.type === 'url' ? (
+                        <Input
+                          id={key}
+                          type="url"
+                          value={config.isSecret ? '***' : config.value}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleConfigChange(key, e.target.value)}
+                          placeholder={config.description}
+                        />
+                      ) : config.type === 'number' ? (
+                        <Input
+                          id={key}
+                          type="number"
+                          value={config.isSecret ? '***' : config.value}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleConfigChange(key, e.target.value)}
+                          placeholder={config.description}
+                        />
+                      ) : (
+                        <Input
+                          id={key}
+                          type={config.isSecret ? 'password' : 'text'}
+                          value={config.isSecret ? '***' : config.value}
+                          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleConfigChange(key, e.target.value)}
+                          placeholder={config.description}
                         />
                       )}
                     </div>
-                    {configValue.type === 'boolean' ? (
-                      <p className="text-sm text-muted-foreground">{configValue.description}</p>
-                    ) : configValue.type === 'url' ? (
-                      <Input
-                        id={key}
-                        type="url"
-                        value={configValue.isSecret ? '***' : configValue.value}
-                        onChange={(e) => handleConfigChange(key, e.target.value)}
-                        placeholder={configValue.description}
-                      />
-                    ) : configValue.type === 'number' ? (
-                      <Input
-                        id={key}
-                        type="number"
-                        value={configValue.isSecret ? '***' : configValue.value}
-                        onChange={(e) => handleConfigChange(key, e.target.value)}
-                        placeholder={configValue.description}
-                      />
-                    ) : (
-                      <Input
-                        id={key}
-                        type={configValue.isSecret ? 'password' : 'text'}
-                        value={configValue.isSecret ? '***' : configValue.value}
-                        onChange={(e) => handleConfigChange(key, e.target.value)}
-                        placeholder={configValue.description}
-                      />
-                    )}
-                  </div>
-                ))}
+                  );
+                })}
               </CardContent>
             </Card>
           ))}
@@ -271,7 +282,7 @@ export const ConfigManagerComponent: React.FC = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label>环境 1</Label>
-                  <Select value={compareEnv1} onValueChange={(value) => setCompareEnv1(value as Environment)}>
+                  <Select value={compareEnv1} onValueChange={(value: string) => setCompareEnv1(value as Environment)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -284,7 +295,7 @@ export const ConfigManagerComponent: React.FC = () => {
                 </div>
                 <div>
                   <Label>环境 2</Label>
-                  <Select value={compareEnv2} onValueChange={(value) => setCompareEnv2(value as Environment)}>
+                  <Select value={compareEnv2} onValueChange={(value: string) => setCompareEnv2(value as Environment)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -368,7 +379,7 @@ export const ConfigManagerComponent: React.FC = () => {
               <Textarea
                 placeholder="粘贴配置内容..."
                 value={importedConfig}
-                onChange={(e) => setImportedConfig(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setImportedConfig(e.target.value)}
                 rows={10}
               />
               <Button onClick={handleImport} className="w-full">

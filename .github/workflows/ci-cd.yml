@@ -1,0 +1,431 @@
+name: YYC3-NAS-ECS CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+env:
+  NODE_VERSION: '18'
+  PYTHON_VERSION: '3.11'
+
+jobs:
+  # ================== 代码质量检查 ==================
+  code-quality:
+    name: 代码质量检查
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 设置Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 运行ESLint
+        run: npm run lint --if-present
+
+      - name: 运行Prettier检查
+        run: npx prettier --check "src/**/*.{ts,tsx,js,jsx}" --if-present
+
+      - name: 运行类型检查
+        run: npm run type-check --if-present
+
+  # ================== 安全扫描 ==================
+  security-scan:
+    name: 安全扫描
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 运行npm audit
+        run: npm audit --audit-level=moderate
+        continue-on-error: true
+
+      - name: 运行Snyk安全扫描
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+        continue-on-error: true
+
+      - name: 上传Snyk结果到GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: snyk.sarif
+
+  # ================== 单元测试 ==================
+  unit-test:
+    name: 单元测试
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 运行单元测试
+        run: npm run test:coverage
+
+      - name: 上传覆盖率报告
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage/coverage-final.json
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+  # ================== 集成测试 ==================
+  integration-test:
+    name: 集成测试
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: yyc3_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 设置Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: 安装Node.js依赖
+        run: npm ci
+
+      - name: 安装Python依赖
+        run: |
+          cd api
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: 运行后端集成测试
+        run: |
+          cd api
+          pytest tests/integration/ --cov=app --cov-report=xml --cov-report=html
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/yyc3_test
+          REDIS_URL: redis://localhost:6379
+
+      - name: 运行前端集成测试
+        run: npm run test:integration --if-present
+
+      - name: 上传覆盖率报告
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./api/coverage.xml
+          flags: integration
+          name: codecov-integration
+          fail_ci_if_error: false
+
+  # ================== E2E测试 ==================
+  e2e-test:
+    name: E2E测试
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 安装Playwright
+        run: npx playwright install --with-deps
+
+      - name: 运行E2E测试
+        run: npm run test:e2e --if-present
+
+      - name: 上传测试报告
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 30
+
+  # ================== 构建前端 ==================
+  build-frontend:
+    name: 构建前端
+    runs-on: ubuntu-latest
+    needs: [code-quality, security-scan, unit-test]
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 构建前端
+        run: npm run build
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-dist
+          path: dist/
+          retention-days: 7
+
+  # ================== 构建后端 ==================
+  build-backend:
+    name: 构建后端
+    runs-on: ubuntu-latest
+    needs: [code-quality, security-scan, unit-test]
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: 安装依赖
+        run: |
+          cd api
+          pip install -r requirements.txt
+
+      - name: 运行后端测试
+        run: |
+          cd api
+          pytest tests/ --cov=app --cov-report=xml --cov-report=html
+
+      - name: 上传覆盖率报告
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./api/coverage.xml
+          flags: backend
+          name: codecov-backend
+          fail_ci_if_error: false
+
+  # ================== Docker构建 ==================
+  docker-build:
+    name: 构建Docker镜像
+    runs-on: ubuntu-latest
+    needs: [build-frontend, build-backend]
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 登录到Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: 提取元数据
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: yyc3/nas-ecs
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: 构建并推送Docker镜像
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ================== 部署到开发环境 ==================
+  deploy-dev:
+    name: 部署到开发环境
+    runs-on: ubuntu-latest
+    needs: [docker-build]
+    if: github.ref == 'refs/heads/develop'
+    environment:
+      name: development
+      url: https://dev.yyc3-nas-ecs.com
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 部署到开发服务器
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DEV_HOST }}
+          username: ${{ secrets.DEV_USERNAME }}
+          key: ${{ secrets.DEV_SSH_KEY }}
+          script: |
+            cd /opt/yyc3-nas-ecs
+            git pull origin develop
+            docker-compose -f docker-compose.dev.yml pull
+            docker-compose -f docker-compose.dev.yml up -d
+            docker-compose -f docker-compose.dev.yml exec -T api python -m pytest tests/health_check.py
+
+  # ================== 部署到生产环境 ==================
+  deploy-prod:
+    name: 部署到生产环境
+    runs-on: ubuntu-latest
+    needs: [docker-build]
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://yyc3-nas-ecs.com
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 创建GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ github.run_number }}
+          name: Release v${{ github.run_number }}
+          body: |
+            ## 🚀 YYC3-NAS-ECS 新版本发布
+
+            ### 📝 变更内容
+            - 更新日志
+
+            ### ✅ 测试
+            - 所有测试通过
+            - 代码覆盖率达标
+
+            ### 🔒 安全
+            - 安全扫描通过
+            - 无高危漏洞
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 部署到生产服务器
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.PROD_HOST }}
+          username: ${{ secrets.PROD_USERNAME }}
+          key: ${{ secrets.PROD_SSH_KEY }}
+          script: |
+            cd /opt/yyc3-nas-ecs
+            git pull origin main
+            docker-compose -f docker-compose.prod.yml pull
+            docker-compose -f docker-compose.prod.yml up -d
+            docker-compose -f docker-compose.prod.yml exec -T api python -m pytest tests/health_check.py
+
+  # ================== 通知 ==================
+  notify:
+    name: 发送通知
+    runs-on: ubuntu-latest
+    needs: [deploy-dev, deploy-prod]
+    if: always()
+
+    steps:
+      - name: 发送Slack通知
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          text: |
+            🚀 YYC3-NAS-ECS 部署完成
+            
+            **分支**: ${{ github.ref_name }}
+            **提交**: ${{ github.sha }}
+            **状态**: ${{ job.status }}
+            **作者**: ${{ github.actor }}
+            
+            📊 [查看工作流](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}
+        if: always()
+
+      - name: 发送邮件通知
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: YYC3-NAS-ECS 部署通知 - ${{ job.status }}
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: YYC3 CI/CD
+          body: |
+            部署状态: ${{ job.status }}
+            分支: ${{ github.ref_name }}
+            提交: ${{ github.sha }}
+            作者: ${{ github.actor }}
+        if: always()

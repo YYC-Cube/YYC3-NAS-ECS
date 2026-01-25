@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import { logService } from './logService';
 import { LogCategory, LogLevel } from '../types/logs';
 
@@ -84,12 +83,13 @@ export class ConfigManager {
     const previousEnv = this.currentEnvironment;
     this.currentEnvironment = env;
     this.loadConfigs();
-    
+
     // Log environment change
     logService.addLog({
       category: LogCategory.SYSTEM,
       level: LogLevel.INFO,
       message: `环境切换成功`,
+      service: 'config',
       details: {
         from: previousEnv,
         to: env
@@ -129,19 +129,20 @@ export class ConfigManager {
     if (envConfig) {
       const oldValue = envConfig[key];
       envConfig[key] = value;
-      
+
       // Log configuration change
       logService.addLog({
         category: LogCategory.SYSTEM,
         level: LogLevel.INFO,
         message: `Configuration changed: ${key}`,
+        service: 'config',
         details: {
           key,
           oldValue,
           newValue: value,
           environment: this.currentEnvironment
         },
-        userId: 'system' // Could be user ID if authenticated
+        userId: 'system'
       });
     }
   }
@@ -184,12 +185,12 @@ export class ConfigManager {
     }
 
     const isValid = errors.length === 0;
-    
-    // Log validation result
+
     logService.addLog({
       category: LogCategory.SYSTEM,
-      level: isValid ? LogLevel.SUCCESS : LogLevel.ERROR,
+      level: isValid ? LogLevel.INFO : LogLevel.ERROR,
       message: isValid ? '配置验证通过' : '配置验证失败',
+      service: 'config',
       details: {
         errors: isValid ? [] : errors.map(e => e.message),
         environment: this.currentEnvironment,

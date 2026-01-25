@@ -1,5 +1,15 @@
+/**
+ * @file BackupService - 备份服务
+ * @description 提供数据备份、恢复和调度管理功能
+ * @module services/backup
+ * @author YYC³
+ * @version 1.0.0
+ * @created 2026-01-24
+ */
+
 import { logService } from './logService';
 import { LogCategory, LogLevel } from '../types/logs';
+import { logger } from '../utils/logger';
 import {
   BackupConfig, BackupRecord, RestoreRecord, BackupStats,
   BackupType, BackupStatus, BackupStorage
@@ -24,7 +34,7 @@ class BackupService {
       localStorage.removeItem(testKey);
       this.isLocalStorageAvailable = true;
     } catch (error) {
-      console.warn('localStorage is not available:', error);
+      logger.warn('localStorage is not available:', error);
       this.isLocalStorageAvailable = false;
     }
   }
@@ -50,7 +60,7 @@ class BackupService {
         this.restores = data.restores || [];
       }
     } catch (error) {
-      console.error('Failed to load backup data:', error);
+      logger.error('Failed to load backup data:', error);
     }
   }
 
@@ -67,7 +77,7 @@ class BackupService {
       };
       localStorage.setItem(this.storageKey, JSON.stringify(data));
     } catch (error) {
-      console.error('Failed to save backup data:', error);
+      logger.error('Failed to save backup data:', error);
     }
   }
 

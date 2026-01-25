@@ -15,13 +15,13 @@
             --dark-color: #2c3e50;
             --light-color: #ecf0f1;
         }
-
+        
         body {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             min-height: 100vh;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-
+        
         .card {
             border: none;
             border-radius: 15px;
@@ -29,27 +29,27 @@
             transition: transform 0.3s;
             background: rgba(255, 255, 255, 0.95);
         }
-
+        
         .card:hover {
             transform: translateY(-5px);
         }
-
+        
         .status-card {
             border-left: 5px solid var(--primary-color);
         }
-
+        
         .status-success {
             border-left-color: var(--success-color) !important;
         }
-
+        
         .status-warning {
             border-left-color: var(--warning-color) !important;
         }
-
+        
         .status-error {
             border-left-color: var(--danger-color) !important;
         }
-
+        
         .btn-primary {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             border: none;
@@ -57,12 +57,12 @@
             border-radius: 25px;
             font-weight: 600;
         }
-
+        
         .btn-primary:hover {
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
         }
-
+        
         .log-entry {
             padding: 10px;
             margin-bottom: 5px;
@@ -70,27 +70,27 @@
             font-family: 'Courier New', monospace;
             font-size: 0.9em;
         }
-
+        
         .log-info {
             background-color: #e8f4fd;
             border-left: 3px solid var(--primary-color);
         }
-
+        
         .log-success {
             background-color: #e8f8ef;
             border-left: 3px solid var(--success-color);
         }
-
+        
         .log-warning {
             background-color: #fff8e1;
             border-left: 3px solid var(--warning-color);
         }
-
+        
         .log-error {
             background-color: #fdeaea;
             border-left: 3px solid var(--danger-color);
         }
-
+        
         .stat-item {
             text-align: center;
             padding: 15px;
@@ -98,29 +98,29 @@
             border-radius: 10px;
             margin-bottom: 15px;
         }
-
+        
         .stat-value {
             font-size: 2rem;
             font-weight: bold;
             color: var(--dark-color);
         }
-
+        
         .stat-label {
             font-size: 0.9rem;
             color: #666;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
-
+        
         .refresh-btn {
             cursor: pointer;
             transition: transform 0.3s;
         }
-
+        
         .refresh-btn:hover {
             transform: rotate(180deg);
         }
-
+        
         .last-update {
             font-size: 0.8rem;
             color: #888;
@@ -173,7 +173,7 @@
                     </div>
                 </div>
             </div>
-
+            
             <div class="col-md-3 mb-3">
                 <div class="card status-card p-3">
                     <div class="d-flex justify-content-between align-items-center">
@@ -187,7 +187,7 @@
                     </div>
                 </div>
             </div>
-
+            
             <div class="col-md-3 mb-3">
                 <div class="card status-card p-3">
                     <div class="d-flex justify-content-between align-items-center">
@@ -201,7 +201,7 @@
                     </div>
                 </div>
             </div>
-
+            
             <div class="col-md-3 mb-3">
                 <div class="card status-card p-3">
                     <div class="d-flex justify-content-between align-items-center">
@@ -257,7 +257,7 @@
                     </div>
                 </div>
             </div>
-
+            
             <div class="col-md-6 mb-3">
                 <div class="card h-100">
                     <div class="card-header bg-white">
@@ -349,7 +349,7 @@
                         YYC3 DDNS 服务 | 服务器: 8.152.195.33
                     </p>
                     <p class="mb-0 last-update">
-                        最后更新: <span id="pageUpdateTime">--:--:--</span> |
+                        最后更新: <span id="pageUpdateTime">--:--:--</span> | 
                         页面版本: 1.0.0
                     </p>
                 </div>
@@ -359,116 +359,116 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
+    
     <!-- 自定义JS -->
     <script>
         // API基础URL
         const API_BASE = '/api/ddns';
-
+        
         // 更新页面时间
         function updatePageTime() {
             const now = new Date();
             const timeStr = now.toLocaleTimeString('zh-CN');
             document.getElementById('pageUpdateTime').textContent = timeStr;
         }
-
+        
         // 格式化时间
         function formatTime(timestamp) {
             if (!timestamp) return '--:--';
             const date = new Date(timestamp);
             return date.toLocaleString('zh-CN');
         }
-
+        
         // 格式化时间差
         function formatTimeAgo(timestamp) {
             if (!timestamp) return '从未';
-
+            
             const now = new Date();
             const date = new Date(timestamp);
             const diffMs = now - date;
             const diffMins = Math.floor(diffMs / 60000);
-
+            
             if (diffMins < 1) return '刚刚';
             if (diffMins < 60) return `${diffMins}分钟前`;
-
+            
             const diffHours = Math.floor(diffMins / 60);
             if (diffHours < 24) return `${diffHours}小时前`;
-
+            
             const diffDays = Math.floor(diffHours / 24);
             return `${diffDays}天前`;
         }
-
+        
         // 加载状态
         async function loadStatus() {
             try {
                 const response = await fetch(`${API_BASE}/status`);
                 const data = await response.json();
-
+                
                 if (data.success) {
                     // 更新DDNS状态
                     const ddnsCard = document.querySelector('#ddnsStatus').closest('.card');
                     ddnsCard.className = ddnsCard.className.replace(/status-\w+/g, '');
-
+                    
                     if (data.ddns_running) {
-                        document.getElementById('ddnsStatus').innerHTML =
+                        document.getElementById('ddnsStatus').innerHTML = 
                             '<span class="text-success">运行中</span>';
                         ddnsCard.classList.add('status-success');
                     } else {
-                        document.getElementById('ddnsStatus').innerHTML =
+                        document.getElementById('ddnsStatus').innerHTML = 
                             '<span class="text-danger">已停止</span>';
                         ddnsCard.classList.add('status-error');
                     }
-
+                    
                     // 更新IP
-                    document.getElementById('currentIp').textContent =
+                    document.getElementById('currentIp').textContent = 
                         data.current_ip || '未知';
-
+                    
                     // 更新DNS状态
                     const dnsCard = document.querySelector('#dnsStatus').closest('.card');
                     dnsCard.className = dnsCard.className.replace(/status-\w+/g, '');
-
+                    
                     if (data.dns_resolved) {
-                        document.getElementById('dnsStatus').innerHTML =
+                        document.getElementById('dnsStatus').innerHTML = 
                             '<span class="text-success">正常</span>';
                         dnsCard.classList.add('status-success');
                     } else {
-                        document.getElementById('dnsStatus').innerHTML =
+                        document.getElementById('dnsStatus').innerHTML = 
                             '<span class="text-danger">异常</span>';
                         dnsCard.classList.add('status-error');
                     }
-
+                    
                     // 更新最后更新时间
-                    document.getElementById('lastUpdate').textContent =
+                    document.getElementById('lastUpdate').textContent = 
                         formatTimeAgo(data.last_update);
-
+                    
                     // 更新系统信息
                     document.getElementById('loadAvg').textContent = data.load || '--';
                     document.getElementById('uptime').textContent = data.uptime || '--';
                     document.getElementById('memoryUsage').textContent = data.memory_usage || '--';
                     document.getElementById('diskUsage').textContent = data.disk_usage || '--';
-
+ 
                     // 更新页面时间
                 updatePageTime();
             }
         } catch (error) {
             console.error('加载状态失败:', error);
-            document.getElementById('ddnsStatus').innerHTML =
+            document.getElementById('ddnsStatus').innerHTML = 
                 '<span class="text-danger">连接失败</span>';
         }
     }
-
+    
     // 加载配置
     async function loadConfig() {
         try {
             const response = await fetch(`${API_BASE}/config`);
             const data = await response.json();
-
+            
             if (data.success) {
                 const config = data.config;
-                document.getElementById('configDomain').textContent =
+                document.getElementById('configDomain').textContent = 
                     `${config.subdomain}.${config.domain}`;
                 document.getElementById('serverIp').textContent = config.server_ip;
-                document.getElementById('checkInterval').textContent =
+                document.getElementById('checkInterval').textContent = 
                     `${config.check_interval / 60} 分钟`;
                 document.getElementById('aliyunConfig').innerHTML = config.aliyun_configured ?
                     '<span class="text-success">已配置</span>' :
@@ -481,23 +481,23 @@
             console.error('加载配置失败:', error);
         }
     }
-
+    
     // 加载日志
     async function loadLogs(lines = 50) {
         try {
             const response = await fetch(`${API_BASE}/logs/recent?lines=${lines}`);
             const data = await response.json();
-
+            
             if (data.success) {
                 const logContainer = document.getElementById('logContainer');
                 const logCount = document.getElementById('logCount');
-
+                
                 // 更新日志数量
                 logCount.textContent = `共 ${data.count} 条日志`;
-
+                
                 // 清空容器
                 logContainer.innerHTML = '';
-
+                
                 // 添加日志条目
                 if (data.logs.length === 0) {
                     logContainer.innerHTML = `
@@ -508,11 +508,11 @@
                     `;
                     return;
                 }
-
+                
                 data.logs.forEach(log => {
                     const logDiv = document.createElement('div');
                     logDiv.className = `log-entry log-${log.level}`;
-
+                    
                     const time = new Date(log.timestamp).toLocaleTimeString('zh-CN');
                     logDiv.innerHTML = `
                         <div class="d-flex justify-content-between">
@@ -523,10 +523,10 @@
                         </div>
                         <div class="log-message mt-1">${log.message}</div>
                     `;
-
+                    
                     logContainer.appendChild(logDiv);
                 });
-
+                
                 // 滚动到底部
                 logContainer.scrollTop = logContainer.scrollHeight;
             }
@@ -540,7 +540,7 @@
             `;
         }
     }
-
+    
     // 获取日志级别颜色
     function getLevelColor(level) {
         switch(level) {
@@ -550,7 +550,7 @@
             default: return 'info';
         }
     }
-
+    
     // 获取日志级别文本
     function getLevelText(level) {
         switch(level) {
@@ -560,25 +560,25 @@
             default: return '信息';
         }
     }
-
+    
     // 手动触发DDNS更新
     async function triggerUpdate() {
         const updateBtn = document.getElementById('updateBtn');
         const originalText = updateBtn.innerHTML;
-
+        
         try {
             updateBtn.disabled = true;
             updateBtn.innerHTML = '<i class="bi bi-arrow-repeat me-2"></i>更新中...';
-
+            
             const response = await fetch(`${API_BASE}/update`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 }
             });
-
+            
             const data = await response.json();
-
+            
             if (data.success) {
                 showAlert('DDNS更新成功！', 'success');
                 // 重新加载状态和日志
@@ -596,13 +596,13 @@
             updateBtn.innerHTML = originalText;
         }
     }
-
+    
     // 显示提示消息
     function showAlert(message, type = 'info') {
         // 移除现有的提示
         const existingAlert = document.querySelector('.alert-toast');
         if (existingAlert) existingAlert.remove();
-
+        
         // 创建新的提示
         const alertDiv = document.createElement('div');
         alertDiv.className = `alert alert-${type} alert-toast position-fixed`;
@@ -613,11 +613,11 @@
             min-width: 300px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.1);
         `;
-
+        
         const icon = type === 'success' ? 'check-circle' :
                     type === 'danger' ? 'exclamation-triangle' :
                     type === 'warning' ? 'exclamation-circle' : 'info-circle';
-
+        
         alertDiv.innerHTML = `
             <div class="d-flex align-items-center">
                 <i class="bi bi-${icon} me-2" style="font-size: 1.2rem;"></i>
@@ -625,9 +625,9 @@
                 <button type="button" class="btn-close ms-auto" onclick="this.parentElement.parentElement.remove()"></button>
             </div>
         `;
-
+        
         document.body.appendChild(alertDiv);
-
+        
         // 5秒后自动移除
         setTimeout(() => {
             if (alertDiv.parentNode) {
@@ -635,24 +635,24 @@
             }
         }, 5000);
     }
-
+    
     // 页面加载完成后的初始化
     document.addEventListener('DOMContentLoaded', function() {
         // 初始加载
         loadStatus();
         loadConfig();
         loadLogs();
-
+        
         // 更新页面时间
         updatePageTime();
         setInterval(updatePageTime, 1000);
-
+        
         // 每30秒自动刷新状态
         setInterval(loadStatus, 30000);
-
+        
         // 每5分钟自动刷新日志
         setInterval(() => loadLogs(), 300000);
-
+        
         // 绑定按钮事件
         document.getElementById('refreshBtn').addEventListener('click', function() {
             loadStatus();
@@ -660,9 +660,9 @@
             loadLogs();
             showAlert('状态已刷新', 'info');
         });
-
+        
         document.getElementById('updateBtn').addEventListener('click', triggerUpdate);
-
+        
         // 添加键盘快捷键
         document.addEventListener('keydown', function(e) {
             // Ctrl+R 刷新
@@ -673,7 +673,7 @@
                 loadLogs();
                 showAlert('状态已刷新 (Ctrl+R)', 'info');
             }
-
+            
             // F5 刷新
             if (e.key === 'F5') {
                 e.preventDefault();
@@ -682,7 +682,7 @@
                 loadLogs();
                 showAlert('状态已刷新 (F5)', 'info');
             }
-
+            
             // Ctrl+U 触发更新
             if (e.ctrlKey && e.key === 'u') {
                 e.preventDefault();
@@ -690,7 +690,7 @@
             }
         });
     });
-
+    
     // 添加页面可见性变化监听
     document.addEventListener('visibilitychange', function() {
         if (!document.hidden) {

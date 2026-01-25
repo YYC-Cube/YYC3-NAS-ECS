@@ -1,8 +1,18 @@
+/**
+ * @file RBACService - 基于角色的访问控制服务
+ * @description 提供用户管理、角色分配、权限控制等功能
+ * @module services/rbac
+ * @author YYC³
+ * @version 1.0.0
+ * @created 2026-01-24
+ */
+
 import { logService } from './logService';
 import { LogCategory, LogLevel } from '../types/logs';
-import { 
-  Role, Permission, User, RolePermissions, 
-  RoleAssignment, PermissionCheck, AccessControlPolicy, AuditLog 
+import { logger } from '../utils/logger';
+import {
+  Role, Permission, User, RolePermissions,
+  PermissionCheck, AccessControlPolicy, AuditLog
 } from '../types/rbac';
 
 class RBACService {
@@ -25,7 +35,7 @@ class RBACService {
       localStorage.removeItem(testKey);
       this.isLocalStorageAvailable = true;
     } catch (error) {
-      console.warn('localStorage is not available:', error);
+      logger.warn('localStorage is not available:', error);
       this.isLocalStorageAvailable = false;
     }
   }
@@ -52,7 +62,7 @@ class RBACService {
         this.auditLogs = data.auditLogs || [];
       }
     } catch (error) {
-      console.error('Failed to load RBAC data:', error);
+      logger.error('Failed to load RBAC data:', error);
     }
   }
 
@@ -69,7 +79,7 @@ class RBACService {
       };
       localStorage.setItem(this.storageKey, JSON.stringify(data));
     } catch (error) {
-      console.error('Failed to save RBAC data:', error);
+      logger.error('Failed to save RBAC data:', error);
     }
   }
 
@@ -222,8 +232,8 @@ class RBACService {
     }
   }
 
-  login(username: string, password: string): User | null {
-    const user = this.users.find(u => 
+  login(username: string, _password: string): User | null {
+    const user = this.users.find(u =>
       u.username === username && u.isActive
     );
 
@@ -295,8 +305,8 @@ class RBACService {
       return false;
     }
 
-    const policy = this.policies.find(p => 
-      p.roles.includes(this.currentUser!.role) && 
+    const policy = this.policies.find(p =>
+      p.roles.includes(this.currentUser!.role) &&
       p.isActive
     );
 
@@ -417,7 +427,7 @@ class RBACService {
       return false;
     }
 
-    const policy = this.policies.find(p => 
+    const policy = this.policies.find(p =>
       p.roles.includes(role) && p.isActive
     );
 
@@ -513,7 +523,7 @@ class RBACService {
   }
 
   getAuditLogs(limit?: number): AuditLog[] {
-    const logs = [...this.auditLogs].sort((a, b) => 
+    const logs = [...this.auditLogs].sort((a, b) =>
       new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
     );
     return limit ? logs.slice(0, limit) : logs;
@@ -533,12 +543,13 @@ class RBACService {
     }
 
     this.saveToStorage();
-    
+
     // Also log to centralized log service
     logService.addLog({
       category: LogCategory.AUTH,
       level: log.result === 'success' ? LogLevel.INFO : LogLevel.ERROR,
       message: `RBAC ${log.action}: ${log.resource}`,
+      service: 'rbac',
       details: {
         action: log.action,
         resource: log.resource,

@@ -1,4 +1,3 @@
-cat > /opt/yyc3/ddns/ddns-simple.sh << 'EOF'
 #!/bin/bash
 
 # 加载全局配置
@@ -126,6 +125,3 @@ main() {
 
 # 运行主函数
 main
-EOF
-
-chmod +x /opt/yyc3/ddns/ddns-simple.sh

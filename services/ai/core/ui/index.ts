@@ -14,6 +14,8 @@ export * from './InsightsDashboard';
 export * from './WorkflowDesigner';
 export * from './UIManager';
 export * from './UISystem';
+export * from './IntelligentAIWidget';
+export * from './widget';
 
 export { ChatInterface } from './ChatInterface';
 export { ToolboxPanel } from './ToolboxPanel';
@@ -21,3 +23,4 @@ export { InsightsDashboard } from './InsightsDashboard';
 export { WorkflowDesigner } from './WorkflowDesigner';
 export { UIManager } from './UIManager';
 export { UISystem, UISystemConfig } from './UISystem';
+export { IntelligentAIWidget } from './IntelligentAIWidget';

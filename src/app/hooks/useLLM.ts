@@ -3,7 +3,7 @@ import { useState } from 'react';
 export const useLLM = () => {
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const generateConfig = async (currentConfig: string, prompt: string): Promise<string> => {
+  const generateConfig = async (_currentConfig: string, _prompt: string): Promise<string> => {
     setIsGenerating(true);
     
     // Simulate API delay
@@ -52,5 +52,12 @@ http_pwd = "password123"
     return `[AI Analysis]: The error "${logEntry.substring(0, 30)}..." suggests a connection timeout. Recommended action: Check firewall settings and ensure the target service port is open.`;
   };
 
-  return { generateConfig, analyzeLog, isGenerating };
+  const generateResponse = async (prompt: string): Promise<string> => {
+    setIsGenerating(true);
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    setIsGenerating(false);
+    return `[AI Response]: Analysis complete for "${prompt.substring(0, 50)}..."`;
+  };
+
+  return { generateConfig, analyzeLog, generateResponse, isGenerating };
 };

@@ -1,4 +1,3 @@
-cat > /opt/yyc3/scripts/nas-tunnel.sh << 'EOF'
 #!/bin/bash
 
 # NAS SSH隧道脚本
@@ -61,6 +60,3 @@ case "$1" in
     status) status_tunnel ;;
     *) echo "用法: $0 {start|stop|restart|status}" ;;
 esac
-EOF
-
-chmod +x /opt/yyc3/scripts/nas-tunnel.sh

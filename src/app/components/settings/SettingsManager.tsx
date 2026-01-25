@@ -1,10 +1,19 @@
+/**
+ * @file SettingsManager - 系统设置管理组件
+ * @description 提供系统配置、主题切换、个性化设置等功能
+ * @module components/settings
+ * @author YYC³
+ * @version 1.0.0
+ * @created 2026-01-24
+ */
+
 import React, { useState, useEffect } from 'react';
 import { ModuleCard } from '../ModuleCard';
 import { 
   Settings, Save, RefreshCw, Search, ChevronDown, ChevronUp,
   Shield, Bell, Palette, Network, HardDrive, Zap,
-  FileText, Database, Code, Info, CheckCircle2,
-  XCircle, Lock, Unlock, Eye, EyeOff, Download
+  FileText, Database, Code, CheckCircle2,
+  XCircle, Lock, Eye, EyeOff, Download
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
@@ -175,7 +184,7 @@ export const SettingsManager: React.FC = () => {
             className="w-full bg-[#4b5563] border border-gray-500 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-blue-500"
           >
             {setting.options?.map((option, idx) => (
-              <option key={idx} value={option.value}>
+              <option key={idx} value={String(option.value)}>
                 {option.label}
               </option>
             ))}

@@ -1,6 +1,15 @@
+/**
+ * @file RBAC - 基于角色的访问控制组件
+ * @description 提供用户管理、角色分配、权限控制等功能
+ * @module components/system
+ * @author YYC³
+ * @version 1.0.0
+ * @created 2026-01-24
+ */
+
 import React from 'react';
 import { ModuleCard } from '../ModuleCard';
-import { User, Shield, CheckCircle, Edit, Plus } from 'lucide-react';
+import { Shield, Edit, Plus } from 'lucide-react';
 
 export const RBAC: React.FC = () => {
   const users = [

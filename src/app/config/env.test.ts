@@ -9,17 +9,23 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { envConfig } from './env';
+import { logger } from '../utils/logger';
+
+vi.mock('../utils/logger', () => ({
+  logger: {
+    info: vi.fn(),
+    debug: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn()
+  }
+}));
 
 describe('EnvironmentConfig', () => {
-  const originalConsoleLog = console.log;
-
   beforeEach(() => {
     vi.clearAllMocks();
-    console.log = vi.fn();
   });
 
   afterEach(() => {
-    console.log = originalConsoleLog;
     vi.restoreAllMocks();
   });
 
@@ -98,7 +104,7 @@ describe('EnvironmentConfig', () => {
 
     it('切换环境时应该输出日志', () => {
       envConfig.setEnvironment('staging');
-      expect(console.log).toHaveBeenCalledWith('Environment switched to: staging');
+      expect(logger.info).toHaveBeenCalledWith('Environment switched to: staging');
     });
 
     it('切换到不存在的环境应该返回false', () => {
@@ -247,6 +253,133 @@ describe('EnvironmentConfig', () => {
     it('应该处理获取不存在的环境配置', () => {
       const nonExistentEnv = envConfig.getEnvironment('nonexistent');
       expect(nonExistentEnv).toBeUndefined();
+    });
+
+    it('应该能够重新加载环境配置', () => {
+      envConfig.setEnvironment('staging');
+      expect(envConfig.getCurrentEnvironment().name).toBe('staging');
+
+      envConfig.reload();
+      expect(envConfig.getCurrentEnvironment().name).toBeDefined();
+      expect(['development', 'staging', 'production']).toContain(envConfig.getCurrentEnvironment().name);
+    });
+
+    it('重新加载后应该保留环境配置', () => {
+      const allEnvsBefore = envConfig.getAllEnvironments();
+      envConfig.reload();
+      const allEnvsAfter = envConfig.getAllEnvironments();
+
+      expect(allEnvsBefore).toEqual(allEnvsAfter);
+      expect(allEnvsAfter).toHaveProperty('development');
+      expect(allEnvsAfter).toHaveProperty('staging');
+      expect(allEnvsAfter).toHaveProperty('production');
+    });
+
+    it('应该处理特殊字符的环境名称', () => {
+      const result = envConfig.setEnvironment('env@test#123');
+      expect(result).toBe(false);
+    });
+
+    it('应该处理null作为环境名称', () => {
+      const result = envConfig.setEnvironment(null as any);
+      expect(result).toBe(false);
+    });
+
+    it('应该处理undefined作为环境名称', () => {
+      const result = envConfig.setEnvironment(undefined as any);
+      expect(result).toBe(false);
+    });
+  });
+
+  describe('配置验证', () => {
+    it('所有环境配置应该包含必需字段', () => {
+      const allEnvs = envConfig.getAllEnvironments();
+      const envNames = Object.keys(allEnvs);
+
+      envNames.forEach(envName => {
+        const env = allEnvs[envName];
+        expect(env).toHaveProperty('name');
+        expect(env).toHaveProperty('apiBaseUrl');
+        expect(env).toHaveProperty('mailApiUrl');
+        expect(env).toHaveProperty('llmApiUrl');
+        expect(env).toHaveProperty('redisApiUrl');
+        expect(env).toHaveProperty('ddnsApiUrl');
+        expect(env).toHaveProperty('frpApiUrl');
+        expect(env).toHaveProperty('frpAdminUrl');
+        expect(env).toHaveProperty('nasApiUrl');
+        expect(env).toHaveProperty('wsUrl');
+        expect(env).toHaveProperty('enableMockData');
+        expect(env).toHaveProperty('enableDebug');
+        expect(env).toHaveProperty('logLevel');
+      });
+    });
+
+    it('API URL应该使用正确的协议', () => {
+      const devEnv = envConfig.getEnvironment('development');
+      const stagingEnv = envConfig.getEnvironment('staging');
+      const prodEnv = envConfig.getEnvironment('production');
+
+      expect(devEnv?.apiBaseUrl).toMatch(/^https?:\/\//);
+      expect(stagingEnv?.apiBaseUrl).toMatch(/^https?:\/\//);
+      expect(prodEnv?.apiBaseUrl).toMatch(/^https?:\/\//);
+    });
+
+    it('WebSocket URL应该使用正确的协议', () => {
+      const devEnv = envConfig.getEnvironment('development');
+      const stagingEnv = envConfig.getEnvironment('staging');
+      const prodEnv = envConfig.getEnvironment('production');
+
+      expect(devEnv?.wsUrl).toMatch(/^ws:\/\//);
+      expect(stagingEnv?.wsUrl).toMatch(/^wss:\/\//);
+      expect(prodEnv?.wsUrl).toMatch(/^wss:\/\//);
+    });
+
+    it('日志级别应该是有效值', () => {
+      const allEnvs = envConfig.getAllEnvironments();
+      const validLogLevels = ['debug', 'info', 'warn', 'error'];
+
+      Object.values(allEnvs).forEach(env => {
+        expect(validLogLevels).toContain(env.logLevel);
+      });
+    });
+
+    it('enableMockData应该是布尔值', () => {
+      const allEnvs = envConfig.getAllEnvironments();
+
+      Object.values(allEnvs).forEach(env => {
+        expect(typeof env.enableMockData).toBe('boolean');
+      });
+    });
+
+    it('enableDebug应该是布尔值', () => {
+      const allEnvs = envConfig.getAllEnvironments();
+
+      Object.values(allEnvs).forEach(env => {
+        expect(typeof env.enableDebug).toBe('boolean');
+      });
+    });
+  });
+
+  describe('性能测试', () => {
+    it('应该在合理时间内获取当前环境', () => {
+      const startTime = performance.now();
+      envConfig.getCurrentEnvironment();
+      const endTime = performance.now();
+      expect(endTime - startTime).toBeLessThan(10);
+    });
+
+    it('应该在合理时间内切换环境', () => {
+      const startTime = performance.now();
+      envConfig.setEnvironment('staging');
+      const endTime = performance.now();
+      expect(endTime - startTime).toBeLessThan(10);
+    });
+
+    it('应该在合理时间内重新加载配置', () => {
+      const startTime = performance.now();
+      envConfig.reload();
+      const endTime = performance.now();
+      expect(endTime - startTime).toBeLessThan(50);
     });
   });
 });

@@ -1,4 +1,14 @@
+/**
+ * @file LogService - 日志服务
+ * @description 提供日志收集、存储、查询和导出功能
+ * @module services/log
+ * @author YYC³
+ * @version 1.0.0
+ * @created 2026-01-24
+ */
+
 import { LogEntry, LogLevel, LogFilter, LogExportOptions, LogStats, LogCategory } from '../types/logs';
+import { logger } from '../utils/logger';
 
 class LogService {
   private logs: LogEntry[] = [];
@@ -18,7 +28,7 @@ class LogService {
       localStorage.removeItem(testKey);
       this.isLocalStorageAvailable = true;
     } catch (error) {
-      console.warn('localStorage is not available:', error);
+      logger.warn('localStorage is not available:', error);
       this.isLocalStorageAvailable = false;
     }
   }
@@ -33,7 +43,7 @@ class LogService {
         this.logs = JSON.parse(stored);
       }
     } catch (error) {
-      console.error('Failed to load logs:', error);
+      logger.error('Failed to load logs:', error);
     }
   }
 
@@ -44,7 +54,7 @@ class LogService {
     try {
       localStorage.setItem(this.storageKey, JSON.stringify(this.logs));
     } catch (error) {
-      console.error('Failed to save logs:', error);
+      logger.error('Failed to save logs:', error);
     }
   }
 

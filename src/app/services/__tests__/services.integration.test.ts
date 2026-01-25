@@ -7,9 +7,6 @@ import { LogLevel, LogCategory } from '../../types/logs';
 import { Role, Permission } from '../../types/rbac';
 import { BackupType, BackupStorage } from '../../types/backup';
 import { logService as globalLogService } from '../logService';
-import { rbacService as globalRBACService } from '../rbacService';
-import { backupService as globalBackupService } from '../backupService';
-import { configManager as globalConfigManager } from '../configService';
 
 describe('服务集成测试', () => {
   let logService: LogService;
@@ -133,7 +130,7 @@ describe('服务集成测试', () => {
         isActive: true
       });
 
-      const backup = await backupService.createBackup(config.id, 'test-user');
+      await backupService.createBackup(config.id, 'test-user');
 
       const logs = logService.queryLogs({
         category: LogCategory.BACKUP
@@ -157,8 +154,8 @@ describe('服务集成测试', () => {
         isActive: true
       });
 
-      const backup = await backupService.createBackup(config.id, 'test-user');
-      await backupService.restoreBackup(backup.id, '/restore-path', 'test-user');
+      const _backup = await backupService.createBackup(config.id, 'test-user');
+      await backupService.restoreBackup(_backup.id, '/restore-path', 'test-user');
 
       const logs = logService.queryLogs({
         category: LogCategory.BACKUP
@@ -182,8 +179,8 @@ describe('服务集成测试', () => {
         isActive: true
       });
 
-      const backup = await backupService.createBackup(config.id, 'test-user');
-      backupService.deleteRecord(backup.id);
+      const _backup = await backupService.createBackup(config.id, 'test-user');
+      backupService.deleteRecord(_backup.id);
 
       const logs = logService.queryLogs({
         category: LogCategory.BACKUP
@@ -289,9 +286,9 @@ describe('服务集成测试', () => {
         isActive: true
       });
 
-      const backup = await backupService.createBackup(config.id, 'test-user');
+      const _backup = await backupService.createBackup(config.id, 'test-user');
 
-      expect(backup).toBeDefined();
+      expect(_backup).toBeDefined();
 
       const logs = logService.queryLogs({
         category: LogCategory.BACKUP
@@ -402,11 +399,11 @@ describe('服务集成测试', () => {
         isActive: true
       });
 
-      const backup = await backupService.createBackup(config.id, 'test-user');
+      const _backup = await backupService.createBackup(config.id, 'test-user');
 
-      const backupById = backupService.getRecordById(backup.id);
+      const backupById = backupService.getRecordById(_backup.id);
       const allBackups = backupService.getRecords();
-      const foundInAll = allBackups.find(b => b.id === backup.id);
+      const foundInAll = allBackups.find(b => b.id === _backup.id);
 
       expect(backupById).toBeDefined();
       expect(foundInAll).toBeDefined();

@@ -1,15 +1,14 @@
-cat > /opt/yyc3/scripts/nas-manager.sh << 'EOF'
 #!/bin/bash
 
 # NAS访问管理系统
-# 用于管理 ddns.0379.email 的DDNS和访问
+# 用于管理 nas.0379.email 的DDNS和访问
 
 # 配置
-DOMAIN="ddns.0379.email"
+DOMAIN="nas.0379.email"
 CLOUD_IP="8.152.195.33"
 LOCAL_NAS_IP="192.168.3.45"
 DDNS_SCRIPT="/opt/yyc3/ddns/ddns-simple.sh"
-NGINX_CONFIG="/etc/nginx/sites-available/ddns.0379.email"
+NGINX_CONFIG="/etc/nginx/sites-available/nas.0379.email"
 
 # 颜色定义
 RED='\033[0;31m'
@@ -113,7 +112,7 @@ test_access() {
 show_info() {
     clear
     print_color $BLUE "╔══════════════════════════════════════════════════════════╗"
-    print_color $BLUE "║              NAS 访问管理系统 - ddns.0379.email          ║"
+    print_color $BLUE "║              NAS 访问管理系统 - nas.0379.email          ║"
     print_color $BLUE "╠══════════════════════════════════════════════════════════╣"
     print_color $BLUE "║  云服务器: 8.152.195.33   本地NAS: 192.168.3.45         ║"
     print_color $BLUE "╚══════════════════════════════════════════════════════════╝"
@@ -183,7 +182,7 @@ main() {
                         --Type "A" \
                         --Value "$new_ip" \
                         --TTL 300
-                    print_color $GREEN "DNS记录已更新: ddns.0379.email → $new_ip"
+                    print_color $GREEN "DNS记录已更新: nas.0379.email → $new_ip"
                 else
                     print_color $RED "阿里云CLI未安装"
                 fi
@@ -214,6 +213,3 @@ main() {
 
 # 运行主程序
 main
-EOF
-
-chmod +x /opt/yyc3/scripts/nas-manager.sh

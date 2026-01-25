@@ -1,0 +1,220 @@
+name: Security Scan
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    - cron: '0 2 * * *'
+
+jobs:
+  # ================== 依赖漏洞扫描 ==================
+  dependency-scan:
+    name: 依赖漏洞扫描
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 运行npm audit
+        run: npm audit --audit-level=moderate --json > npm-audit.json || true
+
+      - name: 上传npm audit结果
+        uses: actions/upload-artifact@v3
+        with:
+          name: npm-audit-results
+          path: npm-audit.json
+          retention-days: 30
+
+      - name: 运行Snyk扫描
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high --json-file-output=snyk-results.json
+        continue-on-error: true
+
+      - name: 上传Snyk结果
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: snyk-results
+          path: snyk-results.json
+          retention-days: 30
+
+      - name: 上传Snyk结果到GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: snyk.sarif
+
+  # ================== 代码安全扫描 ==================
+  code-scan:
+    name: 代码安全扫描
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 运行CodeQL分析
+        uses: github/codeql-action/analyze@v2
+        with:
+          languages: javascript, typescript, python
+          queries: security-extended, security-and-quality
+
+      - name: 运行Semgrep扫描
+        uses: returntocorp/semgrep-action@v1
+        with:
+          config: auto
+          output: semgrep-results.json
+          output-format: json
+
+      - name: 上传Semgrep结果
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: semgrep-results
+          path: semgrep-results.json
+          retention-days: 30
+
+  # ================== 容器安全扫描 ==================
+  container-scan:
+    name: 容器安全扫描
+    runs-on: ubuntu-latest
+    needs: dependency-scan
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 设置Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 构建测试镜像
+        run: |
+          docker build -t yyc3/nas-ecs:test .
+
+      - name: 运行Trivy扫描
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'yyc3/nas-ecs:test'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: 上传Trivy结果到GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: 上传Trivy结果
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: trivy-results
+          path: trivy-results.sarif
+          retention-days: 30
+
+  # ================== 密钥泄露扫描 ==================
+  secret-scan:
+    name: 密钥泄露扫描
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 运行Gitleaks扫描
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITLEAKS_LICENSE: ${{ secrets.GITLEAKS_LICENSE }}
+        with:
+          report-path: gitleaks-results.json
+          format: json
+
+      - name: 上传Gitleaks结果
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: gitleaks-results
+          path: gitleaks-results.json
+          retention-days: 30
+
+  # ================== 安全报告汇总 ==================
+  security-report:
+    name: 安全报告汇总
+    runs-on: ubuntu-latest
+    needs: [dependency-scan, code-scan, container-scan, secret-scan]
+    if: always()
+
+    steps:
+      - name: 检出代码
+        uses: actions/checkout@v4
+
+      - name: 下载所有扫描结果
+        uses: actions/download-artifact@v3
+        with:
+          path: scan-results
+
+      - name: 生成安全报告
+        run: |
+          echo "# YYC3-NAS-ECS 安全扫描报告" > security-report.md
+          echo "" >> security-report.md
+          echo "## 扫描时间" >> security-report.md
+          echo "$(date)" >> security-report.md
+          echo "" >> security-report.md
+          echo "## 扫描结果" >> security-report.md
+          echo "" >> security-report.md
+          echo "### 依赖漏洞扫描" >> security-report.md
+          echo "- npm audit: [查看结果](scan-results/npm-audit-results/npm-audit.json)" >> security-report.md
+          echo "- Snyk: [查看结果](scan-results/snyk-results/snyk-results.json)" >> security-report.md
+          echo "" >> security-report.md
+          echo "### 代码安全扫描" >> security-report.md
+          echo "- CodeQL: 已上传到GitHub Security" >> security-report.md
+          echo "- Semgrep: [查看结果](scan-results/semgrep-results/semgrep-results.json)" >> security-report.md
+          echo "" >> security-report.md
+          echo "### 容器安全扫描" >> security-report.md
+          echo "- Trivy: [查看结果](scan-results/trivy-results/trivy-results.sarif)" >> security-report.md
+          echo "" >> security-report.md
+          echo "### 密钥泄露扫描" >> security-report.md
+          echo "- Gitleaks: [查看结果](scan-results/gitleaks-results/gitleaks-results.json)" >> security-report.md
+
+      - name: 上传安全报告
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-report
+          path: security-report.md
+          retention-days: 90
+
+      - name: 发送安全报告通知
+        uses: 8398a7/action-slack@v3
+        if: always()
+        with:
+          status: ${{ job.status }}
+          text: |
+            🔒 YYC3-NAS-ECS 安全扫描完成
+            
+            **分支**: ${{ github.ref_name }}
+            **提交**: ${{ github.sha }}
+            **状态**: ${{ job.status }}
+            
+            📊 [查看安全报告](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          webhook_url: ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -1,16 +1,25 @@
+/**
+ * @file ConfigManager - FRP内网穿透配置管理器
+ * @description 提供FRP隧道配置的创建、编辑、删除和AI优化功能
+ * @module components/frp
+ * @author YYC³
+ * @version 1.0.0
+ * @created 2026-01-24
+ */
+
 import React, { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
 import { useLLM } from '../../hooks/useLLM';
 import { ModuleCard } from '../ModuleCard';
-import { Sparkles, Save, Plus, Terminal, Play, Square, RefreshCw, Trash2, LogOut, LogIn } from 'lucide-react';
-import { motion } from 'motion/react';
+import { Sparkles, Save, Plus, Terminal, Play, Square, RefreshCw, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '../ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
+import { FRPAIConfigOptimizer } from './FRPAIConfigOptimizer';
 
 interface ProxyConfig {
   name: string;
@@ -69,6 +78,8 @@ export const ConfigManager: React.FC = () => {
   const [serviceStatus, setServiceStatus] = useState<FRPServiceStatus>({ running: false });
   const [clientStatus, setClientStatus] = useState<FRPClientStatus>({ connected: false });
   const [isLoading, setIsLoading] = useState(false);
+  const [showBackups, setShowBackups] = useState(false);
+  const [backups, setBackups] = useState<any[]>([]);
   const { generateConfig, isGenerating } = useLLM();
 
   const currentProxy = proxies[currentProxyIndex];
@@ -101,7 +112,13 @@ export const ConfigManager: React.FC = () => {
   const saveConfig = async () => {
     setIsLoading(true);
     try {
-      // 实际项目中，这里应该是API请求来保存配置
+      const isValid = await validateConfig(currentProxy.content);
+      if (!isValid) {
+        return;
+      }
+
+      await backupConfig();
+
       const response = await fetch('/api/frp/configs', {
         method: 'POST',
         headers: {
@@ -112,7 +129,6 @@ export const ConfigManager: React.FC = () => {
 
       if (response.ok) {
         toast.success('配置已保存');
-        // 保存后重启服务
         await restartService();
       } else {
         toast.error('保存配置失败');
@@ -251,11 +267,115 @@ export const ConfigManager: React.FC = () => {
     toast.info("AI 正在分析并优化配置...");
     const suggestion = await generateConfig(currentProxy.content, "请优化此FRP配置");
     
-    // Update content with suggestion
     const newProxies = [...proxies];
     newProxies[currentProxyIndex].content = suggestion;
     setProxies(newProxies);
     toast.success("配置已由 AI 优化完成！");
+  };
+
+  const validateConfig = async (content: string) => {
+    try {
+      const response = await fetch('/api/frp/configs/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content }),
+      });
+
+      const result = await response.json();
+      
+      if (result.valid) {
+        if (result.warnings.length > 0) {
+          toast.warning('配置验证通过，但存在警告: ' + result.warnings.join(', '));
+        } else {
+          toast.success('配置验证通过');
+        }
+        return true;
+      } else {
+        toast.error('配置验证失败: ' + result.errors.join(', '));
+        return false;
+      }
+    } catch (error) {
+      toast.error('配置验证失败: ' + (error as Error).message);
+      return false;
+    }
+  };
+
+  const backupConfig = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/frp/configs/backup', {
+        method: 'POST',
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        toast.success('配置已备份: ' + result.data.backup_file);
+        await loadBackups();
+      } else {
+        toast.error('备份配置失败');
+      }
+    } catch (error) {
+      toast.error('备份配置失败: ' + (error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const loadBackups = async () => {
+    try {
+      const response = await fetch('/api/frp/configs/backups');
+      if (response.ok) {
+        const result = await response.json();
+        setBackups(result.data);
+      }
+    } catch (error) {
+      console.error('Load backups error:', error);
+    }
+  };
+
+  const restoreConfig = async (backupFilename: string) => {
+    setIsLoading(true);
+    try {
+      const response = await fetch('/api/frp/configs/restore', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ backup_file: backupFilename }),
+      });
+
+      if (response.ok) {
+        toast.success('配置已恢复');
+        await loadConfigs();
+        await loadBackups();
+        await restartService();
+      } else {
+        toast.error('恢复配置失败');
+      }
+    } catch (error) {
+      toast.error('恢复配置失败: ' + (error as Error).message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const deleteBackup = async (backupFilename: string) => {
+    try {
+      const response = await fetch(`/api/frp/configs/backups/${backupFilename}`, {
+        method: 'DELETE',
+      });
+
+      if (response.ok) {
+        toast.success('备份已删除');
+        await loadBackups();
+      } else {
+        toast.error('删除备份失败');
+      }
+    } catch (error) {
+      toast.error('删除备份失败: ' + (error as Error).message);
+    }
   };
 
   return (
@@ -297,6 +417,15 @@ export const ConfigManager: React.FC = () => {
           <Button onClick={restartService} disabled={isLoading} className="flex items-center gap-2">
             <RefreshCw size={14} />
             重启服务
+          </Button>
+          <Button 
+            onClick={() => setShowBackups(!showBackups)} 
+            disabled={isLoading} 
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <RefreshCw size={14} />
+            {showBackups ? '隐藏备份' : '配置备份'}
           </Button>
           <Button onClick={saveConfig} disabled={isLoading} className="bg-blue-600 hover:bg-blue-700 text-white flex items-center gap-2">
             <Save size={14} />
@@ -379,6 +508,64 @@ export const ConfigManager: React.FC = () => {
               </div>
             </CardContent>
           </Card>
+
+          {/* 配置备份列表 */}
+          {showBackups && (
+            <ModuleCard title="配置备份" level={1}>
+              <div className="space-y-3">
+                <Button 
+                  onClick={backupConfig} 
+                  disabled={isLoading} 
+                  variant="outline"
+                  className="w-full"
+                >
+                  <RefreshCw size={14} className="mr-2" />
+                  创建备份
+                </Button>
+                {backups.length === 0 ? (
+                  <div className="text-center text-gray-500 py-4">
+                    暂无备份
+                  </div>
+                ) : (
+                  <ul className="space-y-2 max-h-[300px] overflow-y-auto">
+                    {backups.map((backup) => (
+                      <li 
+                        key={backup.filename}
+                        className="p-3 bg-gray-50 rounded-lg flex items-center justify-between"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm truncate">
+                            {backup.filename}
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {new Date(backup.created).toLocaleString()}
+                          </div>
+                        </div>
+                        <div className="flex gap-1">
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => restoreConfig(backup.filename)}
+                            title="恢复"
+                          >
+                            <RefreshCw size={14} />
+                          </Button>
+                          <Button
+                            size="icon"
+                            variant="ghost"
+                            onClick={() => deleteBackup(backup.filename)}
+                            title="删除"
+                          >
+                            <Trash2 size={14} />
+                          </Button>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </ModuleCard>
+          )}
         </div>
 
         {/* 右侧主区域：配置编辑器 */}
@@ -388,6 +575,10 @@ export const ConfigManager: React.FC = () => {
               <TabsTrigger value="editor">配置编辑器</TabsTrigger>
               <TabsTrigger value="global">全局配置</TabsTrigger>
               <TabsTrigger value="status">服务状态</TabsTrigger>
+              <TabsTrigger value="ai-optimizer">
+                <Sparkles className="h-4 w-4 mr-1" />
+                AI优化器
+              </TabsTrigger>
             </TabsList>
             
             <TabsContent value="editor" className="flex-1 flex flex-col overflow-hidden">
@@ -589,6 +780,10 @@ export const ConfigManager: React.FC = () => {
                   </CardContent>
                 </Card>
               </div>
+            </TabsContent>
+            
+            <TabsContent value="ai-optimizer" className="flex-1 overflow-y-auto">
+              <FRPAIConfigOptimizer />
             </TabsContent>
           </Tabs>
         </div>

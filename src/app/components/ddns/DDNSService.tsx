@@ -16,7 +16,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
 import { Play, Square, RefreshCw, Logs, Activity, AlertCircle, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
-import { motion } from 'motion/react';
 
 interface DDNSStatus {
   running: boolean;

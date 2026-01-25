@@ -49,6 +49,7 @@ export class StateManager extends EventEmitter {
   private config: Required<StateManagerConfig>;
   private currentState: any;
   private previousState: any;
+  private initialState: any;
   private snapshots: StateSnapshot[] = [];
   private transitions: StateTransition[] = [];
   private snapshotInterval: NodeJS.Timeout | null = null;
@@ -58,6 +59,7 @@ export class StateManager extends EventEmitter {
     super();
     this.currentState = initialState;
     this.previousState = null;
+    this.initialState = initialState;
     this.config = {
       enablePersistence: config.enablePersistence ?? true,
       enableSnapshots: config.enableSnapshots ?? true,
@@ -111,8 +113,8 @@ export class StateManager extends EventEmitter {
     this.setState(newState, event, metadata);
   }
 
-  resetState(initialState?: any): void {
-    const state = initialState ?? this.previousState ?? {};
+  resetState(): void {
+    const state = this.initialState ?? {};
     this.setState(state, 'reset', { reason: 'manual_reset' });
   }
 

@@ -1,0 +1,20 @@
+{
+  "name": "YYC³ NAS-ECS 企业管理平台",
+  "short_name": "YYC³ NAS-ECS",
+  "description": "言启象限 | 语枢未来 - 企业级NAS-ECS管理系统",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/yyc3-pwa-icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "lang": "zh-CN"
+}

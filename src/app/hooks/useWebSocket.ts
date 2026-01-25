@@ -1,4 +1,14 @@
+/**
+ * @file useWebSocket - WebSocket连接钩子
+ * @description 提供WebSocket连接、数据接收和自动重连功能
+ * @module hooks/useWebSocket
+ * @author YYC³
+ * @version 1.0.0
+ * @created 2026-01-24
+ */
+
 import { useState, useEffect, useRef } from 'react';
+import { logger } from '../utils/logger';
 
 interface Stats {
   connections: number;
@@ -62,7 +72,7 @@ export const useWebSocket = (url: string) => {
       if (response.ok) {
         const result = await response.json();
         if (result.success && result.data) {
-          const { cpu, memory, disk, network } = result.data;
+          const { cpu, network } = result.data;
           
           setMonitoringData(result.data);
           
@@ -86,7 +96,7 @@ export const useWebSocket = (url: string) => {
         }
       }
     } catch (error) {
-      console.error('Failed to fetch monitoring data:', error);
+      logger.error('Failed to fetch monitoring data:', error);
     }
   };
 
@@ -99,7 +109,7 @@ export const useWebSocket = (url: string) => {
       wsRef.current = new WebSocket(wsUrl);
 
       wsRef.current.onopen = () => {
-        console.log('WebSocket connected');
+        logger.info('WebSocket connected');
         setIsConnected(true);
         setConnectionMode('websocket');
         
@@ -138,35 +148,35 @@ export const useWebSocket = (url: string) => {
             }
           }
         } catch (error) {
-          console.error('Failed to parse WebSocket message:', error);
+          logger.error('Failed to parse WebSocket message:', error);
         }
       };
 
       wsRef.current.onerror = (error) => {
-        console.error('WebSocket error:', error);
+        logger.error('WebSocket error:', error);
         setIsConnected(false);
         fallbackToPolling();
       };
 
       wsRef.current.onclose = () => {
-        console.log('WebSocket disconnected');
+        logger.info('WebSocket disconnected');
         setIsConnected(false);
         
         if (connectionMode === 'websocket') {
           reconnectTimeoutRef.current = setTimeout(() => {
-            console.log('Attempting to reconnect WebSocket...');
+            logger.info('Attempting to reconnect WebSocket...');
             connectWebSocket();
           }, 5000);
         }
       };
     } catch (error) {
-      console.error('Failed to create WebSocket connection:', error);
+      logger.error('Failed to create WebSocket connection:', error);
       fallbackToPolling();
     }
   };
 
   const fallbackToPolling = () => {
-    console.log('Falling back to HTTP polling');
+    logger.info('Falling back to HTTP polling');
     setConnectionMode('polling');
     
     if (pollingIntervalRef.current) {

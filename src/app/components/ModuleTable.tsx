@@ -17,11 +17,11 @@ interface ModuleTableProps {
 }
 
 export const ModuleTable: React.FC<ModuleTableProps> = ({ columns, data }) => {
-  const { theme } = useTheme();
+  const { currentTheme } = useTheme();
 
   // 根据主题获取浅色背景
   const getLightColor = () => {
-    switch(theme) {
+    switch(currentTheme) {
       case 'cpu':
         return '#F0F7FF';
       case 'memory':

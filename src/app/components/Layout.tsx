@@ -9,11 +9,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
-  Bell, Menu, X, Search, Settings, LogOut, Mail, Star, Trash2, 
-  Tag, BarChart3, Inbox, Send, Calendar, FileText, HelpCircle, 
-  PlusCircle, CheckCircle2, Sparkles, Bot, Zap, Shield, 
+  Bell, Menu, X, Search, Settings, LogOut, Mail, HelpCircle, Bot, 
   LayoutDashboard, Server, Database, Globe, Network, Terminal, Users, HardDrive
 } from 'lucide-react';
+import { AIWidgetTrigger } from '../lib/ai-integration';
+import { QuickActions } from './QuickActions';
 
 // 用户类型定义
 interface User {
@@ -49,7 +49,7 @@ interface SidebarMenuItem {
  */
 export const Layout: React.FC<LayoutProps> = ({ children, currentPath, onNavigate }) => {
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [user, setUser] = useState<User | null>(() => {
+  const [user, _setUser] = useState<User | null>(() => {
     if (typeof window !== 'undefined') {
       try {
         const userData = localStorage.getItem('user');
@@ -106,7 +106,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPath, onNavigat
   // 侧边栏菜单 - 新结构
   const sidebarMenu: SidebarMenuItem[] = [
     { id: 'dashboard', label: '实时监控', icon: <LayoutDashboard className="h-5 w-5" />, path: '/' },
-    { id: 'mail', label: 'MAIL服务', icon: <Mail className="h-5 w-5" />, path: '/mail', badge: 24 },
+    { id: 'mail', label: '邮件服务', icon: <Mail className="h-5 w-5" />, path: '/mail', badge: 24 },
     { id: 'frp', label: 'FRP服务', icon: <Network className="h-5 w-5" />, path: '/frp' },
     { id: 'llm', label: 'LLM服务', icon: <Bot className="h-5 w-5" />, path: '/llm' },
     { id: 'ddns', label: 'DDNS服务', icon: <Globe className="h-5 w-5" />, path: '/ddns' },
@@ -123,6 +123,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPath, onNavigat
 
   // 其他功能菜单项
   const otherMenu: SidebarMenuItem[] = [
+    { id: 'ai-demo', label: 'AI Widget Demo', icon: <Bot className="h-5 w-5" />, path: '/ai-demo' },
     { id: 'settings', label: '设置', icon: <Settings className="h-5 w-5" />, path: '/settings' },
     { id: 'help', label: '帮助中心', icon: <HelpCircle className="h-5 w-5" />, path: '/help' },
   ];
@@ -173,12 +174,21 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPath, onNavigat
                 boxShadow: '0 2px 4px rgba(42, 110, 187, 0.08)',
               }}
             >
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-600 rounded-md flex items-center justify-center text-white font-bold shadow-md">
-                  YS
-                </div>
-                <h1 style={{ color: 'var(--module-cpu-dark)' }} className="font-bold">IntelliManage</h1>
-              </div>
+              <button 
+                onClick={() => {
+                  const event = new CustomEvent('toggle-ai-widget', { bubbles: true, cancelable: true });
+                  window.dispatchEvent(event);
+                }}
+                className="flex items-center space-x-2 transition-all duration-200 hover:scale-105 cursor-pointer"
+                title="AI助手"
+              >
+                <img 
+                  src="/yyc3-pwa-icon.png" 
+                  alt="YYC³" 
+                  className="w-8 h-8 rounded-md shadow-md"
+                />
+                <h1 style={{ color: 'var(--module-cpu-dark)' }} className="font-bold">YYC³ NAS-ECS</h1>
+              </button>
               <button 
                 onClick={toggleSidebar} 
                 className="lg:hidden p-1 rounded-full transition-all duration-200"
@@ -338,6 +348,11 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPath, onNavigat
                   System Online
                 </div>
               </div>
+              
+              <QuickActions onNavigate={onNavigate} currentPath={currentPath} />
+              
+              <AIWidgetTrigger variant="icon" />
+              
               <IconButton
                 icon={<Bell className="h-5 w-5" />}
                 onClick={() => {}}
@@ -370,7 +385,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPath, onNavigat
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 bg-black bg-opacity-25 z-20 lg:hidden"
+            className="fixed inset-0 bg-gray-900/25 z-20 lg:hidden"
             onClick={toggleSidebar}
             aria-hidden="true"
           />
@@ -452,61 +467,6 @@ const MenuItem: React.FC<MenuItemProps> = ({ item, isActive, onClick }) => {
           {item.badge}
         </span>
       )}
-    </motion.button>
-  );
-};
-
-/**
- * 菜单按钮组件 - 主要/次要样式
- */
-interface MenuButtonProps {
-  icon: React.ReactNode;
-  label: string;
-  onClick: () => void;
-  isPrimary?: boolean;
-  isSecondary?: boolean;
-}
-
-const MenuButton: React.FC<MenuButtonProps> = ({ icon, label, onClick, isPrimary, isSecondary }) => {
-  const [isHovered, setIsHovered] = useState(false);
-  const [isPressed, setIsPressed] = useState(false);
-
-  const borderWidth = isPressed ? '5px' : isHovered ? '4px' : '3px';
-
-  return (
-    <motion.button
-      className="w-full flex items-center justify-center py-3 px-4 rounded-lg transition-all duration-200"
-      style={{
-        backgroundColor: isPrimary 
-          ? 'var(--module-cpu-primary)' 
-          : isHovered 
-            ? 'rgba(42, 110, 187, 0.05)' 
-            : 'transparent',
-        color: isPrimary ? '#ffffff' : 'var(--module-cpu-primary)',
-        borderTop: isPrimary ? '1px solid rgba(255, 255, 255, 0.3)' : '1px solid rgba(42, 110, 187, 0.2)',
-        borderLeft: `${borderWidth} solid ${isPrimary ? 'var(--module-cpu-shadow)' : 'var(--module-cpu-primary)'}`,
-        borderRight: isPrimary ? '2px solid var(--module-cpu-dark)' : '1px solid rgba(42, 110, 187, 0.15)',
-        borderBottom: isPrimary ? '2px solid var(--module-cpu-dark)' : '1px solid rgba(42, 110, 187, 0.15)',
-        boxShadow: isPrimary 
-          ? '3px 3px 8px rgba(42, 110, 187, 0.3)' 
-          : isHovered 
-            ? '2px 2px 4px rgba(42, 110, 187, 0.15)' 
-            : 'none',
-        transform: isPressed ? 'translateY(2px)' : isHovered ? 'translateY(-2px)' : 'translateY(0)',
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => {
-        setIsHovered(false);
-        setIsPressed(false);
-      }}
-      onMouseDown={() => setIsPressed(true)}
-      onMouseUp={() => setIsPressed(false)}
-      onClick={onClick}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-    >
-      {icon}
-      <span className="ml-2">{label}</span>
     </motion.button>
   );
 };

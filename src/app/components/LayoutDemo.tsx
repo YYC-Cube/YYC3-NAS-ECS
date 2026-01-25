@@ -5,7 +5,7 @@
  * @version 1.0.0
  */
 
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Layout } from './Layout';
 import { EmailList } from './EmailList';
 
@@ -14,6 +14,12 @@ import { EmailList } from './EmailList';
  * 用于展示完整的布局系统和邮件列表功能
  */
 export const LayoutDemo: React.FC = () => {
+  const [currentPath, setCurrentPath] = useState('/');
+
+  const handleNavigate = (path: string) => {
+    setCurrentPath(path);
+  };
+
   // 设置模拟用户数据
   useEffect(() => {
     const mockUser = {
@@ -26,7 +32,7 @@ export const LayoutDemo: React.FC = () => {
 
   return (
     <div className="theme-cpu">
-      <Layout>
+      <Layout currentPath={currentPath} onNavigate={handleNavigate}>
         {/* 页面标题 */}
         <div 
           className="mb-6 p-6 bg-white rounded-lg"
