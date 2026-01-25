@@ -1,4 +1,3 @@
-cat > /opt/yyc3/scripts/monitor-nas.sh << 'EOF'
 #!/bin/bash
 
 # NAS监控脚本
@@ -8,7 +7,7 @@ LOG_DIR="/opt/yyc3/logs/monitor"
 mkdir -p "$LOG_DIR"
 
 LOG_FILE="$LOG_DIR/nas-monitor-$(date +%Y%m%d).log"
-DOMAIN="ddns.0379.email"
+DOMAIN="nas.0379.email"
 EXPECTED_IP="8.152.195.33"
 
 # 日志函数
@@ -105,6 +104,3 @@ case "$1" in
         exit 1
         ;;
 esac
-EOF
-
-chmod +x /opt/yyc3/scripts/monitor-nas.sh

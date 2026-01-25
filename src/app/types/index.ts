@@ -31,6 +31,8 @@ export interface LogEntry {
   message: string;
   source: string;
   timestamp: string;
+  details?: string;
+  stackTrace?: string;
 }
 
 export interface Email {
@@ -42,6 +44,9 @@ export interface Email {
   timestamp: string;
   read: boolean;
   folder: 'inbox' | 'sent' | 'trash' | 'drafts';
+  attachments?: File[];
+  starred?: boolean;
+  tags?: string[];
 }
 
 export interface LLMMessage {
@@ -58,6 +63,28 @@ export interface NasFile {
   size: number;
   updatedAt: string;
   parentId?: string;
+}
+
+export interface NasVolume {
+  id: string;
+  name: string;
+  type: string;
+  total: number;
+  used: number;
+  available: number;
+  health: string;
+  mountPoint: string;
+}
+
+export interface NasShare {
+  id: string;
+  name: string;
+  path: string;
+  type: string;
+  enabled: boolean;
+  users: string[];
+  permissions: string;
+  status: string;
 }
 
 export interface ApiError {
@@ -79,17 +106,22 @@ export interface AuthService {
 
 export interface SystemService {
   getStats(): Promise<SystemStats>;
+  getDetailedStats(): Promise<any>;
 }
 
 export interface FrpService {
   getConfigs(): Promise<FrpConfig[]>;
   updateConfig(config: FrpConfig): Promise<FrpConfig>;
   getStatus(): Promise<any>;
+  startClient(): Promise<void>;
+  stopClient(): Promise<void>;
 }
 
 export interface DdnsService {
   getStatus(): Promise<any>;
   updateConfig(config: any): Promise<any>;
+  updateDDNS(): Promise<void>;
+  getHistory(limit?: number): Promise<any[]>;
 }
 
 export interface MonitoringService {
@@ -99,21 +131,40 @@ export interface MonitoringService {
 
 export interface LogsService {
   getLogs(): Promise<LogEntry[]>;
+  clearLogs(): Promise<void>;
 }
 
 export interface MailService {
-  getEmails(folder?: string): Promise<Email[]>;
+  getEmails(folder?: string, params?: any): Promise<Email[]>;
   sendEmail(to: string, subject: string, body: string): Promise<void>;
+  saveDraft(draft: { to: string[]; cc: string[]; bcc: string[]; subject: string; body: string; attachments: File[]; priority: string }): Promise<void>;
+  scheduleEmail(email: { to: string[]; cc: string[]; bcc: string[]; subject: string; body: string; attachments: File[]; priority: string; scheduledTime: string }): Promise<void>;
+  replyEmail(originalEmailId: string, to: string, subject: string, body: string): Promise<void>;
+  forwardEmail(originalEmailId: string, to: string, subject: string, body: string): Promise<void>;
+  markEmailRead(emailId: string, read: boolean): Promise<void>;
+  markEmailUnread(emailId: string): Promise<void>;
+  deleteEmail(emailId: string): Promise<void>;
+  toggleStar(emailId: string): Promise<void>;
+  archiveEmail(emailId: string): Promise<void>;
 }
 
 export interface LLMService {
   sendMessage(message: string): Promise<LLMMessage>;
+  generate(prompt: string, model?: string, stream?: boolean): Promise<Response>;
+  getModels(): Promise<{ models: Array<{ name: string; size: string; modified_at: string }> }>;
+  deleteModel(modelName: string): Promise<{ success: boolean; message: string }>;
+  pullModel(modelName: string): Promise<Response>;
+  chat(messages: Array<{ role: string; content: string }>, model?: string, stream?: boolean): Promise<Response>;
 }
 
 export interface NasService {
   getStatus(): Promise<any>;
   getVolumes(): Promise<any>;
   getFiles(parentId?: string): Promise<NasFile[]>;
+  getShares(): Promise<any[]>;
+  startService(): Promise<void>;
+  stopService(): Promise<void>;
+  toggleShare(shareId: string): Promise<void>;
 }
 
 export interface ApiService {

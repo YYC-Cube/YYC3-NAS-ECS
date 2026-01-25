@@ -1,10 +1,19 @@
+/**
+ * @file BackupManager - 备份管理组件
+ * @description 提供数据备份、恢复和调度管理功能
+ * @module components/backup
+ * @author YYC³
+ * @version 1.0.0
+ * @created 2026-01-24
+ */
+
 import React, { useState, useEffect } from 'react';
 import { ModuleCard } from '../ModuleCard';
 import { 
-  Database, Play, Pause, RefreshCw, Download, Trash2, 
+  Database, Play, RefreshCw, Trash2, 
   Settings, Plus, Clock, HardDrive, AlertCircle, 
-  CheckCircle2, XCircle, FileText, Calendar,
-  ChevronDown, ChevronUp, Search, Filter
+  CheckCircle2, XCircle, Calendar,
+  ChevronDown, ChevronUp, Search
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { 
@@ -19,13 +28,11 @@ export const BackupManager: React.FC = () => {
   const [restores, setRestores] = useState<RestoreRecord[]>([]);
   const [stats, setStats] = useState<BackupStats | null>(null);
   const [selectedConfig, setSelectedConfig] = useState<BackupConfig | null>(null);
-  const [selectedRecord, setSelectedRecord] = useState<BackupRecord | null>(null);
   const [showCreateConfig, setShowCreateConfig] = useState(false);
   const [showRecords, setShowRecords] = useState(false);
   const [showRestores, setShowRestores] = useState(false);
   const [showStats, setShowStats] = useState(false);
   const [isBackingUp, setIsBackingUp] = useState(false);
-  const [isRestoring, setIsRestoring] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
   const [newConfig, setNewConfig] = useState({
@@ -64,23 +71,6 @@ export const BackupManager: React.FC = () => {
       toast.error('备份创建失败');
     } finally {
       setIsBackingUp(false);
-    }
-  };
-
-  const handleRestoreBackup = async (backupId: string) => {
-    if (!confirm('确定要恢复此备份吗？此操作将覆盖现有数据。')) {
-      return;
-    }
-
-    setIsRestoring(true);
-    try {
-      await backupService.restoreBackup(backupId, '/restore', 'current-user');
-      toast.success('备份恢复成功');
-      loadData();
-    } catch (error) {
-      toast.error('备份恢复失败');
-    } finally {
-      setIsRestoring(false);
     }
   };
 
@@ -135,14 +125,6 @@ export const BackupManager: React.FC = () => {
     }
   };
 
-  const handleDeleteRecord = (recordId: string) => {
-    if (confirm('确定要删除此备份记录吗？')) {
-      backupService.deleteRecord(recordId);
-      toast.success('备份记录删除成功');
-      loadData();
-    }
-  };
-
   const handleCleanup = () => {
     const count = backupService.cleanupOldBackups();
     toast.success(`已清理 ${count} 个过期备份`);
@@ -166,17 +148,6 @@ export const BackupManager: React.FC = () => {
       case BackupStorage.FTP: return 'FTP';
       case BackupStorage.SFTP: return 'SFTP';
       default: return storage;
-    }
-  };
-
-  const getStatusColor = (status: BackupStatus): string => {
-    switch (status) {
-      case BackupStatus.PENDING: return 'text-gray-400';
-      case BackupStatus.IN_PROGRESS: return 'text-blue-400';
-      case BackupStatus.COMPLETED: return 'text-green-400';
-      case BackupStatus.FAILED: return 'text-red-400';
-      case BackupStatus.CANCELLED: return 'text-yellow-400';
-      default: return 'text-gray-400';
     }
   };
 
@@ -459,7 +430,7 @@ export const BackupManager: React.FC = () => {
 
         {/* Create Config Modal */}
         {showCreateConfig && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowCreateConfig(false)}>
+          <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50" onClick={() => setShowCreateConfig(false)}>
             <div 
               className="bg-[#2d3748] rounded-lg border border-gray-600 max-w-lg w-full mx-4"
               onClick={(e) => e.stopPropagation()}
@@ -605,7 +576,7 @@ export const BackupManager: React.FC = () => {
 
         {/* Config Detail Modal */}
         {selectedConfig && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setSelectedConfig(null)}>
+          <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50" onClick={() => setSelectedConfig(null)}>
             <div 
               className="bg-[#2d3748] rounded-lg border border-gray-600 max-w-lg w-full mx-4"
               onClick={(e) => e.stopPropagation()}

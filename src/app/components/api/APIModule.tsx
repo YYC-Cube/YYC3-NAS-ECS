@@ -1,3 +1,12 @@
+/**
+ * @file APIModule - API服务管理模块
+ * @description 提供API接口文档、测试和监控功能
+ * @module components/api
+ * @author YYC³
+ * @version 1.0.0
+ * @created 2026-01-24
+ */
+
 import React, { useState, useEffect } from 'react';
 import { ModuleCard } from '../ModuleCard';
 import { api } from '../../services/api-v2';

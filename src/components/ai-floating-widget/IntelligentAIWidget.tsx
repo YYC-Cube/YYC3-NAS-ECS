@@ -1,20 +1,16 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Minus2, Maximize2, MessageSquare, Settings, Sparkles } from 'lucide-react';
+import { X, Minus, Maximize2, MessageSquare, Settings, Sparkles } from 'lucide-react';
 import { useAIWidget } from '@/lib/ai-components/useAIComponents';
 
 interface IntelligentAIWidgetProps {
-  agenticCore?: any;
-  onClose?: () => void;
   className?: string;
 }
 
-export function IntelligentAIWidget({ agenticCore, onClose, className = '' }: IntelligentAIWidgetProps) {
+export function IntelligentAIWidget({ className = '' }: IntelligentAIWidgetProps) {
   const { widgetState, hideWidget, minimizeWidget, maximizeWidget, updatePosition, updateSize } = useAIWidget();
-  const [isDragging, setIsDragging] = useState(false);
-  const [isResizing, setIsResizing] = useState(false);
   const [activeTab, setActiveTab] = useState<'chat' | 'tools' | 'insights'>('chat');
   const widgetRef = useRef<HTMLDivElement>(null);
   const dragHandleRef = useRef<HTMLDivElement>(null);
@@ -34,12 +30,10 @@ export function IntelligentAIWidget({ agenticCore, onClose, className = '' }: In
     };
 
     const handleMouseUp = () => {
-      setIsDragging(false);
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
 
-    setIsDragging(true);
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
   };
@@ -58,12 +52,10 @@ export function IntelligentAIWidget({ agenticCore, onClose, className = '' }: In
     };
 
     const handleMouseUp = () => {
-      setIsResizing(false);
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
 
-    setIsResizing(true);
     document.addEventListener('mousemove', handleMouseMove);
     document.addEventListener('mouseup', handleMouseUp);
   };
@@ -108,7 +100,7 @@ export function IntelligentAIWidget({ agenticCore, onClose, className = '' }: In
                 className="p-1 hover:bg-white/20 rounded transition-colors"
                 title="最小化"
               >
-                <Minus2 className="w-4 h-4 text-white" />
+                <Minus className="w-4 h-4 text-white" />
               </button>
               <button
                 onClick={maximizeWidget}
@@ -247,9 +239,7 @@ export function IntelligentAIWidget({ agenticCore, onClose, className = '' }: In
   );
 }
 
-export function AIWidgetTrigger({ className = '' }: { className?: string }) {
-  const { toggleWidget } = useAIWidget();
-
+export function AIWidgetTrigger({ toggleWidget, className = '' }: { toggleWidget: () => void; className?: string }) {
   return (
     <button
       onClick={toggleWidget}

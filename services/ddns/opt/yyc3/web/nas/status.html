@@ -25,16 +25,16 @@
             <h2>nas.0379.email</h2>
             <button class="refresh-btn" onclick="location.reload()">刷新状态</button>
         </div>
-
+        
         <div id="status-content">
             <p>正在加载状态信息...</p>
         </div>
-
+        
         <div class="timestamp">
             最后更新: <span id="update-time"></span>
         </div>
     </div>
-
+    
     <script>
         function updateStatus() {
             fetch('/health')
@@ -42,9 +42,9 @@
                 .then(data => {
                     const statusDiv = document.getElementById('status-content');
                     const updateTime = document.getElementById('update-time');
-
+                    
                     updateTime.textContent = new Date().toLocaleString('zh-CN');
-
+                    
                     let html = `
                         <div class="status-grid">
                             <div class="status-card">
@@ -72,29 +72,29 @@
                                 <div class="status-value" style="color: green;">✅ 每30分钟检查</div>
                             </div>
                         </div>
-
+                        
                         <h3>访问链接:</h3>
                         <ul>
                             <li><a href="/">NAS门户首页</a></li>
                             <li><a href="/health">健康检查API</a></li>
                             <li><a href="/status">状态页面</a></li>
                         </ul>
-
+                        
                         <h3>管理工具:</h3>
                         <p>在服务器上运行: <code>/opt/yyc3/scripts/nas-manager.sh</code></p>
                     `;
-
+                    
                     statusDiv.innerHTML = html;
                 })
                 .catch(error => {
-                    document.getElementById('status-content').innerHTML =
+                    document.getElementById('status-content').innerHTML = 
                         '<div class="status-card error"><p>无法获取状态信息</p><p>错误: ' + error + '</p></div>';
                 });
         }
-
+        
         // 页面加载时更新状态
         updateStatus();
-
+        
         // 每30秒自动更新
         setInterval(updateStatus, 30000);
     </script>

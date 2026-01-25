@@ -16,11 +16,11 @@ export const ModuleButton: React.FC<ModuleButtonProps> = ({
   icon: Icon,
   onClick 
 }) => {
-  const { theme } = useTheme();
+  const { currentTheme } = useTheme();
 
   // 根据主题获取颜色值
   const getThemeColors = () => {
-    switch(theme) {
+    switch(currentTheme) {
       case 'cpu':
         return { primary: '#2A6EBB', shadow: '#1E5CA3', dark: '#0D3A6A' };
       case 'memory':

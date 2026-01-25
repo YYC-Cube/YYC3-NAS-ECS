@@ -18,6 +18,7 @@ import {
   ApiService
 } from '../types';
 import { envConfig } from '../config/env';
+import { logger } from '../utils/logger';
 
 class ApiClient {
   private baseUrl: string;
@@ -58,7 +59,7 @@ class ApiClient {
       clearTimeout(timeoutId);
 
       if (envConfig.isDebugEnabled()) {
-        console.error('API request error:', error);
+        logger.error('API request error:', error);
       }
 
       throw error;
@@ -159,6 +160,17 @@ class MockDataService {
       await new Promise(resolve => setTimeout(resolve, 200));
       return this.generateSystemStats();
     },
+
+    getDetailedStats: async () => {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      return {
+        cpu: { usage: 12.5, cores: 4 },
+        memory: { usage: 45.3, total: 16, used: 7.25 },
+        disk: { usage: 35.5, total: 1000, used: 355 },
+        network: { in: 1024, out: 512 },
+        system: { uptime: '15天 3小时 45分钟', hostname: 'nas-0379' }
+      };
+    },
   };
 
   public frp = {
@@ -187,6 +199,16 @@ class MockDataService {
     updateConfig: async (config: FrpConfig): Promise<FrpConfig> => {
       await new Promise(resolve => setTimeout(resolve, 300));
       return config;
+    },
+
+    startClient: async () => {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return;
+    },
+
+    stopClient: async () => {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      return;
     }
   };
 
@@ -213,6 +235,21 @@ class MockDataService {
     updateConfig: async (config: any) => {
       await new Promise(resolve => setTimeout(resolve, 300));
       return { success: true, data: config };
+    },
+    updateDDNS: async () => {
+      await new Promise(resolve => setTimeout(resolve, 500));
+    },
+    getHistory: async (_limit?: number) => {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      return [
+        {
+          id: '1',
+          timestamp: new Date().toISOString(),
+          oldIP: '8.152.195.32',
+          newIP: '8.152.195.33',
+          status: 'success'
+        }
+      ];
     }
   };
 
@@ -291,6 +328,36 @@ class MockDataService {
       await new Promise(resolve => setTimeout(resolve, 300));
       return this.generateNasFiles(parentId);
     },
+    getShares: async (): Promise<any[]> => {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      return [
+        {
+          id: 'share-1',
+          name: 'Documents',
+          path: '/data/documents',
+          permissions: 'read-write',
+          users: ['admin', 'user1'],
+          status: 'active'
+        },
+        {
+          id: 'share-2',
+          name: 'Media',
+          path: '/data/media',
+          permissions: 'read-only',
+          users: ['admin', 'user1', 'user2'],
+          status: 'active'
+        }
+      ];
+    },
+    startService: async (): Promise<void> => {
+      await new Promise(resolve => setTimeout(resolve, 500));
+    },
+    stopService: async (): Promise<void> => {
+      await new Promise(resolve => setTimeout(resolve, 500));
+    },
+    toggleShare: async (_shareId: string): Promise<void> => {
+      await new Promise(resolve => setTimeout(resolve, 300));
+    },
   };
 
   public monitoring = {
@@ -352,6 +419,9 @@ class MockDataService {
       await new Promise(resolve => setTimeout(resolve, 300));
       return this.generateLogs();
     },
+    clearLogs: async (): Promise<void> => {
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
   };
 
   public mail = {
@@ -360,12 +430,82 @@ class MockDataService {
       const emails = this.generateEmails();
       return emails.map(e => ({...e, folder: folder as any}));
     },
-    sendEmail: async (to: string, subject: string, body: string): Promise<void> => {
+    sendEmail: async (to: string, subject: string, body: string, cc?: string[], bcc?: string[], attachments?: File[]): Promise<void> => {
       await new Promise(resolve => setTimeout(resolve, 800));
       if (envConfig.isDebugEnabled()) {
-        console.log(`[Mock] Sending email to ${to}`);
-        console.log(`[Mock] Subject: ${subject}`);
-        console.log(`[Mock] Body length: ${body.length} characters`);
+        logger.debug(`[Mock] Sending email to ${to}`);
+        logger.debug(`[Mock] Subject: ${subject}`);
+        logger.debug(`[Mock] Body length: ${body.length} characters`);
+        logger.debug(`[Mock] CC: ${cc?.join(', ') || 'none'}`);
+        logger.debug(`[Mock] BCC: ${bcc?.join(', ') || 'none'}`);
+        logger.debug(`[Mock] Attachments: ${attachments?.length || 0}`);
+      }
+    },
+    replyEmail: async (originalEmailId: string, to: string, subject: string, body: string): Promise<void> => {
+      await new Promise(resolve => setTimeout(resolve, 800));
+      if (envConfig.isDebugEnabled()) {
+        logger.debug(`[Mock] Replying to email ${originalEmailId}`);
+        logger.debug(`[Mock] To: ${to}`);
+        logger.debug(`[Mock] Subject: ${subject}`);
+        logger.debug(`[Mock] Body length: ${body.length} characters`);
+      }
+    },
+    forwardEmail: async (originalEmailId: string, to: string, subject: string, body: string): Promise<void> => {
+      await new Promise(resolve => setTimeout(resolve, 800));
+      if (envConfig.isDebugEnabled()) {
+        logger.debug(`[Mock] Forwarding email ${originalEmailId}`);
+        logger.debug(`[Mock] To: ${to}`);
+        logger.debug(`[Mock] Subject: ${subject}`);
+        logger.debug(`[Mock] Body length: ${body.length} characters`);
+      }
+    },
+    markEmailRead: async (emailId: string): Promise<void> => {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      if (envConfig.isDebugEnabled()) {
+        logger.debug(`[Mock] Marking email ${emailId} as read`);
+      }
+    },
+    markEmailUnread: async (emailId: string): Promise<void> => {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      if (envConfig.isDebugEnabled()) {
+        logger.debug(`[Mock] Marking email ${emailId} as unread`);
+      }
+    },
+    deleteEmail: async (emailId: string): Promise<void> => {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      if (envConfig.isDebugEnabled()) {
+        logger.debug(`[Mock] Deleting email ${emailId}`);
+      }
+    },
+    saveDraft: async (draft: { to: string[]; cc: string[]; bcc: string[]; subject: string; body: string; attachments: File[]; priority: string }): Promise<void> => {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      if (envConfig.isDebugEnabled()) {
+        logger.debug(`[Mock] Saving draft`);
+        logger.debug(`[Mock] To: ${draft.to.join(', ')}`);
+        logger.debug(`[Mock] Subject: ${draft.subject}`);
+        logger.debug(`[Mock] Priority: ${draft.priority}`);
+      }
+    },
+    scheduleEmail: async (email: { to: string[]; cc: string[]; bcc: string[]; subject: string; body: string; attachments: File[]; priority: string; scheduledTime: string }): Promise<void> => {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      if (envConfig.isDebugEnabled()) {
+        logger.debug(`[Mock] Scheduling email`);
+        logger.debug(`[Mock] To: ${email.to.join(', ')}`);
+        logger.debug(`[Mock] Subject: ${email.subject}`);
+        logger.debug(`[Mock] Scheduled for: ${email.scheduledTime}`);
+        logger.debug(`[Mock] Priority: ${email.priority}`);
+      }
+    },
+    toggleStar: async (emailId: string): Promise<void> => {
+      await new Promise(resolve => setTimeout(resolve, 200));
+      if (envConfig.isDebugEnabled()) {
+        logger.debug(`[Mock] Toggling star for email ${emailId}`);
+      }
+    },
+    archiveEmail: async (emailId: string): Promise<void> => {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      if (envConfig.isDebugEnabled()) {
+        logger.debug(`[Mock] Archiving email ${emailId}`);
       }
     }
   };
@@ -380,6 +520,55 @@ class MockDataService {
         timestamp: new Date().toISOString(),
       };
     },
+    generate: async (prompt: string, model: string = 'qwen:7b', _stream: boolean = true): Promise<Response> => {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const mockResponse = {
+        success: true,
+        response: `This is a mock response for: "${prompt}". Using model: ${model}`
+      };
+      return new Response(JSON.stringify(mockResponse), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    },
+    getModels: async (): Promise<{ models: Array<{ name: string; size: string; modified_at: string }> }> => {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      return {
+        models: [
+          { name: 'qwen:7b', size: '4.7GB', modified_at: '2025-01-20T10:30:00Z' },
+          { name: 'qwen:14b', size: '9.2GB', modified_at: '2025-01-20T10:30:00Z' },
+          { name: 'llama3:8b', size: '4.9GB', modified_at: '2025-01-18T14:20:00Z' },
+          { name: 'llama3:70b', size: '40.2GB', modified_at: '2025-01-18T14:20:00Z' }
+        ]
+      };
+    },
+    deleteModel: async (modelName: string): Promise<{ success: boolean; message: string }> => {
+      await new Promise(resolve => setTimeout(resolve, 300));
+      return {
+        success: true,
+        message: `Model ${modelName} deleted successfully`
+      };
+    },
+    pullModel: async (modelName: string): Promise<Response> => {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const mockResponse = {
+        success: true,
+        status: `Pulling model ${modelName}...`
+      };
+      return new Response(JSON.stringify(mockResponse), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    },
+    chat: async (messages: Array<{ role: string; content: string }>, model: string = 'qwen:7b', _stream: boolean = true): Promise<Response> => {
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const lastMessage = messages[messages.length - 1];
+      const mockResponse = {
+        success: true,
+        content: `This is a mock chat response for: "${lastMessage.content}". Using model: ${model}`
+      };
+      return new Response(JSON.stringify(mockResponse), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
   };
 }
 
@@ -403,6 +592,10 @@ class RealApiService {
     getStats: async (): Promise<SystemStats> => {
       return this.client.get<SystemStats>('/system/stats');
     },
+
+    getDetailedStats: async () => {
+      return this.client.get('/api/v2/monitoring/stats');
+    },
   };
 
   public frp = {
@@ -414,6 +607,14 @@ class RealApiService {
     },
     updateConfig: async (config: FrpConfig): Promise<FrpConfig> => {
       return this.client.put<FrpConfig>(`/api/v2/frp/configs/${config.id}`, config);
+    },
+
+    startClient: async () => {
+      await this.client.post('/api/v2/frp/client/start', {});
+    },
+
+    stopClient: async () => {
+      await this.client.post('/api/v2/frp/client/stop', {});
     }
   };
 
@@ -423,6 +624,13 @@ class RealApiService {
     },
     updateConfig: async (config: any) => {
       return this.client.post('/api/v2/ddns/config', config);
+    },
+    updateDDNS: async (): Promise<void> => {
+      await this.client.post('/api/v2/ddns/update', {});
+    },
+    getHistory: async (limit?: number): Promise<any[]> => {
+      const params = limit ? `?limit=${limit}` : '';
+      return this.client.get(`/api/v2/ddns/history${params}`);
     }
   };
 
@@ -436,6 +644,18 @@ class RealApiService {
     getFiles: async (parentId?: string): Promise<NasFile[]> => {
       const params = parentId ? `?parentId=${parentId}` : '';
       return this.client.get<NasFile[]>(`/nas/files${params}`);
+    },
+    getShares: async (): Promise<any[]> => {
+      return this.client.get('/api/v2/nas/shares');
+    },
+    startService: async (): Promise<void> => {
+      await this.client.post('/api/v2/nas/service/start', {});
+    },
+    stopService: async (): Promise<void> => {
+      await this.client.post('/api/v2/nas/service/stop', {});
+    },
+    toggleShare: async (shareId: string): Promise<void> => {
+      await this.client.post(`/api/v2/nas/shares/${shareId}/toggle`, {});
     },
   };
 
@@ -452,21 +672,66 @@ class RealApiService {
     getLogs: async (): Promise<LogEntry[]> => {
       return this.client.get<LogEntry[]>('/logs');
     },
+    clearLogs: async (): Promise<void> => {
+      await this.client.delete('/logs');
+    },
   };
 
   public mail = {
     getEmails: async (folder: string = 'inbox'): Promise<Email[]> => {
       return this.client.get<Email[]>(`/mail/emails?folder=${folder}`);
     },
-    sendEmail: async (to: string, subject: string, body: string): Promise<void> => {
-      return this.client.post<void>('/mail/send', { to, subject, body });
-    }
+    sendEmail: async (to: string, subject: string, body: string, cc?: string[], bcc?: string[], attachments?: File[]): Promise<void> => {
+      return this.client.post<void>('/mail/send', { to, subject, body, cc, bcc, attachments });
+    },
+    replyEmail: async (originalEmailId: string, to: string, subject: string, body: string): Promise<void> => {
+      return this.client.post<void>('/mail/reply', { original_email_id: originalEmailId, to, subject, body });
+    },
+    forwardEmail: async (originalEmailId: string, to: string, subject: string, body: string): Promise<void> => {
+      return this.client.post<void>('/mail/forward', { original_email_id: originalEmailId, to, subject, body });
+    },
+    markEmailRead: async (emailId: string): Promise<void> => {
+      return this.client.put<void>(`/mail/emails/${emailId}/read`, {});
+    },
+    markEmailUnread: async (emailId: string): Promise<void> => {
+      return this.client.put<void>(`/mail/emails/${emailId}/unread`, {});
+    },
+    deleteEmail: async (emailId: string): Promise<void> => {
+      return this.client.delete<void>(`/mail/emails/${emailId}`);
+    },
+    saveDraft: async (draft: { to: string[]; cc: string[]; bcc: string[]; subject: string; body: string; attachments: File[]; priority: string }): Promise<void> => {
+      return this.client.post<void>('/mail/drafts', draft);
+    },
+    scheduleEmail: async (email: { to: string[]; cc: string[]; bcc: string[]; subject: string; body: string; attachments: File[]; priority: string; scheduledTime: string }): Promise<void> => {
+      return this.client.post<void>('/mail/schedule', email);
+    },
+    archiveEmail: async (emailId: string): Promise<void> => {
+      return this.client.put<void>(`/mail/emails/${emailId}/archive`, {});
+    },
+    toggleStar: async (emailId: string): Promise<void> => {
+      return this.client.post<void>(`/mail/emails/${emailId}/star`, {});
+    },
   };
 
   public llm = {
     sendMessage: async (message: string): Promise<LLMMessage> => {
       return this.client.post<LLMMessage>('/llm/chat', { message });
     },
+    generate: async (prompt: string, model: string = 'qwen:7b', stream: boolean = true): Promise<Response> => {
+      return this.client.post<Response>('/llm/generate', { prompt, model, stream });
+    },
+    getModels: async (): Promise<{ models: Array<{ name: string; size: string; modified_at: string }> }> => {
+      return this.client.get('/llm/tags');
+    },
+    deleteModel: async (modelName: string): Promise<{ success: boolean; message: string }> => {
+      return this.client.delete(`/llm/models/${modelName}`);
+    },
+    pullModel: async (modelName: string): Promise<Response> => {
+      return this.client.post('/llm/pull', { name: modelName });
+    },
+    chat: async (messages: Array<{ role: string; content: string }>, model: string = 'qwen:7b', stream: boolean = true): Promise<Response> => {
+      return this.client.post('/llm/chat', { messages, model, stream });
+    }
   };
 }
 
@@ -484,9 +749,9 @@ class ApiServiceFactory {
     const useMock = envConfig.shouldUseMockData();
 
     if (envConfig.isDebugEnabled()) {
-      console.log(`[API Service] Using ${useMock ? 'MOCK' : 'REAL'} API service`);
-      console.log(`[API Service] Environment: ${envConfig.getCurrentEnvironment().name}`);
-      console.log(`[API Service] Base URL: ${envConfig.getCurrentEnvironment().apiBaseUrl}`);
+      logger.debug(`[API Service] Using ${useMock ? 'MOCK' : 'REAL'} API service`);
+      logger.debug(`[API Service] Environment: ${envConfig.getCurrentEnvironment().name}`);
+      logger.debug(`[API Service] Base URL: ${envConfig.getCurrentEnvironment().apiBaseUrl}`);
     }
 
     return useMock ? this.mockService : this.realService;

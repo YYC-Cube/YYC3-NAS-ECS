@@ -6,13 +6,15 @@ interface ModuleCardProps {
   children: ReactNode;
   level?: 1 | 2; // 层级1: 内容卡片, 层级2: 数据卡片
   onClick?: () => void;
+  className?: string;
 }
 
 export const ModuleCard: React.FC<ModuleCardProps> = ({ 
   title, 
   children, 
   level = 1,
-  onClick 
+  onClick,
+  className 
 }) => {
   const [isHovered, setIsHovered] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
@@ -27,7 +29,7 @@ export const ModuleCard: React.FC<ModuleCardProps> = ({
   
   return (
     <motion.div
-      className="p-6 rounded-lg transition-all duration-300 relative overflow-hidden"
+      className={`p-6 rounded-lg transition-all duration-300 relative overflow-hidden ${className || ''}`}
       style={{
         /* 增强边框系统 */
         border: '1px solid rgba(var(--module-primary), 0.15)',

@@ -13,17 +13,15 @@ export const ModuleSearchBox: React.FC<ModuleSearchBoxProps> = ({
   const [value, setValue] = useState('');
   const [isFocused, setIsFocused] = useState(false);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(e.target.value);
-    onSearch?.(e.target.value);
-  };
-
   return (
     <div className="relative max-w-lg">
       <input
         type="text"
         value={value}
-        onChange={(e) => setValue(e.target.value)}
+        onChange={(e) => {
+          setValue(e.target.value);
+          onSearch?.(e.target.value);
+        }}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         className="w-full px-4 py-3 pl-12 rounded-md transition-all duration-300 outline-none"

@@ -1,11 +1,21 @@
+/**
+ * @file SettingsService - 系统设置服务
+ * @description 提供系统配置、主题切换、个性化设置等功能
+ * @module services/settings
+ * @author YYC³
+ * @version 1.0.0
+ * @created 2026-01-24
+ */
+
 import { 
   SystemSetting, SettingGroup, SettingCategory, SettingType,
   SystemConfig
 } from '../types/settings';
+import { logger } from '../utils/logger';
 
 class SettingsService {
   private settings: SystemSetting[] = [];
-  private config: SystemConfig;
+  private config!: SystemConfig;
   private storageKey = 'yyc3-settings-data';
 
   constructor() {
@@ -25,7 +35,7 @@ class SettingsService {
         this.settings = JSON.parse(stored);
       }
     } catch (error) {
-      console.error('Failed to load settings:', error);
+      logger.error('Failed to load settings:', error);
     }
   }
 
@@ -33,7 +43,7 @@ class SettingsService {
     try {
       localStorage.setItem(this.storageKey, JSON.stringify(this.settings));
     } catch (error) {
-      console.error('Failed to save settings:', error);
+      logger.error('Failed to save settings:', error);
     }
   }
 

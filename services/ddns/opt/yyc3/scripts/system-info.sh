@@ -1,4 +1,3 @@
-cat > /opt/yyc3/scripts/system-info.sh << 'EOF'
 #!/bin/bash
 
 echo "=== 系统信息报告 ==="
@@ -15,7 +14,7 @@ echo ""
 echo "2. 网络信息:"
 echo "公网IP: $(curl -s ifconfig.me 2>/dev/null || echo "无法获取")"
 echo "内网IP: $(hostname -I)"
-echo "DNS解析(ddns.0379.email): $(dig ddns.0379.email +short 2>/dev/null | tr '\n' ' ')"
+echo "DNS解析(nas.0379.email): $(dig nas.0379.email +short 2>/dev/null | tr '\n' ' ')"
 echo ""
 
 echo "3. 服务状态:"
@@ -45,6 +44,3 @@ ls -la /opt/yyc3/ 2>/dev/null || echo "  目录不存在"
 echo ""
 
 echo "=== 报告结束 ==="
-EOF
-
-chmod +x /opt/yyc3/scripts/system-info.sh

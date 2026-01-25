@@ -5,21 +5,20 @@
 
 import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { 
-  Mail, 
-  Send, 
-  Archive, 
-  Star, 
-  Trash2, 
-  Settings, 
-  Search, 
+import {
+  Mail,
+  Send,
+  Archive,
+  Star,
+  Trash2,
+  Settings,
+  Search,
   Plus,
   Inbox,
   FileText,
   Clock,
   Sparkles,
   User,
-  LogOut,
   LayoutDashboard,
   CheckCircle,
   AlertCircle
@@ -53,7 +52,7 @@ export const EmailService: React.FC = () => {
   const handleSend = (e: React.FormEvent) => {
     e.preventDefault();
     toast.success(`测试邮件已发送至 ${emailForm.to} (模板: ${emailForm.template})`);
-    setEmailForm(prev => ({ ...prev, to: '' }));
+    setEmailForm((prev: typeof emailForm) => ({ ...prev, to: '' }));
   };
   // ---------------------------
 
@@ -69,8 +68,8 @@ export const EmailService: React.FC = () => {
             key={theme}
             className="h-8 rounded transition-all duration-200"
             style={{
-              backgroundColor: currentTheme === theme 
-                ? `var(--module-${theme}-primary)` 
+              backgroundColor: currentTheme === theme
+                ? `var(--module-${theme}-primary)`
                 : `var(--module-${theme}-light)`,
               border: `2px solid ${currentTheme === theme ? `var(--module-${theme}-primary)` : 'transparent'}`,
               boxShadow: currentTheme === theme ? `0 2px 4px rgba(0, 0, 0, 0.1)` : 'none',
@@ -137,8 +136,8 @@ export const EmailService: React.FC = () => {
             {/* 搜索框 */}
             <div className="flex-1 max-w-2xl mx-8">
               <div className="relative">
-                <Search 
-                  className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" 
+                <Search
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400"
                 />
                 <input
                   type="text"
@@ -198,7 +197,7 @@ export const EmailService: React.FC = () => {
                   color: '#ffffff',
                   boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1)',
                 }}
-                whileHover={{ 
+                whileHover={{
                   scale: 1.02,
                   boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.1)',
                 }}
@@ -247,7 +246,7 @@ export const EmailService: React.FC = () => {
                   {menuItems.find(item => item.id === activeMenu)?.label || 'AI智能助手'}
                 </h2>
                 <p className="text-sm mt-1 text-gray-500">
-                  {activeMenu === 'inbox' ? '您有 12 封未读邮件' : 
+                  {activeMenu === 'inbox' ? '您有 12 封未读邮件' :
                    activeMenu === 'dashboard' ? '邮件服务运行状态概览' :
                    activeMenu === 'ai-assistant' ? 'AI驱动的智能邮件管理助手' :
                    '邮件管理'}
@@ -256,7 +255,7 @@ export const EmailService: React.FC = () => {
             </div>
 
             {/* --- 内容路由 --- */}
-            
+
             {/* Dashboard View */}
             {activeMenu === 'dashboard' && (
               <div className="space-y-6">
@@ -290,18 +289,18 @@ export const EmailService: React.FC = () => {
                   <form onSubmit={handleSend} className="space-y-4 max-w-lg">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">收件人</label>
-                      <input 
-                        type="email" 
+                      <input
+                        type="email"
                         value={emailForm.to}
                         onChange={(e) => setEmailForm({...emailForm, to: e.target.value})}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        required 
+                        required
                         placeholder="user@example.com"
                       />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">模板</label>
-                      <select 
+                      <select
                         value={emailForm.template}
                         onChange={(e) => setEmailForm({...emailForm, template: e.target.value})}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -311,8 +310,8 @@ export const EmailService: React.FC = () => {
                         <option value="report">周报生成 (Weekly Report)</option>
                       </select>
                     </div>
-                    <button 
-                      type="submit" 
+                    <button
+                      type="submit"
                       className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-sm hover:shadow-md"
                     >
                       <Send size={16} />
@@ -325,7 +324,7 @@ export const EmailService: React.FC = () => {
 
             {/* Inbox View */}
             {activeMenu === 'inbox' && <EmailList />}
-            
+
             {/* AI Assistant View */}
             {activeMenu === 'ai-assistant' && (
               <div
@@ -457,13 +456,13 @@ interface SidebarMenuItemProps {
   isSpecial?: boolean;
 }
 
-const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({ 
-  icon: Icon, 
-  label, 
-  count, 
-  isActive, 
+const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
+  icon: Icon,
+  label,
+  count,
+  isActive,
   onClick,
-  isSpecial 
+  isSpecial
 }) => {
   const [isHovered, setIsHovered] = useState(false);
 
@@ -471,10 +470,10 @@ const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
     <motion.button
       className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg mb-1 transition-all duration-200"
       style={{
-        backgroundColor: isActive 
-          ? 'var(--module-cpu-primary)' 
-          : isHovered 
-            ? 'var(--module-cpu-light)' 
+        backgroundColor: isActive
+          ? 'var(--module-cpu-primary)'
+          : isHovered
+            ? 'var(--module-cpu-light)'
             : 'transparent',
         color: isActive ? '#ffffff' : isHovered ? 'var(--module-cpu-dark)' : '#4b5563', // gray-600
         borderLeft: `3px solid ${isActive ? 'var(--module-cpu-dark)' : 'transparent'}`,

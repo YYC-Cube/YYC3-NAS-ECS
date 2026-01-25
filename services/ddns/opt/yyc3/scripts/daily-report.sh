@@ -1,4 +1,3 @@
-cat > /opt/yyc3/scripts/daily-report.sh << 'EOF'
 #!/bin/bash
 
 REPORT_DIR="/opt/yyc3/reports"
@@ -13,16 +12,16 @@ REPORT_FILE="$REPORT_DIR/daily-report-$(date +%Y%m%d).txt"
     echo ""
     
     echo "1. DNS解析状态:"
-    DNS_IP=$(dig ddns.0379.email +short 2>/dev/null | head -1)
+    DNS_IP=$(dig nas.0379.email +short 2>/dev/null | head -1)
     if [ "$DNS_IP" = "8.152.195.33" ]; then
-        echo "✅ 解析正确: ddns.0379.email → $DNS_IP"
+        echo "✅ 解析正确: nas.0379.email → $DNS_IP"
     else
-        echo "❌ 解析异常: ddns.0379.email → $DNS_IP (期望: 8.152.195.33)"
+        echo "❌ 解析异常: nas.0379.email → $DNS_IP (期望: 8.152.195.33)"
     fi
     echo ""
     
     echo "2. 服务可用性:"
-    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 "http://ddns.0379.email/health")
+    HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" --connect-timeout 10 "http://nas.0379.email/health")
     if [ "$HTTP_CODE" = "200" ]; then
         echo "✅ HTTP服务正常 (状态码: $HTTP_CODE)"
     else
@@ -67,6 +66,3 @@ echo "每日报告已生成: $REPORT_FILE"
 
 # 保留最近7天的报告
 find "$REPORT_DIR" -name "daily-report-*.txt" -mtime +7 -delete
-EOF
-
-chmod +x /opt/yyc3/scripts/daily-report.sh

@@ -1,16 +1,26 @@
-import { 
-  User, 
-  SystemStats, 
-  FrpConfig, 
-  LogEntry, 
-  Email, 
-  LLMMessage, 
+/**
+ * @file API服务模块
+ * @description 提供API接口调用和数据处理功能
+ * @module services/api
+ * @author YYC³
+ * @version 1.0.0
+ * @created 2026-01-24
+ */
+
+import {
+  User,
+  SystemStats,
+  FrpConfig,
+  LogEntry,
+  Email,
+  LLMMessage,
   NasFile,
   NasVolume,
   NasShare,
-  ApiService 
+  ApiService
 } from '../types';
 import { envConfig } from '../config/env';
+import { logger } from '../utils/logger';
 
 // API 基础 URL
 const API_BASE_URL = envConfig.getCurrentEnvironment().apiBaseUrl;
@@ -21,7 +31,7 @@ async function request<T>(
   options: RequestInit = {}
 ): Promise<T> {
   const url = `${API_BASE_URL}${endpoint}`;
-  
+
   const defaultOptions: RequestInit = {
     headers: {
       'Content-Type': 'application/json',
@@ -61,7 +71,7 @@ export const apiV2: ApiService = {
         await new Promise(resolve => setTimeout(resolve, 500));
         return { id: '1', username, role: 'admin', avatar: 'https://github.com/shadcn.png' };
       }
-      
+
       // 真实API
       const response = await request<{ success: boolean; data: User }>('/api/v2/auth/login', {
         method: 'POST',
@@ -69,12 +79,12 @@ export const apiV2: ApiService = {
       });
       return response.data;
     },
-    
+
     logout: async () => {
       if (envConfig.shouldUseMockData()) {
         return;
       }
-      
+
       // 真实API
       await request('/api/v2/auth/logout', { method: 'POST' });
       localStorage.removeItem('auth_token');
@@ -97,12 +107,12 @@ export const apiV2: ApiService = {
           timestamp: new Date().toISOString(),
         };
       }
-      
+
       // 真实API - 使用新接口
       const response = await request<SystemStats>('/api/v2/system/stats');
       return response;
     },
-    
+
     getDetailedStats: async () => {
       if (envConfig.shouldUseMockData()) {
         return {
@@ -113,7 +123,7 @@ export const apiV2: ApiService = {
           system: { uptime: '15天 3小时 45分钟', hostname: 'nas-0379' }
         };
       }
-      
+
       // 真实API - 获取详细统计
       const response = await request<any>('/api/v2/monitoring/stats');
       return response.data;
@@ -136,12 +146,12 @@ export const apiV2: ApiService = {
           status: Math.random() > 0.2 ? 'running' : 'stopped',
         }));
       }
-      
+
       // 真实API
       const response = await request<{ success: boolean; data: FrpConfig[] }>('/api/v2/frp/configs');
       return response.data;
     },
-    
+
     getStatus: async () => {
       if (envConfig.shouldUseMockData()) {
         return {
@@ -151,18 +161,18 @@ export const apiV2: ApiService = {
           uptime: '15天 3小时 45分钟'
         };
       }
-      
+
       // 真实API
       const response = await request<{ success: boolean; data: any }>('/api/v2/frp/status');
       return response.data;
     },
-    
+
     updateConfig: async (config: FrpConfig): Promise<FrpConfig> => {
       if (envConfig.shouldUseMockData()) {
         await new Promise(resolve => setTimeout(resolve, 300));
         return config;
       }
-      
+
       // 真实API
       const response = await request<{ success: boolean; data: FrpConfig }>(`/api/v2/frp/configs/${config.id}`, {
         method: 'PUT',
@@ -170,23 +180,23 @@ export const apiV2: ApiService = {
       });
       return response.data;
     },
-    
+
     startClient: async () => {
       if (envConfig.shouldUseMockData()) {
         await new Promise(resolve => setTimeout(resolve, 500));
         return;
       }
-      
+
       // 真实API
       await request('/api/v2/frp/client/start', { method: 'POST' });
     },
-    
+
     stopClient: async () => {
       if (envConfig.shouldUseMockData()) {
         await new Promise(resolve => setTimeout(resolve, 500));
         return;
       }
-      
+
       // 真实API
       await request('/api/v2/frp/client/stop', { method: 'POST' });
     },
@@ -196,7 +206,6 @@ export const apiV2: ApiService = {
   logs: {
     getLogs: async (params?: any): Promise<LogEntry[]> => {
       if (envConfig.shouldUseMockData()) {
-        // Mock数据
         await new Promise(resolve => setTimeout(resolve, 300));
         return Array.from({ length: 20 }).map((_, i) => ({
           id: `log-${i}`,
@@ -206,19 +215,61 @@ export const apiV2: ApiService = {
           timestamp: new Date(Date.now() - i * 60000).toISOString(),
         }));
       }
-      
-      // 真实API
+
       const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
       const response = await request<{ success: boolean; data: LogEntry[] }>(`/api/v2/logs${queryString}`);
+      return response.data;
+    },
+
+    clearLogs: async (): Promise<void> => {
+      if (envConfig.shouldUseMockData()) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return;
+      }
+
+      await request('/api/v2/logs', { method: 'DELETE' });
+    },
+  },
+
+  // ========== 监控接口 ==========
+  monitoring: {
+    getStats: async () => {
+      if (envConfig.shouldUseMockData()) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        return {
+          cpu: { usage: 12.5, cores: 4 },
+          memory: { usage: 45.3, total: 16, used: 7.25 },
+          disk: { usage: 35.5, total: 1000, used: 355 },
+          network: { in: 1024, out: 512 },
+          system: { uptime: '15天 3小时 45分钟', hostname: 'nas-0379' }
+        };
+      }
+
+      const response = await request<any>('/api/v2/monitoring/stats');
+      return response.data;
+    },
+
+    getProcesses: async (limit: number = 20, sortBy: string = 'cpu') => {
+      if (envConfig.shouldUseMockData()) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        return Array.from({ length: limit }).map((_, i) => ({
+          pid: 1000 + i,
+          name: ['node', 'nginx', 'mysql', 'redis', 'postgres'][i % 5],
+          cpu: Math.random() * 10,
+          memory: Math.random() * 100,
+          user: 'root',
+        }));
+      }
+
+      const response = await request<any>(`/api/v2/monitoring/processes?limit=${limit}&sort_by=${sortBy}`);
       return response.data;
     },
   },
 
   // ========== 邮件接口 ==========
   mail: {
-    getEmails: async (folder: string = 'inbox', params?: any): Promise<Email[]> => {
+    getEmails: async (folder: string = 'inbox', _params?: any): Promise<Email[]> => {
       if (envConfig.shouldUseMockData()) {
-        // Mock数据
         await new Promise(resolve => setTimeout(resolve, 400));
         return Array.from({ length: 15 }).map((_, i) => ({
           id: `email-${i}`,
@@ -231,24 +282,106 @@ export const apiV2: ApiService = {
           folder: folder as any,
         }));
       }
-      
-      // 真实API
+
       const response = await request<{ success: boolean; data: Email[] }>(`/api/v2/mail/${folder}`);
       return response.data;
     },
-    
+
     sendEmail: async (to: string, subject: string, body: string): Promise<void> => {
       if (envConfig.shouldUseMockData()) {
         await new Promise(resolve => setTimeout(resolve, 800));
-        console.log(`[Mock] Sending email to ${to}: ${subject}`);
+        logger.debug(`[Mock] Sending email to ${to}: ${subject}`);
         return;
       }
-      
-      // 真实API
+
       await request('/api/v2/mail/send', {
         method: 'POST',
         body: JSON.stringify({ to, subject, body }),
       });
+    },
+
+    saveDraft: async (draft: { to: string[]; cc: string[]; bcc: string[]; subject: string; body: string; attachments: File[]; priority: string }): Promise<void> => {
+      if (envConfig.shouldUseMockData()) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return;
+      }
+      await request('/api/v2/mail/drafts', {
+        method: 'POST',
+        body: JSON.stringify(draft),
+      });
+    },
+
+    scheduleEmail: async (email: { to: string[]; cc: string[]; bcc: string[]; subject: string; body: string; attachments: File[]; priority: string; scheduledTime: string }): Promise<void> => {
+      if (envConfig.shouldUseMockData()) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return;
+      }
+      await request('/api/v2/mail/schedule', {
+        method: 'POST',
+        body: JSON.stringify(email),
+      });
+    },
+
+    replyEmail: async (originalEmailId: string, to: string, subject: string, body: string): Promise<void> => {
+      if (envConfig.shouldUseMockData()) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return;
+      }
+      await request('/api/v2/mail/reply', {
+        method: 'POST',
+        body: JSON.stringify({ original_email_id: originalEmailId, to, subject, body }),
+      });
+    },
+
+    forwardEmail: async (originalEmailId: string, to: string, subject: string, body: string): Promise<void> => {
+      if (envConfig.shouldUseMockData()) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return;
+      }
+      await request('/api/v2/mail/forward', {
+        method: 'POST',
+        body: JSON.stringify({ original_email_id: originalEmailId, to, subject, body }),
+      });
+    },
+
+    markEmailRead: async (emailId: string, _read: boolean): Promise<void> => {
+      if (envConfig.shouldUseMockData()) {
+        await new Promise(resolve => setTimeout(resolve, 200));
+        return;
+      }
+      await request(`/api/v2/mail/emails/${emailId}/read`, { method: 'PUT' });
+    },
+
+    markEmailUnread: async (emailId: string): Promise<void> => {
+      if (envConfig.shouldUseMockData()) {
+        await new Promise(resolve => setTimeout(resolve, 200));
+        return;
+      }
+      await request(`/api/v2/mail/emails/${emailId}/unread`, { method: 'PUT' });
+    },
+
+    deleteEmail: async (emailId: string): Promise<void> => {
+      if (envConfig.shouldUseMockData()) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        return;
+      }
+      await request(`/api/v2/mail/emails/${emailId}`, { method: 'DELETE' });
+    },
+
+    toggleStar: async (emailId: string): Promise<void> => {
+      if (envConfig.shouldUseMockData()) {
+        await new Promise(resolve => setTimeout(resolve, 200));
+        return;
+      }
+      await request(`/api/v2/mail/emails/${emailId}/star`, { method: 'PUT' });
+    },
+
+    archiveEmail: async (emailId: string): Promise<void> => {
+      if (envConfig.shouldUseMockData()) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        return;
+      }
+      await request(`/api/v2/mail/emails/${emailId}/archive`, { method: 'PUT' });
     },
   },
 
@@ -256,7 +389,6 @@ export const apiV2: ApiService = {
   llm: {
     sendMessage: async (message: string): Promise<LLMMessage> => {
       if (envConfig.shouldUseMockData()) {
-        // Mock数据
         await new Promise(resolve => setTimeout(resolve, 1000));
         return {
           id: Date.now().toString(),
@@ -265,13 +397,90 @@ export const apiV2: ApiService = {
           timestamp: new Date().toISOString(),
         };
       }
-      
-      // 真实API
+
       const response = await request<{ success: boolean; data: LLMMessage }>('/api/v2/llm/chat', {
         method: 'POST',
         body: JSON.stringify({ message }),
       });
       return response.data;
+    },
+
+    generate: async (prompt: string, model: string = 'qwen:7b', _stream: boolean = true): Promise<Response> => {
+      if (envConfig.shouldUseMockData()) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const mockResponse = {
+          success: true,
+          response: `This is a mock response for: "${prompt}". Using model: ${model}`
+        };
+        return new Response(JSON.stringify(mockResponse), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      return await request('/api/v2/llm/generate', {
+        method: 'POST',
+        body: JSON.stringify({ prompt, model, stream: _stream }),
+      });
+    },
+
+    getModels: async (): Promise<{ models: Array<{ name: string; size: string; modified_at: string }> }> => {
+      if (envConfig.shouldUseMockData()) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        return {
+          models: [
+            { name: 'qwen:7b', size: '4.7GB', modified_at: '2025-01-20T10:30:00Z' },
+            { name: 'qwen:14b', size: '9.2GB', modified_at: '2025-01-20T10:30:00Z' },
+            { name: 'llama3:8b', size: '4.9GB', modified_at: '2025-01-18T14:20:00Z' },
+            { name: 'llama3:70b', size: '40.2GB', modified_at: '2025-01-18T14:20:00Z' }
+          ]
+        };
+      }
+      return await request('/api/v2/llm/tags');
+    },
+
+    deleteModel: async (modelName: string): Promise<{ success: boolean; message: string }> => {
+      if (envConfig.shouldUseMockData()) {
+        await new Promise(resolve => setTimeout(resolve, 300));
+        return {
+          success: true,
+          message: `Model ${modelName} deleted successfully`
+        };
+      }
+      return await request(`/llm/models/${modelName}`, { method: 'DELETE' });
+    },
+
+    pullModel: async (modelName: string): Promise<Response> => {
+      if (envConfig.shouldUseMockData()) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const mockResponse = {
+          success: true,
+          status: `Pulling model ${modelName}...`
+        };
+        return new Response(JSON.stringify(mockResponse), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      return await request('/llm/pull', {
+        method: 'POST',
+        body: JSON.stringify({ name: modelName }),
+      });
+    },
+
+    chat: async (messages: Array<{ role: string; content: string }>, model: string = 'qwen:7b', _stream: boolean = true): Promise<Response> => {
+      if (envConfig.shouldUseMockData()) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        const lastMessage = messages[messages.length - 1];
+        const mockResponse = {
+          success: true,
+          content: `This is a mock chat response for: "${lastMessage.content}". Using model: ${model}`
+        };
+        return new Response(JSON.stringify(mockResponse), {
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
+      return await request('/llm/chat', {
+        method: 'POST',
+        body: JSON.stringify({ messages, model, stream: _stream }),
+      });
     },
   },
 
@@ -291,13 +500,13 @@ export const apiV2: ApiService = {
           parentId,
         }));
       }
-      
+
       // 真实API
       const queryString = parentId ? `?parent_id=${parentId}` : '';
       const response = await request<{ success: boolean; data: NasFile[] }>(`/api/v2/nas/files${queryString}`);
       return response.data;
     },
-    
+
     getStatus: async () => {
       if (envConfig.shouldUseMockData()) {
         return {
@@ -310,12 +519,12 @@ export const apiV2: ApiService = {
           temperature: 42,
         };
       }
-      
+
       // 真实API
       const response = await request<{ success: boolean; data: any }>('/api/v2/nas/status');
       return response.data;
     },
-    
+
     getVolumes: async (): Promise<NasVolume[]> => {
       if (envConfig.shouldUseMockData()) {
         return [
@@ -341,12 +550,12 @@ export const apiV2: ApiService = {
           },
         ];
       }
-      
+
       // 真实API
       const response = await request<{ success: boolean; data: NasVolume[] }>('/api/v2/nas/volumes');
       return response.data;
     },
-    
+
     getShares: async (): Promise<NasShare[]> => {
       if (envConfig.shouldUseMockData()) {
         return [
@@ -372,38 +581,38 @@ export const apiV2: ApiService = {
           },
         ];
       }
-      
+
       // 真实API
       const response = await request<{ success: boolean; data: NasShare[] }>('/api/v2/nas/shares');
       return response.data;
     },
-    
+
     startService: async () => {
       if (envConfig.shouldUseMockData()) {
         await new Promise(resolve => setTimeout(resolve, 500));
         return;
       }
-      
+
       // 真实API
       await request('/api/v2/nas/start', { method: 'POST' });
     },
-    
+
     stopService: async () => {
       if (envConfig.shouldUseMockData()) {
         await new Promise(resolve => setTimeout(resolve, 500));
         return;
       }
-      
+
       // 真实API
       await request('/api/v2/nas/stop', { method: 'POST' });
     },
-    
+
     toggleShare: async (shareId: string) => {
       if (envConfig.shouldUseMockData()) {
         await new Promise(resolve => setTimeout(resolve, 300));
         return;
       }
-      
+
       // 真实API
       await request(`/api/v2/nas/shares/${shareId}/toggle`, { method: 'POST' });
     },
@@ -423,22 +632,32 @@ export const apiV2: ApiService = {
           status: 'success',
         };
       }
-      
-      // 真实API
+
       const response = await request<{ success: boolean; data: any }>('/api/v2/ddns/status');
       return response.data;
     },
-    
+
+    updateConfig: async (config: any): Promise<any> => {
+      if (envConfig.shouldUseMockData()) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return { success: true };
+      }
+
+      return await request('/api/v2/ddns/config', {
+        method: 'POST',
+        body: JSON.stringify(config),
+      });
+    },
+
     updateDDNS: async () => {
       if (envConfig.shouldUseMockData()) {
         await new Promise(resolve => setTimeout(resolve, 500));
         return;
       }
-      
-      // 真实API
+
       await request('/api/v2/ddns/update', { method: 'POST' });
     },
-    
+
     getHistory: async (limit: number = 20) => {
       if (envConfig.shouldUseMockData()) {
         return Array.from({ length: limit }).map((_, i) => ({
@@ -450,7 +669,7 @@ export const apiV2: ApiService = {
           message: 'IP未变化，无需更新',
         }));
       }
-      
+
       // 真实API
       const response = await request<{ success: boolean; data: any[] }>(`/api/v2/ddns/history?limit=${limit}`);
       return response.data;

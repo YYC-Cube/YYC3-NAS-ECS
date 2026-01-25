@@ -8,9 +8,9 @@
  */
 
 import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
 import { envConfig } from '../config/env';
 
 export const EnvironmentSwitcher = () => {
@@ -37,7 +37,7 @@ export const EnvironmentSwitcher = () => {
         <div className="space-y-2">
           <h4 className="text-sm font-medium">可用环境</h4>
           <div className="flex gap-2 flex-wrap">
-            {Object.entries(environments).map(([name, env]) => (
+            {Object.entries(environments).map(([name, _env]) => (
               <Button
                 key={name}
                 variant={currentEnv.name === name ? 'default' : 'outline'}
@@ -58,7 +58,7 @@ export const EnvironmentSwitcher = () => {
               <span className="font-mono">{currentEnv.apiBaseUrl}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">Mail API URL:</span>
+              <span className="text-muted-foreground">邮件 API URL:</span>
               <span className="font-mono">{currentEnv.mailApiUrl}</span>
             </div>
             <div className="flex justify-between">

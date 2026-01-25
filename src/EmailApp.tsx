@@ -23,8 +23,8 @@ import {
   User,
   LogOut
 } from 'lucide-react';
-import { EmailList } from './components/EmailList';
-import { ThemeProvider, useTheme } from './contexts/ThemeContext';
+import { EmailList } from './app/components/EmailList';
+import { ThemeProvider, useTheme } from './ThemeContext';
 
 /**
  * 企业邮箱系统主应用组件

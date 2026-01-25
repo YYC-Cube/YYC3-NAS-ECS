@@ -1,10 +1,20 @@
+/**
+ * @file HelpService - 帮助中心服务
+ * @description 提供FAQ、使用指南、技术支持等帮助功能
+ * @module services/help
+ * @author YYC³
+ * @version 1.0.0
+ * @created 2026-01-24
+ */
+
 import { FAQ, Guide, SupportTicket, SupportResponse, ContactInfo } from '../types/help';
+import { logger } from '../utils/logger';
 
 class HelpService {
   private faqs: FAQ[] = [];
   private guides: Guide[] = [];
   private tickets: SupportTicket[] = [];
-  private contactInfo: ContactInfo;
+  private contactInfo!: ContactInfo;
   private storageKey = 'yyc3-help-data';
 
   constructor() {
@@ -27,7 +37,7 @@ class HelpService {
         this.contactInfo = data.contactInfo || this.getDefaultContactInfo();
       }
     } catch (error) {
-      console.error('Failed to load help data:', error);
+      logger.error('Failed to load help data:', error);
     }
   }
 
@@ -41,7 +51,7 @@ class HelpService {
       };
       localStorage.setItem(this.storageKey, JSON.stringify(data));
     } catch (error) {
-      console.error('Failed to save help data:', error);
+      logger.error('Failed to save help data:', error);
     }
   }
 

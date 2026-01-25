@@ -7,6 +7,8 @@
  * @created 2026-01-03
  */
 
+import { logger } from '../utils/logger';
+
 interface Environment {
   name: string;
   apiBaseUrl: string;
@@ -98,7 +100,7 @@ class EnvironmentConfig {
   public setEnvironment(name: string): boolean {
     if (this.environments[name]) {
       this.currentEnv = this.environments[name];
-      console.log(`Environment switched to: ${name}`);
+      logger.info(`Environment switched to: ${name}`);
       return true;
     }
     return false;

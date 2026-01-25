@@ -272,19 +272,19 @@ export const EmailList: React.FC = () => {
           />
           <ToolbarButton
             icon={<Trash2 className="h-4 w-4" />}
-            onClick={() => console.log('删除')}
+            onClick={() => {}}
             disabled={selectedEmails.length === 0}
             aria-label="删除"
           />
           <ToolbarButton
             icon={<Mail className="h-4 w-4" />}
-            onClick={() => console.log('标记为已读')}
+            onClick={() => {}}
             disabled={selectedEmails.length === 0}
             aria-label="标记为已读"
           />
           <ToolbarButton
             icon={<Tag className="h-4 w-4" />}
-            onClick={() => console.log('添加标签')}
+            onClick={() => {}}
             disabled={selectedEmails.length === 0}
             aria-label="添加标签"
           />
@@ -357,7 +357,6 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
             : 'none',
         cursor: disabled ? 'not-allowed' : 'pointer',
         opacity: disabled ? 0.5 : 1,
-        transform: !disabled && (isPressed ? 'scale(0.95)' : isHovered ? 'scale(1.05)' : 'scale(1)'),
       }}
       onMouseEnter={() => !disabled && setIsHovered(true)}
       onMouseLeave={() => {
@@ -371,6 +370,10 @@ const ToolbarButton: React.FC<ToolbarButtonProps> = ({
       aria-label={ariaLabel}
       whileHover={!disabled ? { rotate: 5 } : {}}
       whileTap={!disabled ? { rotate: -5 } : {}}
+      initial={false}
+      animate={{
+        scale: !disabled ? (isPressed ? 0.95 : isHovered ? 1.05 : 1) : 1
+      }}
     >
       {icon}
     </motion.button>
