@@ -171,6 +171,19 @@ ddns/logs/
 ddns/ddns.log
 services/ddns/opt/yyc3/YYC3-NAS-ECS-DDNS-1.md
 services/ddns/opt/yyc3/YYC3-NAS-ECS-DDNS-2.md
+services/ddns/.env.local
+
+# FRP
+services/frp/.env.local
+
+# Redis
+services/redis/.env.local
+
+# API
+api/.env
+
+# Config Services
+config/services/.env.local
 
 # ==================== Misc ====================
 *.pid
