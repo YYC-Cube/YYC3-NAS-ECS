@@ -7,7 +7,7 @@
  * @created 2025-01-03
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 
 export interface LearningConfig {
   enabled?: boolean;
@@ -125,7 +125,7 @@ export interface LearningMetrics {
 }
 
 export class LearningSystem extends EventEmitter {
-  private config: Required<LearningConfig>;
+  private config: LearningConfig;
   private dataStore: LearningData[];
   private learningResults: LearningResult[];
   private models: Map<string, ModelInfo>;
@@ -145,7 +145,6 @@ export class LearningSystem extends EventEmitter {
   private trainingThreshold: number;
   private maxModelHistory: number;
   private abTestingEnabled: boolean;
-  private abTestDuration: number;
   private featureExtractor: FeatureExtractor;
   private modelTrainer: ModelTrainer;
   private patternDetector: PatternDetector;
@@ -168,9 +167,6 @@ export class LearningSystem extends EventEmitter {
       maxModelHistory: 50,
       enableABTesting: true,
       abTestDuration: 604800000,
-      onLearningComplete: undefined,
-      onModelUpdated: undefined,
-      onPatternDiscovered: undefined,
       ...config,
     };
 
@@ -195,18 +191,18 @@ export class LearningSystem extends EventEmitter {
       learningHistory: [],
     };
 
-    this.enabled = this.config.enabled;
-    this.behavioralLearningEnabled = this.config.enableBehavioralLearning;
-    this.strategicLearningEnabled = this.config.enableStrategicLearning;
-    this.knowledgeLearningEnabled = this.config.enableKnowledgeLearning;
-    this.realTimeLearningEnabled = this.config.enableRealTimeLearning;
-    this.autoTrainingEnabled = this.config.enableAutoTraining;
-    this.dataRetentionDays = this.config.dataRetentionDays;
-    this.maxDataPoints = this.config.maxDataPoints;
-    this.trainingThreshold = this.config.trainingThreshold;
-    this.maxModelHistory = this.config.maxModelHistory;
-    this.abTestingEnabled = this.config.enableABTesting;
-    this.abTestDuration = this.config.abTestDuration;
+    this.enabled = this.config.enabled ?? true;
+    this.behavioralLearningEnabled = this.config.enableBehavioralLearning ?? true;
+    this.strategicLearningEnabled = this.config.enableStrategicLearning ?? true;
+    this.knowledgeLearningEnabled = this.config.enableKnowledgeLearning ?? true;
+    this.realTimeLearningEnabled = this.config.enableRealTimeLearning ?? true;
+    this.autoTrainingEnabled = this.config.enableAutoTraining ?? true;
+    this.dataRetentionDays = this.config.dataRetentionDays ?? 90;
+    this.maxDataPoints = this.config.maxDataPoints ?? 100000;
+    this.trainingThreshold = this.config.trainingThreshold ?? 100;
+    this.maxModelHistory = this.config.maxModelHistory ?? 50;
+    this.abTestingEnabled = this.config.enableABTesting ?? true;
+    this.learningIntervalId = null;
 
     this.featureExtractor = new FeatureExtractor();
     this.modelTrainer = new ModelTrainer();
@@ -376,7 +372,7 @@ export class LearningSystem extends EventEmitter {
       }
     });
 
-    const recommendations = this.generateBehavioralRecommendations(patterns, model);
+    const recommendations = this.generateBehavioralRecommendations(patterns);
     recommendations.forEach(rec => {
       if (!this.recommendations.find(r => r.id === rec.id)) {
         this.recommendations.push(rec);
@@ -429,7 +425,7 @@ export class LearningSystem extends EventEmitter {
       }
     });
 
-    const recommendations = this.generateStrategicRecommendations(patterns, model);
+    const recommendations = this.generateStrategicRecommendations(patterns);
     recommendations.forEach(rec => {
       if (!this.recommendations.find(r => r.id === rec.id)) {
         this.recommendations.push(rec);
@@ -482,7 +478,7 @@ export class LearningSystem extends EventEmitter {
       }
     });
 
-    const recommendations = this.generateKnowledgeRecommendations(patterns, model);
+    const recommendations = this.generateKnowledgeRecommendations(patterns);
     recommendations.forEach(rec => {
       if (!this.recommendations.find(r => r.id === rec.id)) {
         this.recommendations.push(rec);
@@ -621,7 +617,7 @@ export class LearningSystem extends EventEmitter {
     });
   }
 
-  private generateBehavioralRecommendations(patterns: Pattern[], model: ModelInfo): Recommendation[] {
+  private generateBehavioralRecommendations(patterns: Pattern[]): Recommendation[] {
     const recommendations: Recommendation[] = [];
 
     patterns.forEach(pattern => {
@@ -642,7 +638,7 @@ export class LearningSystem extends EventEmitter {
     return recommendations;
   }
 
-  private generateStrategicRecommendations(patterns: Pattern[], model: ModelInfo): Recommendation[] {
+  private generateStrategicRecommendations(patterns: Pattern[]): Recommendation[] {
     const recommendations: Recommendation[] = [];
 
     patterns.forEach(pattern => {
@@ -663,7 +659,7 @@ export class LearningSystem extends EventEmitter {
     return recommendations;
   }
 
-  private generateKnowledgeRecommendations(patterns: Pattern[], model: ModelInfo): Recommendation[] {
+  private generateKnowledgeRecommendations(patterns: Pattern[]): Recommendation[] {
     const recommendations: Recommendation[] = [];
 
     patterns.forEach(pattern => {

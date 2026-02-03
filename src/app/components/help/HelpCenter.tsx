@@ -7,9 +7,9 @@
  * @created 2026-01-24
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { ModuleCard } from '../ModuleCard';
-import { 
+import {
   HelpCircle, BookOpen, MessageSquare, Search, ChevronDown,
   ThumbsUp, ThumbsDown, Clock, ExternalLink,
   Send, Plus, AlertCircle
@@ -20,9 +20,9 @@ import { helpService } from '../../services/helpService';
 
 export const HelpCenter: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'faq' | 'guides' | 'support'>('faq');
-  const [faqs, setFaqs] = useState<FAQ[]>([]);
-  const [guides, setGuides] = useState<Guide[]>([]);
-  const [tickets, setTickets] = useState<SupportTicket[]>([]);
+  const [faqs, setFaqs] = useState<FAQ[]>(() => helpService.getFAQs());
+  const [guides, setGuides] = useState<Guide[]>(() => helpService.getGuides());
+  const [tickets, setTickets] = useState<SupportTicket[]>(() => helpService.getTickets());
   const [selectedFAQ, setSelectedFAQ] = useState<FAQ | null>(null);
   const [selectedGuide, setSelectedGuide] = useState<Guide | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -35,20 +35,12 @@ export const HelpCenter: React.FC = () => {
     priority: 'medium' as const
   });
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = () => {
-    setFaqs(helpService.getFAQs());
-    setGuides(helpService.getGuides());
-    setTickets(helpService.getTickets());
-  };
-
   const handleRateFAQ = (faqId: string, helpful: boolean) => {
     helpService.rateFAQ(faqId, helpful);
     toast.success('感谢您的反馈！');
-    loadData();
+    setFaqs(helpService.getFAQs());
+    setGuides(helpService.getGuides());
+    setTickets(helpService.getTickets());
   };
 
   const handleSubmitTicket = () => {
@@ -130,7 +122,7 @@ export const HelpCenter: React.FC = () => {
   return (
     <ModuleCard title="帮助中心" level={1}>
       <div className="flex flex-col h-[700px] bg-[#2d3748] rounded-lg border border-gray-600 overflow-hidden shadow-2xl">
-        
+
         {/* Tabs */}
         <div className="flex items-center gap-2 p-4 border-b border-gray-600 bg-[#374151]">
           <button
@@ -169,15 +161,15 @@ export const HelpCenter: React.FC = () => {
               <div className="flex items-center gap-4 mb-6">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
-                  <input 
-                    type="text" 
-                    placeholder="搜索问题..." 
+                  <input
+                    type="text"
+                    placeholder="搜索问题..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full bg-[#4b5563] border border-gray-500 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:border-blue-500"
                   />
                 </div>
-                <select 
+                <select
                   className="bg-[#4b5563] border border-gray-500 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-blue-500"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
@@ -191,18 +183,21 @@ export const HelpCenter: React.FC = () => {
 
               <div className="space-y-3">
                 {faqs
-                  .filter(faq => 
+                  .filter(faq =>
                     (!selectedCategory || faq.category === selectedCategory) &&
-                    (!searchTerm || 
+                    (!searchTerm ||
                       faq.question.toLowerCase().includes(searchTerm.toLowerCase()) ||
                       faq.answer.toLowerCase().includes(searchTerm.toLowerCase())
                     )
                   )
                   .map(faq => (
-                    <div 
+                    <div
                       key={faq.id}
                       className="bg-[#4b5563] rounded-lg p-4 cursor-pointer hover:bg-[#374151] transition-colors"
                       onClick={() => setSelectedFAQ(faq)}
+                      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setSelectedFAQ(faq)}
+                      role="button"
+                      tabIndex={0}
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
@@ -236,15 +231,15 @@ export const HelpCenter: React.FC = () => {
               <div className="flex items-center gap-4 mb-6">
                 <div className="relative flex-1">
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
-                  <input 
-                    type="text" 
-                    placeholder="搜索指南..." 
+                  <input
+                    type="text"
+                    placeholder="搜索指南..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="w-full bg-[#4b5563] border border-gray-500 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:border-blue-500"
                   />
                 </div>
-                <select 
+                <select
                   className="bg-[#4b5563] border border-gray-500 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-blue-500"
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
@@ -258,18 +253,21 @@ export const HelpCenter: React.FC = () => {
 
               <div className="grid grid-cols-2 gap-4">
                 {guides
-                  .filter(guide => 
+                  .filter(guide =>
                     (!selectedCategory || guide.category === selectedCategory) &&
-                    (!searchTerm || 
+                    (!searchTerm ||
                       guide.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                       guide.description.toLowerCase().includes(searchTerm.toLowerCase())
                     )
                   )
                   .map(guide => (
-                    <div 
+                    <div
                       key={guide.id}
                       className="bg-[#4b5563] rounded-lg p-4 cursor-pointer hover:bg-[#374151] transition-colors"
                       onClick={() => setSelectedGuide(guide)}
+                      onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && setSelectedGuide(guide)}
+                      role="button"
+                      tabIndex={0}
                     >
                       <div className="flex items-start justify-between mb-2">
                         <h3 className="font-medium text-white flex-1">{guide.title}</h3>
@@ -309,7 +307,7 @@ export const HelpCenter: React.FC = () => {
                   <div className="flex flex-col items-center justify-center py-12 text-gray-500">
                     <MessageSquare size={48} className="mb-4 opacity-50" />
                     <p className="text-lg">暂无工单</p>
-                    <p className="text-sm mt-2">点击"提交工单"创建新的支持请求</p>
+                    <p className="text-sm mt-2">点击&ldquo;提交工单&rdquo;创建新的支持请求</p>
                   </div>
                 ) : (
                   tickets.map(ticket => (
@@ -343,14 +341,26 @@ export const HelpCenter: React.FC = () => {
 
         {/* FAQ Detail Modal */}
         {selectedFAQ && (
-          <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50" onClick={() => setSelectedFAQ(null)}>
-            <div 
+          <div
+            className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50"
+            onClick={() => setSelectedFAQ(null)}
+            onKeyDown={(e) => e.key === 'Escape' && setSelectedFAQ(null)}
+            role="button"
+            tabIndex={-1}
+            aria-label="关闭对话框"
+          >
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+            <div
               className="bg-[#2d3748] rounded-lg border border-gray-600 max-w-2xl w-full mx-4 max-h-[80vh] overflow-auto"
               onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-label="问题详情"
             >
               <div className="flex items-center justify-between p-4 border-b border-gray-600">
                 <h3 className="text-lg font-bold text-white">问题详情</h3>
-                <button 
+                <button
                   onClick={() => setSelectedFAQ(null)}
                   className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-white"
                 >
@@ -389,14 +399,26 @@ export const HelpCenter: React.FC = () => {
 
         {/* Guide Detail Modal */}
         {selectedGuide && (
-          <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50" onClick={() => setSelectedGuide(null)}>
-            <div 
+          <div
+            className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50"
+            onClick={() => setSelectedGuide(null)}
+            onKeyDown={(e) => e.key === 'Escape' && setSelectedGuide(null)}
+            role="button"
+            tabIndex={-1}
+            aria-label="关闭对话框"
+          >
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+            <div
               className="bg-[#2d3748] rounded-lg border border-gray-600 max-w-4xl w-full mx-4 max-h-[80vh] overflow-auto"
               onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-label="指南详情"
             >
               <div className="flex items-center justify-between p-4 border-b border-gray-600">
                 <h3 className="text-lg font-bold text-white">{selectedGuide.title}</h3>
-                <button 
+                <button
                   onClick={() => setSelectedGuide(null)}
                   className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-white"
                 >
@@ -426,14 +448,26 @@ export const HelpCenter: React.FC = () => {
 
         {/* New Ticket Modal */}
         {showNewTicket && (
-          <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50" onClick={() => setShowNewTicket(false)}>
-            <div 
+          <div
+            className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50"
+            onClick={() => setShowNewTicket(false)}
+            onKeyDown={(e) => e.key === 'Escape' && setShowNewTicket(false)}
+            role="button"
+            tabIndex={-1}
+            aria-label="关闭对话框"
+          >
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+            <div
               className="bg-[#2d3748] rounded-lg border border-gray-600 max-w-lg w-full mx-4"
               onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-label="创建工单"
             >
               <div className="flex items-center justify-between p-4 border-b border-gray-600">
                 <h3 className="text-lg font-bold text-white">提交工单</h3>
-                <button 
+                <button
                   onClick={() => setShowNewTicket(false)}
                   className="p-1 hover:bg-gray-700 rounded text-gray-400 hover:text-white"
                 >
@@ -442,9 +476,10 @@ export const HelpCenter: React.FC = () => {
               </div>
               <div className="p-4 space-y-4">
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">标题</label>
-                  <input 
-                    type="text" 
+                  <label htmlFor="ticket-title" className="block text-sm text-gray-400 mb-2">标题</label>
+                  <input
+                    id="ticket-title"
+                    type="text"
                     value={newTicket.title}
                     onChange={(e) => setNewTicket({ ...newTicket, title: e.target.value })}
                     className="w-full bg-[#4b5563] border border-gray-500 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-blue-500"
@@ -452,8 +487,9 @@ export const HelpCenter: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">描述</label>
-                  <textarea 
+                  <label htmlFor="ticket-description" className="block text-sm text-gray-400 mb-2">描述</label>
+                  <textarea
+                    id="ticket-description"
                     value={newTicket.description}
                     onChange={(e) => setNewTicket({ ...newTicket, description: e.target.value })}
                     className="w-full bg-[#4b5563] border border-gray-500 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-blue-500 min-h-[120px]"
@@ -462,8 +498,9 @@ export const HelpCenter: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-gray-400 mb-2">分类</label>
-                    <select 
+                    <label htmlFor="ticket-category" className="block text-sm text-gray-400 mb-2">分类</label>
+                    <select
+                      id="ticket-category"
                       value={newTicket.category}
                       onChange={(e) => setNewTicket({ ...newTicket, category: e.target.value })}
                       className="w-full bg-[#4b5563] border border-gray-500 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-blue-500"
@@ -475,8 +512,9 @@ export const HelpCenter: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-400 mb-2">优先级</label>
-                    <select 
+                    <label htmlFor="ticket-priority" className="block text-sm text-gray-400 mb-2">优先级</label>
+                    <select
+                      id="ticket-priority"
                       value={newTicket.priority}
                       onChange={(e) => setNewTicket({ ...newTicket, priority: e.target.value as any })}
                       className="w-full bg-[#4b5563] border border-gray-500 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-blue-500"
@@ -490,13 +528,13 @@ export const HelpCenter: React.FC = () => {
                 </div>
               </div>
               <div className="flex justify-end gap-2 p-4 border-t border-gray-600">
-                <button 
+                <button
                   onClick={() => setShowNewTicket(false)}
                   className="px-4 py-2 bg-[#4b5563] hover:bg-gray-600 text-white rounded-lg transition-colors"
                 >
                   取消
                 </button>
-                <button 
+                <button
                   onClick={handleSubmitTicket}
                   className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
                 >

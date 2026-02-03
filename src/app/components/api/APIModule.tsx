@@ -144,12 +144,8 @@ export const APIModule: React.FC = () => {
   const fetchDDNSStatus = async () => {
     try {
       setLoading(true);
-      const response = await api.ddns.getStatus();
-      if (response.success) {
-        setDDNSStatus(response.data);
-      } else {
-        setError('获取DDNS状态失败');
-      }
+      const status = await api.ddns.getStatus();
+      setDDNSStatus(status);
     } catch (err) {
       setError('DDNS服务请求失败');
       console.error('DDNS error:', err);
@@ -246,6 +242,7 @@ export const APIModule: React.FC = () => {
 
   useEffect(() => {
     refreshData();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   const renderTabContent = () => {

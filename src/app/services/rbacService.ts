@@ -30,6 +30,14 @@ class RBACService {
 
   private checkLocalStorageAvailability(): void {
     try {
+      if (typeof localStorage === 'undefined' || localStorage === null) {
+        this.isLocalStorageAvailable = false;
+        return;
+      }
+      if (typeof localStorage.setItem !== 'function' || typeof localStorage.getItem !== 'function') {
+        this.isLocalStorageAvailable = false;
+        return;
+      }
       const testKey = '__yyc3_storage_test__';
       localStorage.setItem(testKey, 'test');
       localStorage.removeItem(testKey);
@@ -317,7 +325,7 @@ class RBACService {
     return this.checkConditions(policy.conditions);
   }
 
-  private checkConditions(conditions: any): boolean {
+  private checkConditions(conditions: { timeRange?: { start: string; end: string }; ipWhitelist?: string[]; custom?: Record<string, unknown> }): boolean {
     if (conditions.timeRange) {
       const now = new Date();
       const start = new Date(conditions.timeRange.start);

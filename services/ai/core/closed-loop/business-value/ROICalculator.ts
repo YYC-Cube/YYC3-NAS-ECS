@@ -3,13 +3,8 @@
  * @description ROI计算器 - 计算投资回报率
  */
 
-import type { AutonomousAIConfig } from '../../autonomous-ai-widget/types';
-
 export class ROIcalculator {
-  private config: AutonomousAIConfig;
-
-  constructor(config: AutonomousAIConfig) {
-    this.config = config;
+  constructor() {
   }
 
   /**
@@ -17,7 +12,7 @@ export class ROIcalculator {
    * @param businessValue 业务价值数据
    */
   async calculateROI(businessValue: any): Promise<any> {
-    const investment = this.config.initialInvestment || 100000;
+    const investment = 100000;
     const returns = businessValue.totalBusinessValue * investment;
     const roi = ((returns - investment) / investment) * 100;
 

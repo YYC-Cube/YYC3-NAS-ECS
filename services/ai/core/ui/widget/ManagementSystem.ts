@@ -7,7 +7,7 @@
  * @created 2025-01-03
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 
 export interface ManagementConfig {
   enabled?: boolean;
@@ -142,7 +142,7 @@ export interface ManagementMetrics {
 }
 
 export class ManagementSystem extends EventEmitter {
-  private config: Required<ManagementConfig>;
+  private config: ManagementConfig;
   private systems: Map<string, any>;
   private healthHistory: SystemHealth[];
   private activeIssues: HealthIssue[];
@@ -161,12 +161,10 @@ export class ManagementSystem extends EventEmitter {
   private resourceMonitoringIntervalId: NodeJS.Timeout | null;
   private healthCheckInterval: number;
   private resourceMonitoringInterval: number;
-  private maxResourceUsage: number;
   private autoRecoveryEnabled: boolean;
   private recoveryAttempts: number;
   private maxRecoveryAttempts: number;
-  private alertingEnabled: boolean;
-  private alertThresholds: Required<ManagementConfig['alertThresholds']>;
+  private alertThresholds: Required<NonNullable<ManagementConfig['alertThresholds']>>;
   private healthChecker: HealthChecker;
   private resourceMonitor: ResourceMonitor;
   private policyEnforcer: PolicyEnforcer;
@@ -196,9 +194,6 @@ export class ManagementSystem extends EventEmitter {
         memory: 85,
         errorRate: 10,
       },
-      onSystemHealthChange: undefined,
-      onResourceAlert: undefined,
-      onPolicyViolation: undefined,
       ...config,
     };
 
@@ -220,7 +215,7 @@ export class ManagementSystem extends EventEmitter {
       totalHealthChecks: 0,
       successfulHealthChecks: 0,
       failedHealthChecks: 0,
-      totalResourceAlerts: number,
+      totalResourceAlerts: 0,
       acknowledgedAlerts: 0,
       totalPolicyViolations: 0,
       resolvedViolations: 0,
@@ -232,21 +227,25 @@ export class ManagementSystem extends EventEmitter {
       healthHistory: [],
     };
 
-    this.enabled = this.config.enabled;
-    this.resourceManagementEnabled = this.config.enableResourceManagement;
-    this.configurationManagementEnabled = this.config.enableConfigurationManagement;
-    this.policyEnforcementEnabled = this.config.enablePolicyEnforcement;
-    this.healthMonitoringEnabled = this.config.enableHealthMonitoring;
-    this.lifecycleManagementEnabled = this.config.enableLifecycleManagement;
-    this.systemCoordinationEnabled = this.config.enableSystemCoordination;
-    this.healthCheckInterval = this.config.healthCheckInterval;
-    this.resourceMonitoringInterval = this.config.resourceMonitoringInterval;
-    this.maxResourceUsage = this.config.maxResourceUsage;
-    this.autoRecoveryEnabled = this.config.enableAutoRecovery;
+    this.enabled = this.config.enabled ?? true;
+    this.resourceManagementEnabled = this.config.enableResourceManagement ?? true;
+    this.configurationManagementEnabled = this.config.enableConfigurationManagement ?? true;
+    this.policyEnforcementEnabled = this.config.enablePolicyEnforcement ?? true;
+    this.healthMonitoringEnabled = this.config.enableHealthMonitoring ?? true;
+    this.lifecycleManagementEnabled = this.config.enableLifecycleManagement ?? true;
+    this.systemCoordinationEnabled = this.config.enableSystemCoordination ?? true;
+    this.healthCheckInterval = this.config.healthCheckInterval ?? 30000;
+    this.resourceMonitoringInterval = this.config.resourceMonitoringInterval ?? 10000;
+    this.autoRecoveryEnabled = this.config.enableAutoRecovery ?? true;
     this.recoveryAttempts = 0;
-    this.maxRecoveryAttempts = this.config.recoveryAttempts;
-    this.alertingEnabled = this.config.enableAlerting;
-    this.alertThresholds = this.config.alertThresholds as Required<ManagementConfig['alertThresholds']>;
+    this.maxRecoveryAttempts = this.config.recoveryAttempts ?? 3;
+    this.alertThresholds = (this.config.alertThresholds ?? {
+      cpu: 80,
+      memory: 90,
+      errorRate: 5,
+    }) as Required<NonNullable<ManagementConfig['alertThresholds']>>;
+    this.healthCheckIntervalId = null;
+    this.resourceMonitoringIntervalId = null;
     this.startTime = Date.now();
 
     this.healthChecker = new HealthChecker();
@@ -682,7 +681,7 @@ class HealthChecker {
 }
 
 class ResourceMonitor {
-  public async monitorResources(systems: Map<string, any>, thresholds: Required<ManagementConfig['alertThresholds']>): Promise<ResourceAlert[]> {
+  public async monitorResources(_systems: Map<string, any>, thresholds: Required<NonNullable<ManagementConfig['alertThresholds']>>): Promise<ResourceAlert[]> {
     const alerts: ResourceAlert[] = [];
 
     const cpuUsage = this.getCPUUsage();
@@ -790,7 +789,7 @@ class PolicyEnforcer {
 }
 
 class LifecycleManager {
-  public async startSystem(name: string, system: any): Promise<void> {
+  public async startSystem(_name: string, system: any): Promise<void> {
     if (typeof system.start === 'function') {
       await system.start();
     } else if (typeof system.initialize === 'function') {
@@ -798,7 +797,7 @@ class LifecycleManager {
     }
   }
 
-  public async stopSystem(name: string, system: any): Promise<void> {
+  public async stopSystem(_name: string, system: any): Promise<void> {
     if (typeof system.stop === 'function') {
       await system.stop();
     } else if (typeof system.shutdown === 'function') {
@@ -806,12 +805,12 @@ class LifecycleManager {
     }
   }
 
-  public async recoverSystem(name: string, system: any): Promise<void> {
+  public async recoverSystem(_name: string, system: any): Promise<void> {
     try {
-      await this.stopSystem(name, system);
-      await this.startSystem(name, system);
+      await this.stopSystem(_name, system);
+      await this.startSystem(_name, system);
     } catch (error) {
-      throw new Error(`Failed to recover system ${name}: ${error}`);
+      throw new Error(`Failed to recover system ${_name}: ${error}`);
     }
   }
 }

@@ -41,6 +41,26 @@ def create_app(config_name=None):
     app.config.from_object(config[config_name])
     logger.info(f"Application running in {config_name} mode")
 
+    # 验证环境变量 (开发环境下跳过严格检查)
+    if config_name == 'production':
+        try:
+            from config.env_validator import validate_environment
+            validate_environment(fail_on_error=True)
+            logger.info("Environment validation passed")
+        except ImportError:
+            logger.warning("Environment validator not available, skipping validation")
+        except SystemExit:
+            logger.error("Environment validation failed, cannot start application")
+            raise
+    else:
+        try:
+            from config.env_validator import get_validation_report
+            report = get_validation_report()
+            if not report.is_valid:
+                logger.warning(f"Environment validation found {len(report.critical_errors)} issues")
+        except ImportError:
+            pass
+
     # 初始化扩展
     db.init_app(app)
     migrate = Migrate(app, db)

@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 import { Threat, ThreatDetector } from './ThreatDetector';
 
 export interface ResponseAction {

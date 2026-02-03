@@ -418,7 +418,7 @@ export class EdgeCollaborativeComputing {
     };
   }
 
-  async achieveConsensus(proposal: string): Promise<{
+  async achieveConsensus(_proposal: string): Promise<{
     consensusResult: boolean;
     consensusTime: number;
     participantNodes: string[];

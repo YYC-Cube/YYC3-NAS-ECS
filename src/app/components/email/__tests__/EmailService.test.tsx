@@ -24,8 +24,8 @@ vi.mock('sonner', () => ({
 
 vi.mock('motion/react', () => ({
   motion: {
-    div: ({ children, ...props }: any) => <div {...props}>{children}</div>,
-    button: ({ children, ...props }: any) => <button {...props}>{children}</button>,
+    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div {...props}>{children}</div>,
+    button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) => <button {...props}>{children}</button>,
   },
 }));
 
@@ -334,7 +334,6 @@ describe('EmailService', () => {
       renderWithTheme(<EmailService />);
       
       const toInput = screen.getByPlaceholderText('user@example.com');
-      const sendButton = screen.getByText('发送');
       
       fireEvent.change(toInput, { target: { value: 'invalid-email' } });
       

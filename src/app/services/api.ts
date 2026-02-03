@@ -10,14 +10,24 @@
 import {
   User,
   SystemStats,
+  DetailedSystemStats,
   FrpConfig,
+  FrpStatus,
   LogEntry,
   Email,
+  EmailSearchParams,
+  EmailDraft,
+  ScheduledEmail,
   LLMMessage,
   NasFile,
   NasVolume,
   NasShare,
-  ApiService
+  NasStatus,
+  DdnsStatus,
+  DdnsConfig,
+  DnsUpdateRecord,
+  ApiService,
+  ProcessInfo
 } from '../types';
 import { envConfig } from '../config/env';
 import { logger } from '../utils/logger';
@@ -41,7 +51,7 @@ async function request<T>(
 
   // 如果使用真实API，添加认证
   if (!envConfig.shouldUseMockData()) {
-    const token = localStorage.getItem('auth_token');
+    const token = typeof localStorage !== 'undefined' && localStorage ? localStorage.getItem('auth_token') : null;
     if (token) {
       defaultOptions.headers = {
         ...defaultOptions.headers,
@@ -113,19 +123,27 @@ export const apiV2: ApiService = {
       return response;
     },
 
-    getDetailedStats: async () => {
+    getDetailedStats: async (): Promise<DetailedSystemStats> => {
       if (envConfig.shouldUseMockData()) {
         return {
-          cpu: { usage: 12.5, cores: 4 },
-          memory: { usage: 45.3, total: 16, used: 7.25 },
-          disk: { usage: 35.5, total: 1000, used: 355 },
-          network: { in: 1024, out: 512 },
-          system: { uptime: '15天 3小时 45分钟', hostname: 'nas-0379' }
+          cpuUsage: 12.5,
+          memoryUsage: 45.3,
+          diskUsage: 35.5,
+          networkIn: 1024,
+          networkOut: 512,
+          uptime: Date.now() - 1000000,
+          timestamp: new Date().toISOString(),
+          processes: [
+            { pid: 1000, name: 'node', cpu: 2.5, memory: 45.3 },
+            { pid: 1001, name: 'nginx', cpu: 1.2, memory: 12.1 }
+          ],
+          diskIO: { readBytes: 1024000, writeBytes: 512000 },
+          networkConnections: 150
         };
       }
 
       // 真实API - 获取详细统计
-      const response = await request<any>('/api/v2/monitoring/stats');
+      const response = await request<{ success: boolean; data: DetailedSystemStats }>('/api/v2/monitoring/stats');
       return response.data;
     },
   },
@@ -136,15 +154,18 @@ export const apiV2: ApiService = {
       if (envConfig.shouldUseMockData()) {
         // Mock数据
         await new Promise(resolve => setTimeout(resolve, 500));
-        return Array.from({ length: 7 }).map((_, i) => ({
-          id: `frp-${i}`,
-          name: `Service ${i + 1}`,
-          type: ['tcp', 'udp', 'http', 'https'][Math.floor(Math.random() * 4)] as any,
-          localIp: '127.0.0.1',
-          localPort: 8000 + i,
-          remotePort: 6000 + i,
-          status: Math.random() > 0.2 ? 'running' : 'stopped',
-        }));
+        return Array.from({ length: 7 }).map((_, i) => {
+          const type = ['tcp', 'udp', 'http', 'https'][Math.floor(Math.random() * 4)] as 'tcp' | 'udp' | 'http' | 'https';
+          return {
+            id: `frp-${i}`,
+            name: `Service ${i + 1}`,
+            type,
+            localIp: '127.0.0.1',
+            localPort: 8000 + i,
+            remotePort: 6000 + i,
+            status: Math.random() > 0.2 ? 'running' : 'stopped',
+          };
+        });
       }
 
       // 真实API
@@ -152,18 +173,19 @@ export const apiV2: ApiService = {
       return response.data;
     },
 
-    getStatus: async () => {
+    getStatus: async (): Promise<FrpStatus> => {
       if (envConfig.shouldUseMockData()) {
         return {
           running: true,
-          connected: true,
-          proxyCount: 7,
-          uptime: '15天 3小时 45分钟'
+          uptime: 1296000000,
+          connections: 7,
+          bytesIn: 1024000,
+          bytesOut: 512000,
         };
       }
 
       // 真实API
-      const response = await request<{ success: boolean; data: any }>('/api/v2/frp/status');
+      const response = await request<{ success: boolean; data: FrpStatus }>('/api/v2/frp/status');
       return response.data;
     },
 
@@ -204,16 +226,19 @@ export const apiV2: ApiService = {
 
   // ========== 日志接口 ==========
   logs: {
-    getLogs: async (params?: any): Promise<LogEntry[]> => {
+    getLogs: async (params?: Record<string, string>): Promise<LogEntry[]> => {
       if (envConfig.shouldUseMockData()) {
         await new Promise(resolve => setTimeout(resolve, 300));
-        return Array.from({ length: 20 }).map((_, i) => ({
-          id: `log-${i}`,
-          level: ['info', 'warn', 'error', 'debug'][Math.floor(Math.random() * 4)] as any,
-          message: `System event ${i}: Operation completed successfully or failed.`,
-          source: ['System', 'FRP', 'Network', 'Auth'][Math.floor(Math.random() * 4)],
-          timestamp: new Date(Date.now() - i * 60000).toISOString(),
-        }));
+        return Array.from({ length: 20 }).map((_, i) => {
+          const level = ['info', 'warn', 'error', 'debug'][Math.floor(Math.random() * 4)] as 'info' | 'warn' | 'error' | 'debug';
+          return {
+            id: `log-${i}`,
+            level,
+            message: `System event ${i}: Operation completed successfully or failed.`,
+            source: ['System', 'FRP', 'Network', 'Auth'][Math.floor(Math.random() * 4)],
+            timestamp: new Date(Date.now() - i * 60000).toISOString(),
+          };
+        });
       }
 
       const queryString = params ? `?${new URLSearchParams(params).toString()}` : '';
@@ -233,23 +258,25 @@ export const apiV2: ApiService = {
 
   // ========== 监控接口 ==========
   monitoring: {
-    getStats: async () => {
+    getStats: async (): Promise<SystemStats> => {
       if (envConfig.shouldUseMockData()) {
         await new Promise(resolve => setTimeout(resolve, 300));
         return {
-          cpu: { usage: 12.5, cores: 4 },
-          memory: { usage: 45.3, total: 16, used: 7.25 },
-          disk: { usage: 35.5, total: 1000, used: 355 },
-          network: { in: 1024, out: 512 },
-          system: { uptime: '15天 3小时 45分钟', hostname: 'nas-0379' }
+          cpuUsage: 12.5,
+          memoryUsage: 45.3,
+          diskUsage: 35.5,
+          networkIn: 1024,
+          networkOut: 512,
+          uptime: Date.now() - 1000000,
+          timestamp: new Date().toISOString(),
         };
       }
 
-      const response = await request<any>('/api/v2/monitoring/stats');
+      const response = await request<{ success: boolean; data: SystemStats }>('/api/v2/monitoring/stats');
       return response.data;
     },
 
-    getProcesses: async (limit: number = 20, sortBy: string = 'cpu') => {
+    getProcesses: async (limit: number = 20, sortBy: string = 'cpu'): Promise<ProcessInfo[]> => {
       if (envConfig.shouldUseMockData()) {
         await new Promise(resolve => setTimeout(resolve, 300));
         return Array.from({ length: limit }).map((_, i) => ({
@@ -258,29 +285,34 @@ export const apiV2: ApiService = {
           cpu: Math.random() * 10,
           memory: Math.random() * 100,
           user: 'root',
+          status: 'running',
+          uptime: Math.random() * 1000000,
         }));
       }
 
-      const response = await request<any>(`/api/v2/monitoring/processes?limit=${limit}&sort_by=${sortBy}`);
+      const response = await request<{ success: boolean; data: ProcessInfo[] }>(`/api/v2/monitoring/processes?limit=${limit}&sort_by=${sortBy}`);
       return response.data;
     },
   },
 
   // ========== 邮件接口 ==========
   mail: {
-    getEmails: async (folder: string = 'inbox', _params?: any): Promise<Email[]> => {
+    getEmails: async (folder: string = 'inbox', _params?: EmailSearchParams): Promise<Email[]> => {
       if (envConfig.shouldUseMockData()) {
         await new Promise(resolve => setTimeout(resolve, 400));
-        return Array.from({ length: 15 }).map((_, i) => ({
-          id: `email-${i}`,
-          from: `user${i}@example.com`,
-          to: 'me@admin.com',
-          subject: `Project Update ${i}`,
-          body: `Hello, here is update for project ${i}. Please review attached documents.`,
-          timestamp: new Date(Date.now() - i * 3600000).toISOString(),
-          read: Math.random() > 0.3,
-          folder: folder as any,
-        }));
+        return Array.from({ length: 15 }).map((_, i) => {
+          const emailFolder = folder as 'inbox' | 'sent' | 'trash' | 'drafts';
+          return {
+            id: `email-${i}`,
+            from: `user${i}@example.com`,
+            to: 'me@admin.com',
+            subject: `Project Update ${i}`,
+            body: `Hello, here is update for project ${i}. Please review attached documents.`,
+            timestamp: new Date(Date.now() - i * 3600000).toISOString(),
+            read: Math.random() > 0.3,
+            folder: emailFolder,
+          };
+        });
       }
 
       const response = await request<{ success: boolean; data: Email[] }>(`/api/v2/mail/${folder}`);
@@ -300,7 +332,7 @@ export const apiV2: ApiService = {
       });
     },
 
-    saveDraft: async (draft: { to: string[]; cc: string[]; bcc: string[]; subject: string; body: string; attachments: File[]; priority: string }): Promise<void> => {
+    saveDraft: async (draft: EmailDraft): Promise<void> => {
       if (envConfig.shouldUseMockData()) {
         await new Promise(resolve => setTimeout(resolve, 500));
         return;
@@ -311,7 +343,7 @@ export const apiV2: ApiService = {
       });
     },
 
-    scheduleEmail: async (email: { to: string[]; cc: string[]; bcc: string[]; subject: string; body: string; attachments: File[]; priority: string; scheduledTime: string }): Promise<void> => {
+    scheduleEmail: async (email: ScheduledEmail): Promise<void> => {
       if (envConfig.shouldUseMockData()) {
         await new Promise(resolve => setTimeout(resolve, 500));
         return;
@@ -507,21 +539,19 @@ export const apiV2: ApiService = {
       return response.data;
     },
 
-    getStatus: async () => {
+    getStatus: async (): Promise<NasStatus> => {
       if (envConfig.shouldUseMockData()) {
         return {
           running: true,
-          status: 'online',
-          uptime: '15天 3小时 45分钟',
-          version: 'DSM 7.2.1-69057 Update 3',
-          cpuUsage: 12.5,
-          memoryUsage: 45.3,
-          temperature: 42,
+          uptime: 1296000000,
+          activeConnections: 15,
+          totalStorage: 16000,
+          usedStorage: 8750,
         };
       }
 
       // 真实API
-      const response = await request<{ success: boolean; data: any }>('/api/v2/nas/status');
+      const response = await request<{ success: boolean; data: NasStatus }>('/api/v2/nas/status');
       return response.data;
     },
 
@@ -620,30 +650,28 @@ export const apiV2: ApiService = {
 
   // ========== DDNS接口 ==========
   ddns: {
-    getStatus: async () => {
+    getStatus: async (): Promise<DdnsStatus> => {
       if (envConfig.shouldUseMockData()) {
         return {
-          running: true,
           enabled: true,
-          provider: 'aliyun',
+          currentIp: '8.152.195.33',
           domain: 'ddns.0379.email',
-          currentIP: '8.152.195.33',
           lastUpdate: new Date().toISOString(),
           status: 'success',
         };
       }
 
-      const response = await request<{ success: boolean; data: any }>('/api/v2/ddns/status');
+      const response = await request<{ success: boolean; data: DdnsStatus }>('/api/v2/ddns/status');
       return response.data;
     },
 
-    updateConfig: async (config: any): Promise<any> => {
+    updateConfig: async (config: DdnsConfig): Promise<DdnsConfig> => {
       if (envConfig.shouldUseMockData()) {
         await new Promise(resolve => setTimeout(resolve, 500));
-        return { success: true };
+        return config;
       }
 
-      return await request('/api/v2/ddns/config', {
+      return await request<{ success: boolean; data: DdnsConfig }>('/api/v2/ddns/config', {
         method: 'POST',
         body: JSON.stringify(config),
       });
@@ -658,20 +686,19 @@ export const apiV2: ApiService = {
       await request('/api/v2/ddns/update', { method: 'POST' });
     },
 
-    getHistory: async (limit: number = 20) => {
+    getHistory: async (limit: number = 20): Promise<DnsUpdateRecord[]> => {
       if (envConfig.shouldUseMockData()) {
         return Array.from({ length: limit }).map((_, i) => ({
-          id: String(i),
           timestamp: new Date(Date.now() - i * 300000).toISOString(),
-          oldIP: '8.152.195.33',
-          newIP: '8.152.195.33',
-          status: 'success',
-          message: 'IP未变化，无需更新',
+          previousIp: '8.152.195.33',
+          newIp: '8.152.195.33',
+          success: true,
+          errorMessage: undefined,
         }));
       }
 
       // 真实API
-      const response = await request<{ success: boolean; data: any[] }>(`/api/v2/ddns/history?limit=${limit}`);
+      const response = await request<{ success: boolean; data: DnsUpdateRecord[] }>(`/api/v2/ddns/history?limit=${limit}`);
       return response.data;
     },
   },

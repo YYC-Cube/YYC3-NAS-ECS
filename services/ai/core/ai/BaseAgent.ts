@@ -15,7 +15,7 @@ import {
   AgentContext,
   AgentCapability
 } from './AgentProtocol';
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 import {
   InternalError
 } from '../error-handler/ErrorTypes';

@@ -7,9 +7,9 @@
  * @created 2026-01-24
  */
 
-import { 
+import {
   SystemSetting, SettingGroup, SettingCategory, SettingType,
-  SystemConfig
+  SystemConfig, SettingValue
 } from '../types/settings';
 import { logger } from '../utils/logger';
 
@@ -17,9 +17,31 @@ class SettingsService {
   private settings: SystemSetting[] = [];
   private config!: SystemConfig;
   private storageKey = 'yyc3-settings-data';
+  private isLocalStorageAvailable: boolean = false;
 
   constructor() {
+    this.checkLocalStorageAvailability();
     this.initialize();
+  }
+
+  private checkLocalStorageAvailability(): void {
+    try {
+      if (typeof localStorage === 'undefined' || localStorage === null) {
+        this.isLocalStorageAvailable = false;
+        return;
+      }
+      if (typeof localStorage.setItem !== 'function' || typeof localStorage.getItem !== 'function') {
+        this.isLocalStorageAvailable = false;
+        return;
+      }
+      const testKey = '__yyc3_storage_test__';
+      localStorage.setItem(testKey, 'test');
+      localStorage.removeItem(testKey);
+      this.isLocalStorageAvailable = true;
+    } catch (error) {
+      logger.warn('localStorage is not available:', error);
+      this.isLocalStorageAvailable = false;
+    }
   }
 
   private initialize(): void {
@@ -29,6 +51,9 @@ class SettingsService {
   }
 
   private loadFromStorage(): void {
+    if (!this.isLocalStorageAvailable) {
+      return;
+    }
     try {
       const stored = localStorage.getItem(this.storageKey);
       if (stored) {
@@ -40,6 +65,9 @@ class SettingsService {
   }
 
   private saveToStorage(): void {
+    if (!this.isLocalStorageAvailable) {
+      return;
+    }
     try {
       localStorage.setItem(this.storageKey, JSON.stringify(this.settings));
     } catch (error) {
@@ -581,12 +609,12 @@ class SettingsService {
     return this.settings.find(s => s.key === key);
   }
 
-  getSettingValue(key: string): any {
+  getSettingValue(key: string): SettingValue | undefined {
     const setting = this.getSettingByKey(key);
     return setting ? setting.value : undefined;
   }
 
-  updateSetting(id: string, value: any, updatedBy: string = 'current-user'): SystemSetting | null {
+  updateSetting(id: string, value: SettingValue, updatedBy: string = 'current-user'): SystemSetting | null {
     const index = this.settings.findIndex(s => s.id === id);
     if (index === -1) {
       return null;
@@ -616,7 +644,7 @@ class SettingsService {
     return this.settings[index];
   }
 
-  updateSettingByKey(key: string, value: any, updatedBy: string = 'current-user'): SystemSetting | null {
+  updateSettingByKey(key: string, value: SettingValue, updatedBy: string = 'current-user'): SystemSetting | null {
     const setting = this.getSettingByKey(key);
     if (!setting) {
       return null;
@@ -739,7 +767,7 @@ class SettingsService {
       this.settings = settings;
       this.saveToStorage();
       this.loadConfig();
-    } catch (error) {
+    } catch (_error) {
       throw new Error('Invalid settings format');
     }
   }

@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ModuleProgress } from './ModuleProgress';
@@ -289,15 +288,16 @@ describe('ModuleProgress', () => {
 
   describe('边界情况', () => {
     it('应该处理空标签', () => {
-      render(
+      const { container } = render(
         <ModuleProgress 
           label="" 
           value={50} 
         />
       );
 
-      const labelElement = screen.queryByText('');
+      const labelElement = container.querySelector('.flex.justify-between.items-center span:first-child');
       expect(labelElement).toBeInTheDocument();
+      expect(labelElement?.textContent).toBe('');
     });
 
     it('应该处理长标签', () => {

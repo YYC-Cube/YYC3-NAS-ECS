@@ -216,7 +216,7 @@ export const initializeYYC3AI = async (config: AutonomousAIConfig) => {
     await engine.initialize(engineConfig);
     await engine.start();
     
-    const closedLoopSystem = new ClosedLoopSystem(config);
+    const closedLoopSystem = new ClosedLoopSystem();
     
     // 初始化智能体系统集成
     const { AgentSystemIntegration } = await import('./integration/AgentSystemIntegration');

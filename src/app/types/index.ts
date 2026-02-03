@@ -104,29 +104,86 @@ export interface AuthService {
   logout(): Promise<void>;
 }
 
+export interface DetailedSystemStats extends SystemStats {
+  processes?: Array<{
+    pid: number;
+    name: string;
+    cpu: number;
+    memory: number;
+  }>;
+  diskIO?: {
+    readBytes: number;
+    writeBytes: number;
+  };
+  networkConnections?: number;
+}
+
 export interface SystemService {
   getStats(): Promise<SystemStats>;
-  getDetailedStats(): Promise<any>;
+  getDetailedStats(): Promise<DetailedSystemStats>;
+}
+
+export interface FrpStatus {
+  running: boolean;
+  uptime?: number;
+  connections?: number;
+  bytesIn?: number;
+  bytesOut?: number;
+  lastError?: string;
 }
 
 export interface FrpService {
   getConfigs(): Promise<FrpConfig[]>;
   updateConfig(config: FrpConfig): Promise<FrpConfig>;
-  getStatus(): Promise<any>;
+  getStatus(): Promise<FrpStatus>;
   startClient(): Promise<void>;
   stopClient(): Promise<void>;
 }
 
+export interface DdnsStatus {
+  enabled: boolean;
+  currentIp: string;
+  domain: string;
+  lastUpdate: string;
+  status: 'success' | 'error' | 'pending';
+}
+
+export interface DdnsConfig {
+  provider: string;
+  domain: string;
+  username: string;
+  password: string;
+  updateInterval: number;
+}
+
+export interface DnsUpdateRecord {
+  timestamp: string;
+  previousIp: string;
+  newIp: string;
+  success: boolean;
+  errorMessage?: string;
+}
+
 export interface DdnsService {
-  getStatus(): Promise<any>;
-  updateConfig(config: any): Promise<any>;
+  getStatus(): Promise<DdnsStatus>;
+  updateConfig(config: DdnsConfig): Promise<DdnsConfig>;
   updateDDNS(): Promise<void>;
-  getHistory(limit?: number): Promise<any[]>;
+  getHistory(limit?: number): Promise<DnsUpdateRecord[]>;
+}
+
+export interface ProcessInfo {
+  pid: number;
+  name: string;
+  cpu: number;
+  memory: number;
+  user: string;
+  status: string;
+  uptime: number;
 }
 
 export interface MonitoringService {
-  getStats(): Promise<any>;
-  getProcesses(limit: number, sortBy: string): Promise<any>;
+  getStats(): Promise<SystemStats>;
+  getProcesses(limit: number, sortBy: string): Promise<ProcessInfo[]>;
 }
 
 export interface LogsService {
@@ -134,11 +191,34 @@ export interface LogsService {
   clearLogs(): Promise<void>;
 }
 
+export interface EmailSearchParams {
+  search?: string;
+  startDate?: string;
+  endDate?: string;
+  unreadOnly?: boolean;
+  starredOnly?: boolean;
+  tags?: string[];
+}
+
+export interface EmailDraft {
+  to: string[];
+  cc?: string[];
+  bcc?: string[];
+  subject: string;
+  body: string;
+  attachments?: File[];
+  priority?: 'low' | 'normal' | 'high';
+}
+
+export interface ScheduledEmail extends EmailDraft {
+  scheduledTime: string;
+}
+
 export interface MailService {
-  getEmails(folder?: string, params?: any): Promise<Email[]>;
+  getEmails(folder?: string, params?: EmailSearchParams): Promise<Email[]>;
   sendEmail(to: string, subject: string, body: string): Promise<void>;
-  saveDraft(draft: { to: string[]; cc: string[]; bcc: string[]; subject: string; body: string; attachments: File[]; priority: string }): Promise<void>;
-  scheduleEmail(email: { to: string[]; cc: string[]; bcc: string[]; subject: string; body: string; attachments: File[]; priority: string; scheduledTime: string }): Promise<void>;
+  saveDraft(draft: EmailDraft): Promise<void>;
+  scheduleEmail(email: ScheduledEmail): Promise<void>;
   replyEmail(originalEmailId: string, to: string, subject: string, body: string): Promise<void>;
   forwardEmail(originalEmailId: string, to: string, subject: string, body: string): Promise<void>;
   markEmailRead(emailId: string, read: boolean): Promise<void>;
@@ -157,11 +237,32 @@ export interface LLMService {
   chat(messages: Array<{ role: string; content: string }>, model?: string, stream?: boolean): Promise<Response>;
 }
 
+export interface NasStatus {
+  running: boolean;
+  uptime: number;
+  activeConnections: number;
+  totalStorage: number;
+  usedStorage: number;
+}
+
+export type NasVolumeAlias = NasVolume;
+
+export interface NasShare {
+  id: string;
+  name: string;
+  path: string;
+  type: string;
+  enabled: boolean;
+  users: string[];
+  permissions: string;
+  status: string;
+}
+
 export interface NasService {
-  getStatus(): Promise<any>;
-  getVolumes(): Promise<any>;
+  getStatus(): Promise<NasStatus>;
+  getVolumes(): Promise<NasVolume[]>;
   getFiles(parentId?: string): Promise<NasFile[]>;
-  getShares(): Promise<any[]>;
+  getShares(): Promise<NasShare[]>;
   startService(): Promise<void>;
   stopService(): Promise<void>;
   toggleShare(shareId: string): Promise<void>;

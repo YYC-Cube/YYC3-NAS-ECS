@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
@@ -47,20 +47,25 @@ export const ConfigManagerComponent: React.FC = () => {
   const [exportedConfig, setExportedConfig] = useState<string>('');
   const [importedConfig, setImportedConfig] = useState<string>('');
 
-  useEffect(() => {
-    loadData();
-  }, [currentEnvironment]);
+  const validateConfig = useCallback(() => {
+    const result = configManager.validate();
+    setValidationResult(result);
+  }, []);
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     configManager.setEnvironment(currentEnvironment);
     setCategories(configManager.getConfigCategories());
     validateConfig();
-  };
+  }, [currentEnvironment, validateConfig]);
 
-  const validateConfig = () => {
-    const result = configManager.validate();
-    setValidationResult(result);
-  };
+  useEffect(() => {
+    const initializeData = () => {
+      configManager.setEnvironment(currentEnvironment);
+      setCategories(configManager.getConfigCategories());
+      validateConfig();
+    };
+    initializeData();
+  }, [currentEnvironment, validateConfig]);
 
   const handleEnvironmentChange = (env: Environment) => {
     setCurrentEnvironment(env);
@@ -194,8 +199,8 @@ export const ConfigManagerComponent: React.FC = () => {
           <AlertTitle>配置验证失败</AlertTitle>
           <AlertDescription>
             <ul className="list-disc list-inside mt-2">
-              {validationResult.errors.map((error: any, index: number) => (
-                <li key={index}>{error.message}</li>
+              {validationResult.errors.map((error: { message: string; field?: string }, index: number) => (
+                <li key={index}>{error.field ? `${error.field}: ` : ''}{error.message}</li>
               ))}
             </ul>
           </AlertDescription>

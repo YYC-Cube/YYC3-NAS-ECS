@@ -12,7 +12,7 @@ import { FederatedOptimization } from './FederatedOptimization';
 import { PrivacyPreservation } from './PrivacyPreservation';
 import { HeterogeneousFL } from './HeterogeneousFL';
 
-export interface FederatedOptimization {
+export interface FederatedOptimizationConfig {
   aggregation: {
     fedAvg: any;
     fedProx: any;
@@ -30,7 +30,7 @@ export interface FederatedOptimization {
   };
 }
 
-export interface PrivacyPreservation {
+export interface PrivacyPreservationConfig {
   differentialPrivacy: {
     noiseMechanism: any;
     privacyBudget: any;
@@ -48,7 +48,7 @@ export interface PrivacyPreservation {
   };
 }
 
-export interface HeterogeneousFL {
+export interface HeterogeneousFLConfig {
   nonIidData: {
     distribution: any;
     skewness: any;
@@ -113,7 +113,7 @@ export class FederatedLearning {
     this.selectedClients = new Set();
   }
 
-  async federatedOptimization(): Promise<FederatedOptimization> {
+  async getFederatedOptimization(): Promise<FederatedOptimizationConfig> {
     return {
       aggregation: {
         fedAvg: await this.implementFedAvg(),
@@ -133,7 +133,7 @@ export class FederatedLearning {
     };
   }
 
-  async privacyPreservation(): Promise<PrivacyPreservation> {
+  async getPrivacyPreservation(): Promise<PrivacyPreservationConfig> {
     return {
       differentialPrivacy: {
         noiseMechanism: await this.implementNoiseMechanism(),
@@ -153,7 +153,7 @@ export class FederatedLearning {
     };
   }
 
-  async heterogeneousFL(): Promise<HeterogeneousFL> {
+  async getHeterogeneousFL(): Promise<HeterogeneousFLConfig> {
     return {
       nonIidData: {
         distribution: await this.analyzeDataDistribution(),

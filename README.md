@@ -841,10 +841,10 @@ A: 在 `services/ai/core/adapters/` 目录下创建新的适配器，实现 `Mod
 
 ## 📞 联系方式
 
-- **项目主页**: https://github.com/YYC-Cube/YYC3-NAS-ECS
-- **问题反馈**: https://github.com/YYC-Cube/YYC3-NAS-ECS/issues
-- **功能建议**: https://github.com/YYC-Cube/YYC3-NAS-ECS/discussions
-- **邮箱**: support@yyc3.com
+- **项目主页**: <https://github.com/YYC-Cube/YYC3-NAS-ECS>
+- **问题反馈**: <https://github.com/YYC-Cube/YYC3-NAS-ECS/issues>
+- **功能建议**: <https://github.com/YYC-Cube/YYC3-NAS-ECS/discussions>
+- **邮箱**: <support@yyc3.com>
 
 ---
 

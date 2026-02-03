@@ -7,12 +7,11 @@
  * @created 2025-01-30
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 import {
   NotFoundError,
   ConflictError,
-  TimeoutError,
-  InternalError
+  TimeoutError
 } from '../error-handler/ErrorTypes';
 
 export interface Task {

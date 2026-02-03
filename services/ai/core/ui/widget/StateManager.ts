@@ -10,7 +10,7 @@
  * @license MIT
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 
 export interface StateManagerConfig {
   enabled?: boolean;
@@ -136,7 +136,6 @@ export class StateManager extends EventEmitter {
   private optimizationEnabled: boolean;
   private persistenceKey: string;
   private syncInterval: number;
-  private maxStateHistory: number;
   private stateRetentionDays: number;
   private syncTimer: NodeJS.Timeout | null;
   private stateVersion: string;
@@ -190,7 +189,6 @@ export class StateManager extends EventEmitter {
     this.optimizationEnabled = this.config.enableOptimization;
     this.persistenceKey = this.config.persistenceKey;
     this.syncInterval = this.config.syncInterval;
-    this.maxStateHistory = this.config.maxStateHistory;
     this.stateRetentionDays = this.config.stateRetentionDays;
 
     this.initialize();
@@ -385,7 +383,6 @@ export class StateManager extends EventEmitter {
   ): StateSnapshot {
     const { validate = this.validationEnabled, persist = this.persistenceEnabled } = options;
 
-    const newData = this.getNestedValue(this.currentState.data, path);
     const updatedData = this.setNestedValue({ ...this.currentState.data }, path, value);
 
     return this.setState(updatedData, { merge: false, validate, persist });
@@ -514,7 +511,7 @@ export class StateManager extends EventEmitter {
     const errors: StateValidationError[] = [];
     const warnings: StateValidationWarning[] = [];
 
-    this.schemas.forEach((schema, name) => {
+    this.schemas.forEach((schema, _name) => {
       const schemaErrors = this.validateAgainstSchema(data, schema);
       errors.push(...schemaErrors);
     });
@@ -754,10 +751,6 @@ export class StateManager extends EventEmitter {
     }
 
     return Math.abs(hash).toString(16);
-  }
-
-  private getNestedValue(obj: any, path: string): any {
-    return path.split('.').reduce((current, key) => current?.[key], obj);
   }
 
   private setNestedValue(obj: any, path: string, value: any): any {

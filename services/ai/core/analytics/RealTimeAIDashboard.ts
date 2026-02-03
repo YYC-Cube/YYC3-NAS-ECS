@@ -10,7 +10,7 @@ import {
   AlertEngine,
   KPITracker
 } from './types';
-import { PerformanceMonitor, PerformanceMetric, Alert } from '../monitoring/PerformanceMonitor';
+import { PerformanceMonitor, PerformanceMetric, Alert, AlertRule } from '../monitoring/PerformanceMonitor';
 
 export class RealTimeAIDashboard {
   private dataStream: DataStream;
@@ -102,7 +102,7 @@ export class RealTimeAIDashboard {
   private async createRealTimeMonitoring(metrics: AIMetrics): Promise<RealTimeMonitoring> {
     const systemMetrics = await this.getSystemMetrics();
     const activeAlerts = await this.performanceMonitor.getActiveAlerts();
-    
+
     return {
       liveMetrics: {
         timestamp: new Date(),
@@ -130,20 +130,20 @@ export class RealTimeAIDashboard {
   private async getSystemMetrics(): Promise<{ cpu: number; memory: number; networkStatus: string }> {
     const cpuMetrics = this.performanceMonitor.getMetricsByType('cpu');
     const memoryMetrics = this.performanceMonitor.getMetricsByType('memory');
-    
+
     let cpu = 0;
     let memory = 0;
-    
+
     if (cpuMetrics.length > 0) {
       const latestCpu = cpuMetrics[cpuMetrics.length - 1];
       cpu = latestCpu.value;
     }
-    
+
     if (memoryMetrics.length > 0) {
       const latestMemory = memoryMetrics[memoryMetrics.length - 1];
       memory = latestMemory.value;
     }
-    
+
     return {
       cpu,
       memory,
@@ -177,55 +177,66 @@ export class RealTimeAIDashboard {
   private async createAlertDashboard(metrics: AIMetrics): Promise<AlertDashboard> {
     const performanceAlerts = await this.performanceMonitor.getActiveAlerts();
     const alertHistory = await this.performanceMonitor.getAlertHistory();
-    
-    const activeAlerts = performanceAlerts.map(alert => ({
+
+    const activeAlerts: Array<{
+      id: string;
+      type: string;
+      severity: 'low' | 'medium' | 'high' | 'critical';
+      message: string;
+      timestamp: Date;
+      acknowledged: boolean;
+    }> = performanceAlerts.map(alert => ({
       id: alert.id,
       type: alert.severity === 'critical' ? 'critical' : 'warning',
-      severity: alert.severity,
+      severity: alert.severity === 'critical' ? 'critical' : 'medium',
       message: alert.message,
       timestamp: alert.triggeredAt,
-      acknowledged: alert.status === 'acknowledged',
-      metrics: alert.metrics,
-      ruleId: alert.ruleId,
-      ruleName: alert.ruleName
+      acknowledged: alert.status === 'acknowledged'
     }));
-    
+
     if (metrics.revenue.current < metrics.revenue.target * 0.8) {
       activeAlerts.push({
         id: 'revenue-low',
         type: 'warning',
-        severity: 'high' as const,
+        severity: 'high',
         message: 'Revenue is below 80% of target',
         timestamp: new Date(),
         acknowledged: false
       });
     }
-    
+
     if (metrics.satisfaction.score < 70) {
       activeAlerts.push({
         id: 'satisfaction-low',
         type: 'critical',
-        severity: 'critical' as const,
+        severity: 'critical',
         message: 'Customer satisfaction is below 70',
         timestamp: new Date(),
         acknowledged: false
       });
     }
-    
+
     if (metrics.efficiency.agentUtilization > 90) {
       activeAlerts.push({
         id: 'utilization-high',
         type: 'warning',
-        severity: 'high' as const,
+        severity: 'high',
         message: 'Agent utilization is above 90%',
         timestamp: new Date(),
         acknowledged: false
       });
     }
-    
+
     return {
       activeAlerts,
-      alertHistory: alertHistory.slice(0, 50),
+      alertHistory: alertHistory.map(alert => ({
+        id: alert.id,
+        type: alert.severity,
+        severity: alert.severity === 'critical' ? 'critical' : alert.severity === 'warning' ? 'high' : 'low',
+        message: alert.message,
+        timestamp: alert.triggeredAt,
+        resolvedAt: alert.resolvedAt || alert.triggeredAt
+      })),
       alertTrends: await this.analyzeAlertTrends(alertHistory)
     };
   }
@@ -237,32 +248,32 @@ export class RealTimeAIDashboard {
       warning: 0,
       info: 0
     };
-    
+
     const last24Hours = Date.now() - 24 * 60 * 60 * 1000;
     const recentAlerts = alertHistory.filter(a => a.triggeredAt.getTime() > last24Hours);
-    
+
     recentAlerts.forEach(alert => {
       severityCounts[alert.severity]++;
     });
-    
+
     trends.push({
       type: 'severity_distribution',
       data: severityCounts,
       period: '24h'
     });
-    
+
     const hourlyAlerts = new Map<number, number>();
     recentAlerts.forEach(alert => {
       const hour = alert.triggeredAt.getHours();
       hourlyAlerts.set(hour, (hourlyAlerts.get(hour) || 0) + 1);
     });
-    
+
     trends.push({
       type: 'hourly_distribution',
       data: Array.from(hourlyAlerts.entries()).map(([hour, count]) => ({ hour, count })),
       period: '24h'
     });
-    
+
     return trends;
   }
 
@@ -270,7 +281,7 @@ export class RealTimeAIDashboard {
     const efficiencySuggestions = [];
     const qualitySuggestions = [];
     const customerExperienceSuggestions = [];
-    
+
     if (metrics.efficiency.averageTalkTime > 600) {
       efficiencySuggestions.push({
         id: 'talk-time-high',
@@ -281,7 +292,7 @@ export class RealTimeAIDashboard {
         priority: 'high'
       });
     }
-    
+
     if (metrics.conversion.rate < 0.3) {
       qualitySuggestions.push({
         id: 'conversion-low',
@@ -292,7 +303,7 @@ export class RealTimeAIDashboard {
         priority: 'high'
       });
     }
-    
+
     if (metrics.satisfaction.score < 80) {
       customerExperienceSuggestions.push({
         id: 'satisfaction-improve',
@@ -303,7 +314,7 @@ export class RealTimeAIDashboard {
         priority: 'high'
       });
     }
-    
+
     return {
       efficiencySuggestions,
       qualitySuggestions,
@@ -344,11 +355,7 @@ export class RealTimeAIDashboard {
   }
 
   async recordSystemMetric(metric: Omit<PerformanceMetric, 'id' | 'timestamp'>): Promise<void> {
-    await this.performanceMonitor.recordMetricAsync({
-      ...metric,
-      id: `${metric.moduleName}-${metric.metricType}-${Date.now()}`,
-      timestamp: new Date()
-    });
+    await this.performanceMonitor.recordMetricAsync(metric);
   }
 
   async getActiveAlerts(): Promise<Alert[]> {
@@ -364,10 +371,7 @@ export class RealTimeAIDashboard {
   }
 
   async addAlertRule(rule: Omit<AlertRule, 'id'>): Promise<AlertRule> {
-    return await this.performanceMonitor.addAlertRule({
-      ...rule,
-      id: `rule-${Date.now()}`
-    });
+    return await this.performanceMonitor.addAlertRule(rule);
   }
 
   async removeAlertRule(ruleId: string): Promise<void> {
@@ -391,7 +395,7 @@ export class RealTimeAIDashboard {
   }> {
     const systemMetrics = await this.getSystemMetrics();
     const activeAlerts = await this.performanceMonitor.getActiveAlerts();
-    
+
     return {
       cpu: systemMetrics.cpu,
       memory: systemMetrics.memory,
@@ -406,11 +410,11 @@ export class RealTimeAIDashboard {
     const cpuMetrics = await this.performanceMonitor.getMetricsByType('cpu');
     const memoryMetrics = await this.performanceMonitor.getMetricsByType('memory');
     const responseTimeMetrics = await this.performanceMonitor.getMetricsByType('response_time');
-    
+
     allMetrics.push(...cpuMetrics.map(m => ({ ...m, moduleName: 'system', metricType: 'cpu' })));
     allMetrics.push(...memoryMetrics.map(m => ({ ...m, moduleName: 'system', metricType: 'memory' })));
     allMetrics.push(...responseTimeMetrics.map(m => ({ ...m, moduleName: 'system', metricType: 'response_time' })));
-    
+
     if (allMetrics.length === 0) {
       return {
         timestamp: new Date(),
@@ -421,7 +425,7 @@ export class RealTimeAIDashboard {
         escalation: null
       };
     }
-    
+
     return {
       timestamp: new Date(),
       anomalies: [],
@@ -443,10 +447,10 @@ export class RealTimeAIDashboard {
       await this.updateRealTimeMetrics();
       const dashboardData = await this.createAIDashboard();
       this.notifySubscribers('dashboard', dashboardData);
-      
+
       const systemHealth = await this.getSystemHealth();
       this.notifySubscribers('health', systemHealth);
-      
+
       const activeAlerts = await this.getActiveAlerts();
       this.notifySubscribers('alerts', activeAlerts);
     }, intervalMs);
@@ -463,7 +467,7 @@ export class RealTimeAIDashboard {
     if (!this.subscribers.has(eventType)) {
       this.subscribers.set(eventType, new Set());
     }
-    
+
     const subscribers = this.subscribers.get(eventType)!;
     subscribers.add(callback);
 
@@ -490,23 +494,7 @@ export class RealTimeAIDashboard {
 
   async getRealTimeMetricsHistory(metricType: string, limit?: number): Promise<any[]> {
     const history = this.realTimeMetricsHistory.get(metricType) || [];
-    return history.slice(-limit || this.maxHistorySize);
-  }
-
-  private addToHistory(metricType: string, data: any): void {
-    if (!this.realTimeMetricsHistory.has(metricType)) {
-      this.realTimeMetricsHistory.set(metricType, []);
-    }
-    
-    const history = this.realTimeMetricsHistory.get(metricType)!;
-    history.push({
-      ...data,
-      timestamp: new Date()
-    });
-
-    if (history.length > this.maxHistorySize) {
-      history.shift();
-    }
+    return history.slice(-(limit ?? this.maxHistorySize));
   }
 
   async getEnhancedAlertDashboard(): Promise<any> {
@@ -538,31 +526,31 @@ export class RealTimeAIDashboard {
   }
 
   private getAlertTrend(alertId: string, alertHistory: any[]): string {
-    const relatedAlerts = alertHistory.filter(a => 
+    const relatedAlerts = alertHistory.filter(a =>
       a.ruleId === alertId || a.message.includes(alertId)
     );
-    
+
     if (relatedAlerts.length < 2) return 'unknown';
-    
-    const recentCount = relatedAlerts.filter(a => 
+
+    const recentCount = relatedAlerts.filter(a =>
       Date.now() - a.triggeredAt.getTime() < 24 * 60 * 60 * 1000
     ).length;
-    
+
     if (recentCount > 5) return 'increasing';
     if (recentCount > 2) return 'stable';
     return 'decreasing';
   }
 
   private findRelatedAlerts(alert: any, allAlerts: any[]): any[] {
-    return allAlerts.filter(a => 
-      a.id !== alert.id && 
+    return allAlerts.filter(a =>
+      a.id !== alert.id &&
       (a.metricType === alert.metricType || a.moduleName === alert.moduleName)
     );
   }
 
   private getSuggestedActions(alert: any): string[] {
     const actions: string[] = [];
-    
+
     switch (alert.severity) {
       case 'critical':
         actions.push('立即检查相关系统');
@@ -596,7 +584,7 @@ export class RealTimeAIDashboard {
 
   private async generateAlertRecommendations(activeAlerts: any[]): Promise<any[]> {
     const recommendations: any[] = [];
-    
+
     const criticalAlerts = activeAlerts.filter(a => a.severity === 'critical');
     if (criticalAlerts.length > 0) {
       recommendations.push({

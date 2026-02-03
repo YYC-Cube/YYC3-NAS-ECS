@@ -10,7 +10,7 @@
  * @license MIT
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 
 export interface ExecutionConfig {
   enabled?: boolean;
@@ -105,7 +105,7 @@ export interface ResourceAllocation {
 }
 
 export class ExecutionSystem extends EventEmitter {
-  private config: Required<ExecutionConfig>;
+  private config: ExecutionConfig;
   private taskQueue: Task[];
   private runningTasks: Map<string, Task>;
   private completedTasks: Map<string, Task>;
@@ -117,12 +117,10 @@ export class ExecutionSystem extends EventEmitter {
   private maxConcurrentTasks: number;
   private taskTimeout: number;
   private enableRetry: boolean;
-  private maxRetries: number;
   private retryDelay: number;
   private enablePriorityQueue: boolean;
   private enableTaskDependencies: boolean;
   private enableWorkflow: boolean;
-  private enableResourceManagement: boolean;
   private abortControllers: Map<string, AbortController>;
   private executionHistory: Map<string, number[]>;
 
@@ -140,9 +138,6 @@ export class ExecutionSystem extends EventEmitter {
       enableTaskDependencies: true,
       enableWorkflow: true,
       enableResourceManagement: true,
-      onTaskComplete: undefined,
-      onTaskFailed: undefined,
-      onWorkflowComplete: undefined,
       ...config,
     };
 
@@ -169,16 +164,14 @@ export class ExecutionSystem extends EventEmitter {
       currentRunningTasks: 0,
     };
 
-    this.enabled = this.config.enabled;
-    this.maxConcurrentTasks = this.config.maxConcurrentTasks;
-    this.taskTimeout = this.config.taskTimeout;
-    this.enableRetry = this.config.enableRetry;
-    this.maxRetries = this.config.maxRetries;
-    this.retryDelay = this.config.retryDelay;
-    this.enablePriorityQueue = this.config.enablePriorityQueue;
-    this.enableTaskDependencies = this.config.enableTaskDependencies;
-    this.enableWorkflow = this.config.enableWorkflow;
-    this.enableResourceManagement = this.config.enableResourceManagement;
+    this.enabled = this.config.enabled ?? true;
+    this.maxConcurrentTasks = this.config.maxConcurrentTasks ?? 5;
+    this.taskTimeout = this.config.taskTimeout ?? 30000;
+    this.enableRetry = this.config.enableRetry ?? true;
+    this.retryDelay = this.config.retryDelay ?? 1000;
+    this.enablePriorityQueue = this.config.enablePriorityQueue ?? true;
+    this.enableTaskDependencies = this.config.enableTaskDependencies ?? true;
+    this.enableWorkflow = this.config.enableWorkflow ?? true;
 
     if (this.enabled) {
       this.initialize();
@@ -324,7 +317,7 @@ export class ExecutionSystem extends EventEmitter {
       }
 
       this.releaseTaskResources(task.id);
-      this.checkWorkflowCompletion(task);
+      this.checkWorkflowCompletion();
 
     } catch (error) {
       const err = error as Error;
@@ -358,15 +351,15 @@ export class ExecutionSystem extends EventEmitter {
         }
 
         this.releaseTaskResources(task.id);
-        this.checkWorkflowFailure(task);
+        this.checkWorkflowFailure();
       }
     }
 
     this.processQueue();
   }
 
-  private checkWorkflowCompletion(task: Task): void {
-    for (const [workflowId, workflow] of this.workflows) {
+  private checkWorkflowCompletion(): void {
+    for (const [_workflowId, workflow] of this.workflows) {
       if (workflow.status === 'running' || workflow.status === 'pending') {
         const allTasksCompleted = workflow.tasks.every(t => t.status === 'completed');
         const anyTaskFailed = workflow.tasks.some(t => t.status === 'failed');
@@ -386,8 +379,8 @@ export class ExecutionSystem extends EventEmitter {
     }
   }
 
-  private checkWorkflowFailure(task: Task): void {
-    for (const [workflowId, workflow] of this.workflows) {
+  private checkWorkflowFailure(): void {
+    for (const [_workflowId, workflow] of this.workflows) {
       if (workflow.status === 'running' || workflow.status === 'pending') {
         const anyTaskFailed = workflow.tasks.some(t => t.status === 'failed');
 
@@ -674,10 +667,6 @@ export class ExecutionSystem extends EventEmitter {
       this.enableRetry = config.enableRetry;
     }
 
-    if (config.maxRetries !== undefined) {
-      this.maxRetries = config.maxRetries;
-    }
-
     if (config.retryDelay !== undefined) {
       this.retryDelay = config.retryDelay;
     }
@@ -695,10 +684,6 @@ export class ExecutionSystem extends EventEmitter {
 
     if (config.enableWorkflow !== undefined) {
       this.enableWorkflow = config.enableWorkflow;
-    }
-
-    if (config.enableResourceManagement !== undefined) {
-      this.enableResourceManagement = config.enableResourceManagement;
     }
 
     this.emit('config:updated', this.config);

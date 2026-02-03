@@ -7,7 +7,7 @@
  * @created 2025-12-30
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '../utils/EventEmitter';
 import { ErrorSeverity, ErrorCategory, ErrorContext } from './ErrorTypes';
 
 export enum RecoveryStrategy {
@@ -29,9 +29,9 @@ export interface ErrorRecord {
   recoveryAttempted: boolean;
   recoverySuccessful?: boolean;
   recoveryStrategy?: RecoveryStrategy;
-  timestamp: Date;
+  timestamp: number;
   resolved: boolean;
-  resolutionTime?: Date;
+  resolutionTime?: number;
 }
 
 export interface ErrorStatistics {
@@ -51,7 +51,7 @@ export interface ErrorPattern {
   category: ErrorCategory;
   severity: ErrorSeverity;
   frequency: number;
-  lastOccurrence: Date;
+  lastOccurrence: number;
   suggestedStrategy: RecoveryStrategy;
 }
 
@@ -102,6 +102,7 @@ export class GlobalErrorHandler extends EventEmitter {
     this.statistics = this.initializeStatistics();
     this.setupGlobalErrorHandlers();
     this.startPatternAnalysis();
+    this.startCleanupInterval();
   }
 
   private initializeStatistics(): ErrorStatistics {
@@ -114,14 +115,18 @@ export class GlobalErrorHandler extends EventEmitter {
         [ErrorSeverity.LOW]: 0
       },
       errorsByCategory: {
-        [ErrorCategory.RUNTIME]: 0,
-        [ErrorCategory.NETWORK]: 0,
-        [ErrorCategory.DATABASE]: 0,
-        [ErrorCategory.MEMORY]: 0,
-        [ErrorCategory.SECURITY]: 0,
         [ErrorCategory.VALIDATION]: 0,
-        [ErrorCategory.BUSINESS]: 0,
-        [ErrorCategory.SYSTEM]: 0
+        [ErrorCategory.AUTHENTICATION]: 0,
+        [ErrorCategory.AUTHORIZATION]: 0,
+        [ErrorCategory.NOT_FOUND]: 0,
+        [ErrorCategory.CONFLICT]: 0,
+        [ErrorCategory.RATE_LIMIT]: 0,
+        [ErrorCategory.INTERNAL]: 0,
+        [ErrorCategory.EXTERNAL]: 0,
+        [ErrorCategory.NETWORK]: 0,
+        [ErrorCategory.TIMEOUT]: 0,
+        [ErrorCategory.DATABASE]: 0,
+        [ErrorCategory.UNKNOWN]: 0
       },
       errorsByComponent: {},
       recoveryRate: 0,
@@ -146,7 +151,7 @@ export class GlobalErrorHandler extends EventEmitter {
   private handleWindowError(event: ErrorEvent): void {
     const error = event.error || new Error(event.message);
     this.handleError(error, {
-      timestamp: new Date(),
+      timestamp: Date.now(),
       component: 'window',
       operation: 'global',
       metadata: {
@@ -159,7 +164,7 @@ export class GlobalErrorHandler extends EventEmitter {
 
   private handleUncaughtException(error: Error): void {
     this.handleError(error, {
-      timestamp: new Date(),
+      timestamp: Date.now(),
       component: 'process',
       operation: 'uncaught_exception'
     });
@@ -168,7 +173,7 @@ export class GlobalErrorHandler extends EventEmitter {
   private handleUnhandledRejection(reason: any): void {
     const error = reason instanceof Error ? reason : new Error(String(reason));
     this.handleError(error, {
-      timestamp: new Date(),
+      timestamp: Date.now(),
       component: 'process',
       operation: 'unhandled_rejection'
     });
@@ -209,11 +214,11 @@ export class GlobalErrorHandler extends EventEmitter {
       category,
       context: {
         ...context,
-        timestamp: context.timestamp || new Date()
+        timestamp: context.timestamp || Date.now()
       },
       stackTrace: error.stack,
       recoveryAttempted: false,
-      timestamp: new Date(),
+      timestamp: Date.now(),
       resolved: false
     };
   }
@@ -229,31 +234,31 @@ export class GlobalErrorHandler extends EventEmitter {
       return ErrorCategory.DATABASE;
     }
     if (message.includes('memory') || message.includes('heap') || message.includes('allocation')) {
-      return ErrorCategory.MEMORY;
+      return ErrorCategory.INTERNAL;
     }
     if (message.includes('security') || message.includes('auth') || message.includes('permission')) {
-      return ErrorCategory.SECURITY;
+      return ErrorCategory.AUTHENTICATION;
     }
     if (message.includes('validation') || message.includes('invalid') || message.includes('format')) {
       return ErrorCategory.VALIDATION;
     }
     if (name.includes('typeerror') || name.includes('referenceerror')) {
-      return ErrorCategory.RUNTIME;
+      return ErrorCategory.INTERNAL;
     }
 
-    return ErrorCategory.SYSTEM;
+    return ErrorCategory.UNKNOWN;
   }
 
   private assessSeverity(error: Error, category: ErrorCategory): ErrorSeverity {
     const message = error.message.toLowerCase();
 
-    if (category === ErrorCategory.SECURITY || message.includes('critical') || message.includes('fatal')) {
+    if (category === ErrorCategory.AUTHENTICATION || message.includes('critical') || message.includes('fatal')) {
       return ErrorSeverity.CRITICAL;
     }
     if (category === ErrorCategory.DATABASE || category === ErrorCategory.NETWORK) {
       return ErrorSeverity.HIGH;
     }
-    if (category === ErrorCategory.MEMORY || message.includes('warning')) {
+    if (category === ErrorCategory.INTERNAL || message.includes('warning')) {
       return ErrorSeverity.MEDIUM;
     }
 
@@ -280,7 +285,7 @@ export class GlobalErrorHandler extends EventEmitter {
 
       if (errorRecord.recoverySuccessful) {
         errorRecord.resolved = true;
-        errorRecord.resolutionTime = new Date();
+        errorRecord.resolutionTime = Date.now();
         this.emit('recovered', errorRecord);
       }
     } catch (recoveryError) {
@@ -290,7 +295,7 @@ export class GlobalErrorHandler extends EventEmitter {
   }
 
   private selectRecoveryStrategy(errorRecord: ErrorRecord): RecoveryStrategy {
-    const { category, severity, context } = errorRecord;
+    const { category, severity } = errorRecord;
 
     if (severity === ErrorSeverity.CRITICAL) {
       return RecoveryStrategy.MANUAL_INTERVENTION;
@@ -471,7 +476,7 @@ export class GlobalErrorHandler extends EventEmitter {
     }
 
     const totalTime = resolvedErrors.reduce(
-      (sum, e) => sum + (e.resolutionTime!.getTime() - e.timestamp.getTime()),
+      (sum, e) => sum + (e.resolutionTime! - e.timestamp),
       0
     );
     this.statistics.averageResolutionTime = totalTime / resolvedErrors.length;
@@ -492,11 +497,17 @@ export class GlobalErrorHandler extends EventEmitter {
     }, 60000);
   }
 
+  private startCleanupInterval(): void {
+    setInterval(() => {
+      this.cleanupOldData();
+    }, 3600000);
+  }
+
   private cleanupOldData(): void {
     const retentionTime = this.parseRetentionPeriod(this.config.errorRetentionPeriod);
     const cutoffTime = Date.now() - retentionTime;
 
-    this.errorHistory = this.errorHistory.filter(e => e.timestamp.getTime() > cutoffTime);
+    this.errorHistory = this.errorHistory.filter(e => e.timestamp > cutoffTime);
   }
 
   private parseRetentionPeriod(period: string): number {

@@ -7,8 +7,12 @@
  * @created 2025-12-30
  */
 
-import { ErrorHandler, ErrorBoundary, YYC3Error, ErrorCategory, ErrorSeverity } from './ErrorHandler';
-import { GlobalErrorHandler, ErrorContext as GlobalErrorContext } from './GlobalErrorHandler';
+import { ErrorHandler } from './ErrorHandler';
+import { YYC3Error, ErrorCategory, ErrorSeverity, ErrorContext } from './ErrorTypes';
+import { ErrorBoundary } from './ErrorBoundary';
+import { GlobalErrorHandler } from './GlobalErrorHandler';
+
+type GlobalErrorContext = ErrorContext;
 
 export class IntegratedErrorHandler {
   private errorHandler: ErrorHandler;
@@ -62,7 +66,7 @@ export class IntegratedErrorHandler {
       );
     });
 
-    this.errorBoundary.on('error', ({ error, errorInfo, report }) => {
+    this.errorBoundary.on('error', ({ error, errorInfo }) => {
       const globalContext: GlobalErrorContext = {
         timestamp: new Date(),
         component: errorInfo.componentStack || 'Unknown',
@@ -110,7 +114,7 @@ export class IntegratedErrorHandler {
   }
 
   async clearHistory(): Promise<void> {
-    return this.globalErrorHandler.clearHistory();
+    this.globalErrorHandler.clearErrorHistory();
   }
 
   destroy(): void {

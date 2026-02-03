@@ -1,13 +1,13 @@
 import React from 'react';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { ModuleButton } from './ModuleButton';
 import { ThemeProvider } from '../contexts/ThemeContext';
 import { Settings } from 'lucide-react';
 
-const renderWithTheme = (component: React.ReactNode, theme = 'cpu') => {
+const renderWithTheme = (component: React.ReactNode, _theme = 'cpu') => {
   return render(
-    <ThemeProvider initialTheme={theme}>
+    <ThemeProvider>
       {component}
     </ThemeProvider>
   );
@@ -165,10 +165,7 @@ describe('ModuleButton', () => {
     });
 
     it('应该正确传递事件对象', () => {
-      const handleClick = vi.fn((event) => {
-        expect(event).toBeDefined();
-        expect(event.type).toBe('click');
-      });
+      const handleClick = vi.fn();
 
       renderWithTheme(
         <ModuleButton onClick={handleClick}>

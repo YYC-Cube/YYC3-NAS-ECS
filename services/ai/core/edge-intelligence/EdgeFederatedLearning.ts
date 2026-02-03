@@ -352,7 +352,7 @@ export class EdgeFederatedLearning {
     accuracy: number;
     precision: number[];
     recall: number[];
-    f1Score: number;
+    f1Score: number[];
   }> {
     const predictions = await this.performGlobalInference(testData);
     let correct = 0;
@@ -387,7 +387,7 @@ export class EdgeFederatedLearning {
 
   async performGlobalInference(inputs: number[][]): Promise<number[][]> {
     const outputs: number[][] = [];
-    for (const input of inputs) {
+    for (const _input of inputs) {
       const output: number[] = [];
       for (let i = 0; i < 10; i++) {
         output.push(Math.random());
@@ -397,7 +397,7 @@ export class EdgeFederatedLearning {
     return outputs;
   }
 
-  private async trainLocalModel(data: number[][], labels: number[]): Promise<number[][]> {
+  private async trainLocalModel(_data: number[][], _labels: number[]): Promise<number[][]> {
     const weights: number[][] = [];
     for (let i = 0; i < 5; i++) {
       const layer: number[] = [];

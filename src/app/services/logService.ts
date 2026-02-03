@@ -23,6 +23,14 @@ class LogService {
 
   private checkLocalStorageAvailability(): void {
     try {
+      if (typeof localStorage === 'undefined' || localStorage === null) {
+        this.isLocalStorageAvailable = false;
+        return;
+      }
+      if (typeof localStorage.setItem !== 'function' || typeof localStorage.getItem !== 'function') {
+        this.isLocalStorageAvailable = false;
+        return;
+      }
       const testKey = '__yyc3_storage_test__';
       localStorage.setItem(testKey, 'test');
       localStorage.removeItem(testKey);
@@ -201,7 +209,7 @@ class LogService {
       case 'json':
         return JSON.stringify(logs, null, 2);
 
-      case 'csv':
+      case 'csv': {
         const headers = ['timestamp', 'level', 'category', 'service', 'message', 'userId', 'duration'];
         const rows = logs.map(log => [
           log.timestamp,
@@ -213,6 +221,7 @@ class LogService {
           log.duration || ''
         ].join(','));
         return [headers.join(','), ...rows].join('\n');
+      }
 
       case 'txt':
         return logs.map(log => 

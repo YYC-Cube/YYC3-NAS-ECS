@@ -7,7 +7,7 @@
  * @created 2025-12-30
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 import {
   IAutonomousAIEngine,
   EngineStatus,

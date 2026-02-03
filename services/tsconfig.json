@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["../src/*"],
+      "@services/*": ["./*"],
+      "@utils/*": ["./utils/*", "../src/utils/*"]
+    }
+  },
+  "include": ["ai/**/*.ts", "ai/**/*.tsx"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "docs",
+    "**/docs/**",
+    "**/*.md",
+    "**/ai/docs/**",
+    "**/ai/docs/**/*.ts",
+    "**/ai/docs/**/*.tsx",
+    "**/ai/docs/YYC3-MovAISys-*/**",
+    "**/YYC3-MovAISys-*/**"
+  ]
+}

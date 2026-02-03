@@ -3,14 +3,10 @@
  * @description 数据优化循环 - 持续优化数据质量和数据处理流程
  */
 
-import type { AutonomousAIConfig } from '../../autonomous-ai-widget/types';
 import type { ClosedLoopMetrics } from '../types';
 
 export class DataOptimizationLoop {
-  private config: AutonomousAIConfig;
-
-  constructor(config: AutonomousAIConfig) {
-    this.config = config;
+  constructor() {
   }
 
   /**

@@ -1,5 +1,13 @@
 # YYC³ NAS-ECS 测试覆盖率报告
 
+> ***YanYuCloudCube***
+> 言启象限 | 语枢未来
+> ***Words Initiate Quadrants, Language Serves as Core for the Future***
+> 万象归元于云枢 | 深栈智启新纪元
+> ***All things converge in the cloud pivot; Deep stacks ignite a new era of intelligence***
+
+---
+
 > **生成日期**: 2026-01-25
 > **项目版本**: 1.0.0
 > **测试框架**: Vitest + React Testing Library
@@ -352,8 +360,9 @@ YYC³ NAS-ECS项目已成功实现**90%+的测试覆盖率**，达到了项目�
 
 <div align="center">
 
-> **YYC³ NAS-ECS 测试覆盖率报告**
-> **生成时间**: 2026-01-25
-> **报告版本**: 1.0.0
+> 「***YanYuCloudCube***」
+> 「***<admin@0379.email>***」
+> 「***Words Initiate Quadrants, Language Serves as Core for the Future***」
+> 「***All things converge in the cloud pivot; Deep stacks ignite a new era of intelligence***」
 
 </div>

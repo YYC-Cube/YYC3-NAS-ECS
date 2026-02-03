@@ -7,16 +7,15 @@
  * @created 2025-01-30
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 import {
   IWorkflowDesigner,
   Workflow,
   WorkflowNode,
   WorkflowEdge,
-  WorkflowPort,
   ValidationResult,
-  ValidationError,
   ValidationWarning,
+  WorkflowValidationError,
   WorkflowExecutionResult,
   ExecutionLog,
   ExportFormat,
@@ -30,14 +29,12 @@ import {
 export class WorkflowDesigner extends EventEmitter implements IWorkflowDesigner {
   private workflows: Map<string, Workflow>;
   private currentWorkflowId: string | null;
-  private visible: boolean;
   private nodeTypes: Map<string, WorkflowNode>;
 
   constructor() {
     super();
     this.workflows = new Map();
     this.currentWorkflowId = null;
-    this.visible = true;
     this.nodeTypes = new Map();
     this.initializeNodeTypes();
   }
@@ -142,7 +139,7 @@ export class WorkflowDesigner extends EventEmitter implements IWorkflowDesigner 
     }
 
     if (workflow.nodes.find(n => n.id === node.id)) {
-      throw new ConflictError('Node with this id already exists', 'node', {
+      throw new ConflictError('Node with this id already exists', {
         additionalData: { nodeId: node.id, existingNodes: workflow.nodes.map(n => n.id) }
       });
     }
@@ -204,7 +201,7 @@ export class WorkflowDesigner extends EventEmitter implements IWorkflowDesigner 
     }
 
     if (workflow.edges.find(e => e.id === edge.id)) {
-      throw new ConflictError('Edge with this id already exists', 'edge', {
+      throw new ConflictError('Edge with this id already exists', {
         additionalData: { edgeId: edge.id, existingEdges: workflow.edges.map(e => e.id) }
       });
     }
@@ -263,7 +260,7 @@ export class WorkflowDesigner extends EventEmitter implements IWorkflowDesigner 
   }
 
   validateWorkflow(workflow: Workflow): ValidationResult {
-    const errors: ValidationError[] = [];
+    const errors: WorkflowValidationError[] = [];
     const warnings: ValidationWarning[] = [];
 
     if (workflow.nodes.length === 0) {
@@ -411,7 +408,7 @@ export class WorkflowDesigner extends EventEmitter implements IWorkflowDesigner 
         level: 'info',
       });
 
-      const nodeOutput = await this.executeNode(currentNode, workflow.variables);
+      const nodeOutput = await this.executeNode(currentNode, workflow.variables ?? {});
       outputs[currentNode.id] = nodeOutput;
 
       const outgoingEdges = workflow.edges.filter(e => e.sourceNodeId === currentNode.id);
@@ -427,7 +424,7 @@ export class WorkflowDesigner extends EventEmitter implements IWorkflowDesigner 
     return outputs;
   }
 
-  private async executeNode(node: WorkflowNode, variables: Record<string, any>): Promise<any> {
+  private async executeNode(node: WorkflowNode, _variables: Record<string, any>): Promise<any> {
     await new Promise(resolve => setTimeout(resolve, 100));
     
     switch (node.type) {
@@ -529,12 +526,10 @@ export class WorkflowDesigner extends EventEmitter implements IWorkflowDesigner 
   }
 
   show(): void {
-    this.visible = true;
     this.emit('visibility:changed', { visible: true });
   }
 
   hide(): void {
-    this.visible = false;
     this.emit('visibility:changed', { visible: false });
   }
 

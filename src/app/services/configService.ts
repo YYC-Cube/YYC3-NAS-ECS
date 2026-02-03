@@ -63,7 +63,11 @@ export class ConfigManager {
   }
 
   private loadConfigs(): void {
-    const env = import.meta.env || { ...process.env };
+    // Merge both import.meta.env and process.env to support test environment
+    const metaEnv = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env : {};
+    const processEnv = process.env || {};
+    const env = { ...metaEnv, ...processEnv };
+
     const config: Record<string, string> = {};
 
     Object.keys(env).forEach(key => {

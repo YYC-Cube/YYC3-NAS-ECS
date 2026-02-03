@@ -7,10 +7,9 @@
  * @created 2025-01-30
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 import {
-  NotFoundError,
-  InternalError
+  NotFoundError
 } from '../error-handler/ErrorTypes';
 
 export interface StateSnapshot {
@@ -48,7 +47,6 @@ export interface StateMetrics {
 export class StateManager extends EventEmitter {
   private config: Required<StateManagerConfig>;
   private currentState: any;
-  private previousState: any;
   private initialState: any;
   private snapshots: StateSnapshot[] = [];
   private transitions: StateTransition[] = [];
@@ -58,7 +56,6 @@ export class StateManager extends EventEmitter {
   constructor(initialState: any, config: StateManagerConfig = {}) {
     super();
     this.currentState = initialState;
-    this.previousState = null;
     this.initialState = initialState;
     this.config = {
       enablePersistence: config.enablePersistence ?? true,
@@ -91,7 +88,6 @@ export class StateManager extends EventEmitter {
       this.recordTransition(previousState, nextState, event, metadata);
     }
 
-    this.previousState = previousState;
     this.currentState = nextState;
     this.metrics.currentState = JSON.stringify(nextState);
     this.metrics.lastTransitionTime = Date.now();
@@ -137,7 +133,7 @@ export class StateManager extends EventEmitter {
     this.emit('snapshot_created', snapshot);
 
     if (this.config.enablePersistence) {
-      this.persistSnapshot(snapshot);
+      this.persistSnapshot();
     }
 
     return snapshot.id;
@@ -253,7 +249,7 @@ export class StateManager extends EventEmitter {
       return state.map(item => this.cloneState(item));
     }
 
-    const cloned = Array.isArray(state) ? [] : {};
+    const cloned: Record<string, any> = Array.isArray(state) ? [] : {};
     for (const key in state) {
       if (state.hasOwnProperty(key)) {
         cloned[key] = this.cloneState(state[key]);
@@ -276,7 +272,7 @@ export class StateManager extends EventEmitter {
     }
   }
 
-  private persistSnapshot(snapshot: StateSnapshot): void {
+  private persistSnapshot(): void {
     try {
       const snapshotsData = {
         snapshots: this.snapshots,

@@ -10,7 +10,7 @@
  * @license MIT
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 
 export interface OptimizationConfig {
   enabled?: boolean;
@@ -183,7 +183,6 @@ export class OptimizationSystem extends EventEmitter {
     this.enabled = this.config.enabled;
     this.autoOptimizationEnabled = this.config.enableAutoOptimization;
     this.optimizationInterval = this.config.optimizationInterval;
-    this.optimizationThreshold = this.config.optimizationThreshold;
     this.maxOptimizationHistory = this.config.maxOptimizationHistory;
     this.optimizationIntervalId = null;
 
@@ -436,7 +435,7 @@ export class OptimizationSystem extends EventEmitter {
     return suggestions;
   }
 
-  private checkForOptimizationOpportunities(): void {
+  private checkForOptimizationOpportunities(_metrics: WidgetPerformanceMetrics): void {
     const suggestions = this.analyzePerformance();
 
     suggestions.forEach(suggestion => {
@@ -774,10 +773,6 @@ export class OptimizationSystem extends EventEmitter {
       if (this.autoOptimizationEnabled) {
         this.startAutoOptimization();
       }
-    }
-
-    if (config.optimizationThreshold !== undefined) {
-      this.optimizationThreshold = config.optimizationThreshold;
     }
 
     if (config.maxOptimizationHistory !== undefined) {

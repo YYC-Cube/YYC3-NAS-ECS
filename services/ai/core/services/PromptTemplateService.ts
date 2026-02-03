@@ -7,7 +7,7 @@
  * @created 2025-01-19
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 
 export interface PromptTemplate {
   id: string;

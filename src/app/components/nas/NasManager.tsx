@@ -246,6 +246,7 @@ export const NasManager: React.FC = () => {
 
   useEffect(() => {
     loadNasStatus();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

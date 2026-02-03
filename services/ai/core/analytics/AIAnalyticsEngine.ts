@@ -4,9 +4,7 @@ import {
   AnalyticsInsight,
   OptimizationRecommendation,
   AIVisualization,
-  PredictiveModel,
-  AnomalyDetector,
-  InsightGenerator
+  AnomalyDetector
 } from './types';
 
 export class AIAnalyticsEngine {
@@ -33,7 +31,7 @@ export class AIAnalyticsEngine {
     return {};
   }
 
-  private async enrichWithAIFeatures(data: any): Promise<ProcessedData> {
+  private async enrichWithAIFeatures(_data: any): Promise<ProcessedData> {
     return {
       customerData: [],
       campaignData: [],
@@ -42,7 +40,7 @@ export class AIAnalyticsEngine {
     };
   }
 
-  private async generatePredictions(data: ProcessedData): Promise<any[]> {
+  private async generatePredictions(_data: ProcessedData): Promise<any[]> {
     return [];
   }
 
@@ -50,7 +48,7 @@ export class AIAnalyticsEngine {
     return await this.anomalyDetector.detect(data);
   }
 
-  private async createAIVisualizations(data: ProcessedData): Promise<AIVisualization> {
+  private async createAIVisualizations(_data: ProcessedData): Promise<AIVisualization> {
     return {
       charts: [],
       metrics: [],

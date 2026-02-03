@@ -132,6 +132,7 @@ export class IntelligentCacheLayer {
       prefetchThreshold: config.prefetchThreshold ?? 0.8,
       clusteringEnabled: config.clusteringEnabled ?? false,
       writeBufferSize: config.writeBufferSize ?? 1024 * 1024,
+      strategy: config.strategy ?? CacheStrategy.LRU,
     };
 
     this.l1Cache = new Map();

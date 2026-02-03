@@ -8,8 +8,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { helpService } from '../helpService';
-import { logger } from '../../utils/logger';
+import { HelpService } from '../helpService';
 
 vi.mock('../../utils/logger', () => ({
   logger: {
@@ -21,9 +20,12 @@ vi.mock('../../utils/logger', () => ({
 }));
 
 describe('HelpService', () => {
+  let helpService: HelpService;
+
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    helpService = new HelpService();
   });
 
   afterEach(() => {
@@ -349,8 +351,9 @@ describe('HelpService', () => {
 
       const response = helpService.addResponse(createdTicket.id, {
         message: '这是回复消息',
-        author: 'support',
-        authorType: 'support'
+        ticketId: createdTicket.id,
+        createdBy: 'support',
+        isInternal: true
       });
 
       expect(response).toBeDefined();
@@ -367,8 +370,9 @@ describe('HelpService', () => {
       expect(() => {
         helpService.addResponse('non-existent', {
           message: '回复消息',
-          author: 'support',
-          authorType: 'support'
+          ticketId: 'non-existent',
+          createdBy: 'support',
+          isInternal: true
         });
       }).toThrow('Ticket not found');
     });

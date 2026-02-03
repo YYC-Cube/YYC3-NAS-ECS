@@ -19,20 +19,34 @@ import {
 } from '../types';
 import { envConfig } from '../config/env';
 import { logger } from '../utils/logger';
+import { sanitizeObject, RateLimiter } from '../utils/security/xss-protection';
 
 class ApiClient {
   private baseUrl: string;
   private timeout: number;
+  private rateLimiter: RateLimiter;
 
   constructor() {
     this.baseUrl = envConfig.getCurrentEnvironment().apiBaseUrl;
     this.timeout = parseInt((import.meta as any).env.VITE_API_TIMEOUT || '30000');
+    this.rateLimiter = new RateLimiter({
+      maxRequests: 100,
+      windowMs: 60000,
+    });
   }
 
   private async request<T>(
     endpoint: string,
     options: RequestInit = {}
   ): Promise<T> {
+    const rateLimitResult = this.rateLimiter.check('api-client');
+    
+    if (!rateLimitResult.success) {
+      throw new Error(
+        `Rate limit exceeded. Please wait ${Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)} seconds before retrying.`
+      );
+    }
+
     const url = `${this.baseUrl}${endpoint}`;
 
     const controller = new AbortController();
@@ -44,6 +58,7 @@ class ApiClient {
         signal: controller.signal,
         headers: {
           'Content-Type': 'application/json',
+          'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
           ...options.headers,
         },
       });
@@ -54,7 +69,8 @@ class ApiClient {
         throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
 
-      return await response.json();
+      const data = await response.json();
+      return sanitizeObject(data);
     } catch (error) {
       clearTimeout(timeoutId);
 

@@ -19,7 +19,7 @@ export const ModuleCard: React.FC<ModuleCardProps> = ({
   const [isHovered, setIsHovered] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
 
-  const handleClick = () => {
+  const handleClick = (_e: React.MouseEvent) => {
     setIsClicked(true);
     onClick?.();
     setTimeout(() => setIsClicked(false), 200);

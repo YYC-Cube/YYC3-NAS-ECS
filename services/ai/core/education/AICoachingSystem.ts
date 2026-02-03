@@ -408,7 +408,7 @@ export class AICoachingSystem {
     };
   }
 
-  private async defineSuccessMetrics(agent: Agent, trainingPlan: TrainingPlan): Promise<SuccessMetric[]> {
+  private async defineSuccessMetrics(agent: Agent, _trainingPlan: TrainingPlan): Promise<SuccessMetric[]> {
     console.log(`定义成功指标，智能体: ${agent.name}`);
     return [];
   }

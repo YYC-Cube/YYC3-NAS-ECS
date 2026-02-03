@@ -29,6 +29,9 @@ export interface ErrorContext {
   method?: string;
   userAgent?: string;
   ip?: string;
+  component?: string;
+  operation?: string;
+  metadata?: Record<string, any>;
   additionalData?: Record<string, any>;
 }
 

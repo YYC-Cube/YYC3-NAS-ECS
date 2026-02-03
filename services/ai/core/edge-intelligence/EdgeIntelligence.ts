@@ -8,11 +8,7 @@
  * @updated 2024-10-15
  */
 
-import { EdgeAIInference } from './EdgeAIInference';
-import { EdgeFederatedLearning } from './EdgeFederatedLearning';
-import { EdgeCollaborativeComputing } from './EdgeCollaborativeComputing';
-
-export interface EdgeAIInference {
+export interface EdgeAIInferenceData {
   model: {
     architecture: string;
     size: number;
@@ -30,7 +26,7 @@ export interface EdgeAIInference {
   };
 }
 
-export interface EdgeFederatedLearning {
+export interface EdgeFederatedLearningData {
   training: {
     localEpochs: number;
     learningRate: number;
@@ -48,7 +44,7 @@ export interface EdgeFederatedLearning {
   };
 }
 
-export interface EdgeCollaborativeComputing {
+export interface EdgeCollaborativeComputingData {
   network: {
     topology: string;
     connectivity: number;
@@ -98,23 +94,17 @@ export interface InferenceResult {
 }
 
 export class EdgeIntelligence {
-  private edgeAIInference: EdgeAIInference;
-  private edgeFederatedLearning: EdgeFederatedLearning;
-  private edgeCollaborativeComputing: EdgeCollaborativeComputing;
   private edgeNodes: Map<string, EdgeNode>;
   private inferenceQueue: InferenceRequest[];
   private activeInferences: Map<string, InferenceRequest>;
 
   constructor() {
-    this.edgeAIInference = new EdgeAIInference();
-    this.edgeFederatedLearning = new EdgeFederatedLearning();
-    this.edgeCollaborativeComputing = new EdgeCollaborativeComputing();
     this.edgeNodes = new Map();
     this.inferenceQueue = [];
     this.activeInferences = new Map();
   }
 
-  async edgeAIInference(): Promise<EdgeAIInference> {
+  async getEdgeAIInference(): Promise<EdgeAIInferenceData> {
     return {
       model: {
         architecture: await this.implementModelArchitecture(),
@@ -134,7 +124,7 @@ export class EdgeIntelligence {
     };
   }
 
-  async edgeFederatedLearning(): Promise<EdgeFederatedLearning> {
+  async getEdgeFederatedLearning(): Promise<EdgeFederatedLearningData> {
     return {
       training: {
         localEpochs: await this.configureLocalTraining(),
@@ -154,7 +144,7 @@ export class EdgeIntelligence {
     };
   }
 
-  async edgeCollaborativeComputing(): Promise<EdgeCollaborativeComputing> {
+  async getEdgeCollaborativeComputing(): Promise<EdgeCollaborativeComputingData> {
     return {
       network: {
         topology: await this.designNetworkTopology(),
@@ -409,7 +399,7 @@ export class EdgeIntelligence {
     return result;
   }
 
-  async performInference(data: number[], modelId: string): Promise<number[]> {
+  async performInference(_data: number[], _modelId: string): Promise<number[]> {
     const prediction: number[] = [];
     for (let i = 0; i < 10; i++) {
       prediction.push(Math.random());
@@ -417,7 +407,7 @@ export class EdgeIntelligence {
     return prediction;
   }
 
-  selectOptimalNode(request: InferenceRequest): string {
+  selectOptimalNode(_request: InferenceRequest): string {
     const activeNodes = Array.from(this.edgeNodes.values()).filter(node => node.status === 'active');
     if (activeNodes.length === 0) {
       return 'default-node';

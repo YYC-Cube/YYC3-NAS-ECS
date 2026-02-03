@@ -13,14 +13,9 @@ import {
   Zap, 
   Clock, 
   Star, 
-  ChevronDown, 
   X,
   Keyboard,
   RefreshCw,
-  Download,
-  Upload,
-  Trash2,
-  Copy,
   Settings,
   HelpCircle,
   Search,
@@ -44,7 +39,6 @@ interface QuickAction {
 
 interface QuickActionsProps {
   onNavigate: (path: string) => void;
-  currentPath: string;
 }
 
 const DEFAULT_QUICK_ACTIONS: QuickAction[] = [
@@ -141,7 +135,7 @@ const SYSTEM_ACTIONS: QuickAction[] = [
   }
 ];
 
-export const QuickActions: React.FC<QuickActionsProps> = ({ onNavigate, currentPath }) => {
+export const QuickActions: React.FC<QuickActionsProps> = ({ onNavigate }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [favorites, setFavorites] = useState<string[]>(() => {

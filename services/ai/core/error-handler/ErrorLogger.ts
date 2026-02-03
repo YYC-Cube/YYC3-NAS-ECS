@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 import { YYC3Error, ErrorSeverity, ErrorCategory } from './ErrorTypes';
 import { ErrorReport } from './ErrorHandler';
 
@@ -97,7 +97,7 @@ export class ErrorLogger extends EventEmitter {
       enableTrendAnalysis: config.enableTrendAnalysis ?? true,
       enableAlerts: config.enableAlerts ?? true,
       aggregationWindow: config.aggregationWindow ?? 300000,
-      aggregationThreshold: config.aggregationThreshold,
+      aggregationThreshold: config.aggregationThreshold ?? 5,
       maxAggregatedSamples: config.maxAggregatedSamples ?? 10,
       logLevel: config.logLevel ?? ErrorSeverity.LOW,
       logFilePath: config.logFilePath ?? './logs/errors.log',
@@ -204,7 +204,7 @@ export class ErrorLogger extends EventEmitter {
 
   private formatLogEntry(entry: LogEntry): string {
     const timestamp = new Date(entry.timestamp).toISOString();
-    const tags = entry.tags?.length > 0 ? `[${entry.tags.join(', ')}]` : '';
+    const tags = entry.tags && entry.tags.length > 0 ? `[${entry.tags.join(', ')}]` : '';
     const source = entry.source ? `[${entry.source}]` : '';
 
     return `${timestamp} ${source} ${tags} [${entry.level.toUpperCase()}] ${entry.message}`;

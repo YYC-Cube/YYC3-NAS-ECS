@@ -349,7 +349,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPath, onNavigat
                 </div>
               </div>
               
-              <QuickActions onNavigate={onNavigate} currentPath={currentPath} />
+              <QuickActions onNavigate={onNavigate} />
               
               <AIWidgetTrigger variant="icon" />
               

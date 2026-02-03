@@ -1,0 +1,193 @@
+# Docker Compose Configuration for Local Staging Test
+# This is a self-contained configuration for local testing
+# Includes all services needed for deployment testing
+
+x-common: &common
+  restart: unless-stopped
+  networks:
+    - nas-network
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+x-api-environment: &api-environment
+  # Basic configuration
+  ENVIRONMENT: local
+  NODE_ENV: development
+  FLASK_ENV: development
+  DEBUG: "true"
+  TESTING: "false"
+  LOG_LEVEL: debug
+
+  # Application configuration
+  APP_NAME: YYC3-NAS-ECS
+  APP_VERSION: 1.0.0
+  APP_TIMEZONE: Asia/Shanghai
+
+  # API configuration
+  API_PREFIX: /api/v2
+  API_VERSION: 2.0.0
+  API_TIMEOUT: 30000
+  API_RATE_LIMIT: 100
+
+  # CORS configuration
+  CORS_ENABLED: "true"
+  CORS_ORIGINS: "*"
+  CORS_METHODS: GET,POST,PUT,DELETE,OPTIONS
+  CORS_HEADERS: Content-Type,Authorization,X-API-Key
+
+  # Security configuration
+  SECURE_COOKIE: "false"
+  CSRF_ENABLED: "false"
+  CSRF_SECRET: local-test-secret-key-for-csrf-protection
+  API_JWT_SECRET: local-test-jwt-secret-key-for-token-generation-min-32-chars
+  API_JWT_EXPIRES_IN: 7d
+
+  # Database configuration
+  DATABASE_URL: postgresql://postgres:postgres@postgres:5432/yyc3
+  SQLALCHEMY_ECHO: "false"
+  SQLALCHEMY_RECORD_QUERIES: "false"
+
+  # Redis configuration
+  REDIS_URL: redis://redis:6379/0
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+  REDIS_PASSWORD: ""
+  REDIS_DB: 0
+  REDIS_TLS: "false"
+
+  # Cache configuration
+  CACHE_ENABLED: "true"
+  CACHE_TYPE: redis
+  CACHE_TTL: 3600
+
+  # Rate limit configuration
+  RATE_LIMIT_ENABLED: "true"
+  RATE_LIMIT_WINDOW: 60
+  RATE_LIMIT_MAX_REQUESTS: 100
+
+  # Monitoring configuration
+  METRICS_ENABLED: "true"
+  METRICS_PORT: 9090
+  HEALTH_CHECK_INTERVAL: 30
+
+services:
+  # PostgreSQL database
+  postgres:
+    image: postgres:15-alpine
+    container_name: yyc3-postgres
+    <<: *common
+    environment:
+      POSTGRES_DB: yyc3
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-postgres.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Redis cache
+  redis:
+    image: redis:7-alpine
+    container_name: yyc3-redis
+    <<: *common
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # API service
+  api:
+    build:
+      context: ../../api
+      dockerfile: Dockerfile
+      target: production
+    container_name: yyc3-api
+    <<: *common
+    environment:
+      <<: *api-environment
+      # Additional API-specific environment variables
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    volumes:
+      - ../../api/app:/app/app
+      - ../../api/data:/app/data
+      - ../../api/logs:/app/logs
+      - ../../api/config:/app/config
+      - ../../api/scripts:/app/scripts
+      - ../../api/reports:/app/reports
+    ports:
+      - "3200:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/v2/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Grafana visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: yyc3-grafana
+    <<: *common
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_INSTALL_PLUGINS: ""
+      GF_SERVER_ROOT_URL: http://localhost:3001
+    volumes:
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+
+  # Prometheus monitoring
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: yyc3-prometheus
+    <<: *common
+    volumes:
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.enable-lifecycle'
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  grafana_data:
+    driver: local
+  prometheus_data:
+    driver: local
+
+networks:
+  nas-network:
+    driver: bridge

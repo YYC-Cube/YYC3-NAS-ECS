@@ -29,6 +29,14 @@ class BackupService {
 
   private checkLocalStorageAvailability(): void {
     try {
+      if (typeof localStorage === 'undefined' || localStorage === null) {
+        this.isLocalStorageAvailable = false;
+        return;
+      }
+      if (typeof localStorage.setItem !== 'function' || typeof localStorage.getItem !== 'function') {
+        this.isLocalStorageAvailable = false;
+        return;
+      }
       const testKey = '__yyc3_storage_test__';
       localStorage.setItem(testKey, 'test');
       localStorage.removeItem(testKey);
@@ -460,7 +468,7 @@ class BackupService {
         id: undefined as any,
         createdAt: undefined as any
       });
-    } catch (error) {
+    } catch (_error) {
       throw new Error('Invalid backup configuration format');
     }
   }

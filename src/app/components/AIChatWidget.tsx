@@ -7,6 +7,50 @@
  * @created 2026-01-25
  */
 
+// Type declarations for Web Speech API
+declare global {
+  interface Window {
+    SpeechRecognition: typeof SpeechRecognition;
+    webkitSpeechRecognition: typeof SpeechRecognition;
+  }
+}
+
+interface SpeechRecognition extends EventTarget {
+  continuous: boolean;
+  interimResults: boolean;
+  lang: string;
+  maxAlternatives: number;
+  onaudioend: ((this: SpeechRecognition, ev: Event) => unknown) | null;
+  onaudiostart: ((this: SpeechRecognition, ev: Event) => unknown) | null;
+  onend: ((this: SpeechRecognition, ev: Event) => unknown) | null;
+  onerror: ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => unknown) | null;
+  onnomatch: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => unknown) | null;
+  onresult: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => unknown) | null;
+  onsoundend: ((this: SpeechRecognition, ev: Event) => unknown) | null;
+  onsoundstart: ((this: SpeechRecognition, ev: Event) => unknown) | null;
+  onspeechend: ((this: SpeechRecognition, ev: Event) => unknown) | null;
+  onspeechstart: ((this: SpeechRecognition, ev: Event) => unknown) | null;
+  onstart: ((this: SpeechRecognition, ev: Event) => unknown) | null;
+  start(): void;
+  stop(): void;
+  abort(): void;
+}
+
+declare const SpeechRecognition: {
+  prototype: SpeechRecognition;
+  new(): SpeechRecognition;
+};
+
+interface SpeechRecognitionEvent extends Event {
+  resultIndex: number;
+  results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string;
+  message: string;
+}
+
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
@@ -25,13 +69,11 @@ import {
   Globe,
   ChevronDown,
   ChevronUp,
-  Volume1,
-  Play,
-  Pause
+  Volume1
 } from 'lucide-react';
-import { ChatMessage, ChatSession, VoiceRecognitionConfig, VoiceRecognitionResult } from '../../types/chat';
-import { logService } from '../../services/logService';
-import { LogLevel, LogCategory } from '../../types/logs';
+import { ChatMessage, ChatSession, VoiceRecognitionConfig } from '../types/chat';
+import { logService } from '../services/logService';
+import { LogLevel, LogCategory } from '../types/logs';
 
 interface AIChatWidgetProps {
   className?: string;
@@ -90,8 +132,7 @@ export const AIChatWidget: React.FC<AIChatWidgetProps> = ({
   className = '',
   initialMessages = [],
   onSendMessage,
-  onExport,
-  theme = 'light'
+  onExport
 }) => {
   const [messages, setMessages] = useState<ChatMessage[]>(initialMessages);
   const [inputValue, setInputValue] = useState('');
@@ -120,7 +161,7 @@ export const AIChatWidget: React.FC<AIChatWidgetProps> = ({
     confidence: 0
   });
   
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognition | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
   const mediaStreamRef = useRef<MediaStream | null>(null);
@@ -142,6 +183,7 @@ export const AIChatWidget: React.FC<AIChatWidgetProps> = ({
         recognitionRef.current.stop();
       }
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -168,7 +210,8 @@ export const AIChatWidget: React.FC<AIChatWidgetProps> = ({
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [inputValue, showShortcuts]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showShortcuts]);
 
   const initializeVoiceRecognition = () => {
     const SpeechRecognition = (window as any).webkitSpeechRecognition || 
@@ -188,12 +231,13 @@ export const AIChatWidget: React.FC<AIChatWidgetProps> = ({
     voiceState.current.isSupported = true;
     
     recognitionRef.current = new SpeechRecognition();
-    recognitionRef.current.continuous = voiceConfig.continuous;
-    recognitionRef.current.interimResults = voiceConfig.interimResults;
-    recognitionRef.current.lang = voiceConfig.language;
-    recognitionRef.current.maxAlternatives = voiceConfig.maxAlternatives;
+    const recognition = recognitionRef.current;
+    recognition.continuous = voiceConfig.continuous;
+    recognition.interimResults = voiceConfig.interimResults;
+    recognition.lang = voiceConfig.language;
+    recognition.maxAlternatives = voiceConfig.maxAlternatives;
 
-    recognitionRef.current.onresult = (event: any) => {
+    recognition.onresult = (event: SpeechRecognitionEvent) => {
       let interimTranscript = '';
       let finalTranscript = '';
       let maxConfidence = 0;
@@ -201,23 +245,14 @@ export const AIChatWidget: React.FC<AIChatWidgetProps> = ({
       for (let i = event.resultIndex; i < event.results.length; i++) {
         const transcript = event.results[i][0].transcript;
         const confidence = event.results[i][0].confidence || 0;
-        
+
         if (confidence > maxConfidence) {
           maxConfidence = confidence;
         }
-        
+
         if (event.results[i].isFinal) {
           finalTranscript += transcript;
-          
-          const result: VoiceRecognitionResult = {
-            transcript,
-            confidence,
-            isFinal: true,
-            alternatives: [],
-            timestamp: Date.now(),
-            language: voiceConfig.language
-          };
-          
+
           checkVoiceCommands(transcript);
         } else {
           interimTranscript += transcript;
@@ -229,7 +264,7 @@ export const AIChatWidget: React.FC<AIChatWidgetProps> = ({
       if (finalTranscript) {
         setInputValue(prev => prev + finalTranscript);
         voiceState.current.transcript = '';
-        
+
         logService.addLog({
           level: LogLevel.INFO,
           category: LogCategory.LLM,
@@ -242,7 +277,7 @@ export const AIChatWidget: React.FC<AIChatWidgetProps> = ({
       }
     };
 
-    recognitionRef.current.onerror = (event: any) => {
+    recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error('语音识别错误:', event.error);
       voiceState.current.isListening = false;
       voiceState.current.error = event.error;
@@ -260,11 +295,11 @@ export const AIChatWidget: React.FC<AIChatWidgetProps> = ({
       }
     };
 
-    recognitionRef.current.onend = () => {
+    recognition.onend = () => {
       if (voiceState.current.isListening) {
         try {
-          recognitionRef.current.start();
-        } catch (error) {
+          recognition.start();
+        } catch (_error) {
           voiceState.current.isListening = false;
           logService.addLog({
             level: LogLevel.WARN,
@@ -274,11 +309,11 @@ export const AIChatWidget: React.FC<AIChatWidgetProps> = ({
           });
         }
       }
-      
+
       stopAudioMonitoring();
     };
 
-    recognitionRef.current.onstart = () => {
+    recognition.onstart = () => {
       voiceState.current.isListening = true;
       startAudioMonitoring();
       
@@ -1011,8 +1046,9 @@ export const AIChatWidget: React.FC<AIChatWidgetProps> = ({
             
             <div className="settings-content">
               <div className="setting-group">
-                <label>识别语言</label>
+                <label htmlFor="voice-language">识别语言</label>
                 <select
+                  id="voice-language"
                   value={voiceConfig.language}
                   onChange={(e) => {
                     setVoiceConfig(prev => ({ ...prev, language: e.target.value }));
@@ -1031,9 +1067,10 @@ export const AIChatWidget: React.FC<AIChatWidgetProps> = ({
               </div>
               
               <div className="setting-group">
-                <label>连续识别</label>
+                <label htmlFor="voice-continuous">连续识别</label>
                 <div className="toggle-switch">
                   <input
+                    id="voice-continuous"
                     type="checkbox"
                     checked={voiceConfig.continuous}
                     onChange={(e) => setVoiceConfig(prev => ({ ...prev, continuous: e.target.checked }))}
@@ -1043,9 +1080,10 @@ export const AIChatWidget: React.FC<AIChatWidgetProps> = ({
               </div>
               
               <div className="setting-group">
-                <label>显示临时结果</label>
+                <label htmlFor="voice-interim">显示临时结果</label>
                 <div className="toggle-switch">
                   <input
+                    id="voice-interim"
                     type="checkbox"
                     checked={voiceConfig.interimResults}
                     onChange={(e) => setVoiceConfig(prev => ({ ...prev, interimResults: e.target.checked }))}
@@ -1055,9 +1093,10 @@ export const AIChatWidget: React.FC<AIChatWidgetProps> = ({
               </div>
               
               <div className="setting-group">
-                <label>音频反馈</label>
+                <label htmlFor="voice-feedback">音频反馈</label>
                 <div className="toggle-switch">
                   <input
+                    id="voice-feedback"
                     type="checkbox"
                     checked={audioFeedbackEnabled}
                     onChange={(e) => setAudioFeedbackEnabled(e.target.checked)}
@@ -1067,11 +1106,11 @@ export const AIChatWidget: React.FC<AIChatWidgetProps> = ({
               </div>
               
               <div className="setting-group">
-                <label>语音命令</label>
+                <span className="text-sm font-medium">语音命令</span>
                 <div className="voice-commands-list">
                   {VOICE_COMMANDS.map((command, index) => (
                     <div key={index} className="voice-command-item">
-                      <span className="command-keyword">"{command.keyword}"</span>
+                      <span className="command-keyword">&ldquo;{command.keyword}&rdquo;</span>
                       <span className="command-description">{command.description}</span>
                     </div>
                   ))}

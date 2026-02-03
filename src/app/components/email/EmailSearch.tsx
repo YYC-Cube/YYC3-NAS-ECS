@@ -149,10 +149,11 @@ export const EmailSearch: React.FC<EmailSearchProps> = ({ onSearch, onClear }) =
           transition={{ duration: 0.2 }}
         >
           <div>
-            <label className="text-xs font-medium mb-1 block" style={{ color: 'var(--module-cpu-shadow)' }}>
+            <label htmlFor="email-search-sender" className="text-xs font-medium mb-1 block" style={{ color: 'var(--module-cpu-shadow)' }}>
               发件人
             </label>
             <Input
+              id="email-search-sender"
               placeholder="输入发件人..."
               value={filters.sender || ''}
               onChange={(e) => setFilters({ ...filters, sender: e.target.value })}

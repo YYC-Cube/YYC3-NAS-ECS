@@ -1,4 +1,4 @@
-import { ValidationError, TimeoutError, InternalError } from '../error-handler/ErrorTypes';
+import { ValidationError, InternalError } from '../error-handler/ErrorTypes';
 
 export interface Message {
   id: string;
@@ -66,12 +66,10 @@ export class MessageBus extends EventTarget {
   private messageHistory: Message[] = [];
   private subscriptions: Map<string, Subscription> = new Map();
   private metrics: MessageMetrics;
-  private processingQueue: Map<string, Promise<void>> = new Map();
   private messageIdCounter: number = 0;
   private handlerIdCounter: number = 0;
   private subscriptionIdCounter: number = 0;
   private isPaused: boolean = false;
-  private pausedMessages: Message[] = [];
 
   constructor(config: MessageBusConfig = {}) {
     super();

@@ -7,7 +7,7 @@
  * @created 2025-01-30
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 import {
   IInsightsDashboard,
   MetricData,
@@ -20,8 +20,6 @@ export class InsightsDashboard extends EventEmitter implements IInsightsDashboar
   private metrics: Map<string, MetricData>;
   private charts: Map<string, ChartData>;
   private insights: Map<string, Insight>;
-  private visible: boolean;
-  private autoRefresh: boolean;
   private refreshInterval: number | null;
 
   constructor() {
@@ -29,8 +27,6 @@ export class InsightsDashboard extends EventEmitter implements IInsightsDashboar
     this.metrics = new Map();
     this.charts = new Map();
     this.insights = new Map();
-    this.visible = true;
-    this.autoRefresh = false;
     this.refreshInterval = null;
     this.initializeDefaultMetrics();
   }
@@ -184,13 +180,13 @@ export class InsightsDashboard extends EventEmitter implements IInsightsDashboar
     }
   }
 
-  private async fetchMetricValue(metricId: string): Promise<number | undefined> {
+  private async fetchMetricValue(_metricId: string): Promise<number | undefined> {
     return Math.floor(Math.random() * 100);
   }
 
   private async refreshCharts(): Promise<void> {
     for (const chart of this.charts.values()) {
-      const newData = await this.fetchChartData(chart.id);
+      const newData = await this.fetchChartData();
       if (newData) {
         chart.data = newData;
         this.emit('chart:updated', chart);
@@ -198,7 +194,7 @@ export class InsightsDashboard extends EventEmitter implements IInsightsDashboar
     }
   }
 
-  private async fetchChartData(chartId: string): Promise<any[] | undefined> {
+  private async fetchChartData(): Promise<any[] | undefined> {
     const dataPoints = 10;
     return Array.from({ length: dataPoints }, (_, i) => ({
       x: i,
@@ -310,17 +306,14 @@ export class InsightsDashboard extends EventEmitter implements IInsightsDashboar
   }
 
   show(): void {
-    this.visible = true;
     this.emit('visibility:changed', { visible: true });
   }
 
   hide(): void {
-    this.visible = false;
     this.emit('visibility:changed', { visible: false });
   }
 
   startAutoRefresh(intervalMs: number = 30000): void {
-    this.autoRefresh = true;
     if (this.refreshInterval) {
       clearInterval(this.refreshInterval);
     }
@@ -331,7 +324,6 @@ export class InsightsDashboard extends EventEmitter implements IInsightsDashboar
   }
 
   stopAutoRefresh(): void {
-    this.autoRefresh = false;
     if (this.refreshInterval) {
       clearInterval(this.refreshInterval);
       this.refreshInterval = null;

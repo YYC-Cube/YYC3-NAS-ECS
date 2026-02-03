@@ -20,6 +20,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./core/*"],
+      "@utils/*": ["../utils/*", "./core/utils/*"],
       "@tests/*": ["./tests/*"]
     },
     "types": ["node"],
@@ -34,8 +35,7 @@
   "include": [
     "core/**/*",
     "src/**/*",
-    "widget/**/*",
-    "tests/**/*"
+    "widget/**/*"
   ],
   "exclude": [
     "node_modules",

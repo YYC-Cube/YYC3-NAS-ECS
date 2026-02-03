@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { TaskScheduler, Task, TaskResult, TaskPlan, SchedulerConfig, SchedulerMetrics } from '../../../core/task-scheduler/TaskScheduler';
-import { EventEmitter } from 'events';
 
 describe('TaskScheduler', () => {
   let scheduler: TaskScheduler;

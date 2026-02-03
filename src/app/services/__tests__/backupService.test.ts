@@ -819,7 +819,7 @@ describe('BackupService', () => {
     });
 
     it('应该跳过未激活的配置', () => {
-      const config = backupService.createConfig({
+      backupService.createConfig({
         name: '测试配置',
         type: BackupType.FULL,
         storage: BackupStorage.LOCAL,
@@ -1038,7 +1038,6 @@ describe('BackupService', () => {
 
     it('应该处理空备份记录', () => {
       const records = backupService.getRecords();
-      const initialCount = records.length;
       
       for (const record of records) {
         backupService.deleteRecord(record.id);
@@ -1419,20 +1418,6 @@ describe('BackupService', () => {
         includedPaths: ['/data'],
         excludedPaths: [],
         isActive: true
-      });
-
-      const config2 = backupService.createConfig({
-        name: '失败备份配置',
-        type: BackupType.FULL,
-        storage: BackupStorage.LOCAL,
-        schedule: '0 2 * * *',
-        retentionDays: 30,
-        compression: true,
-        encryption: false,
-        storageConfig: { localPath: '/backups' },
-        includedPaths: ['/data'],
-        excludedPaths: [],
-        isActive: false
       });
 
       await backupService.createBackup(config1.id, 'test-user');

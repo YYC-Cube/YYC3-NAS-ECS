@@ -60,26 +60,7 @@ export interface AITag {
 }
 
 export class AdvancedCustomer360 {
-  private behavioralAnalytics: BehavioralAnalytics;
-  private predictiveScoring: PredictiveScoring;
-  private journeyMapper: JourneyMapper;
-
   constructor() {
-    this.behavioralAnalytics = {
-      analyze: async (customerId: string) => {
-        return {};
-      }
-    };
-    this.predictiveScoring = {
-      score: async (customerId: string) => {
-        return {};
-      }
-    };
-    this.journeyMapper = {
-      map: async (customerId: string) => {
-        return {};
-      }
-    };
   }
 
   async createComprehensiveProfile(customerId: string): Promise<Customer360> {

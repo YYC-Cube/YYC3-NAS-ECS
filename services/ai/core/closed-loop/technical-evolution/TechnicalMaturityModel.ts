@@ -4,8 +4,6 @@
  * @description 实现技术演进维度的技术成熟度评估功能
  */
 
-import type { AutonomousAIConfig } from '../../autonomous-ai-widget/types';
-
 export interface ClosedLoopMetrics {
   cycleEfficiency: any;
   improvementImpact: any;
@@ -39,11 +37,9 @@ interface TechnicalDomain {
 }
 
 export class TechnicalMaturityModel {
-  private config: AutonomousAIConfig;
   private domains: TechnicalDomain[] = [];
 
-  constructor(_config: AutonomousAIConfig) {
-    this.config = _config;
+  constructor() {
     this.initializeDomains();
   }
 

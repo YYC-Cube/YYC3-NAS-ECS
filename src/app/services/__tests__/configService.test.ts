@@ -961,11 +961,9 @@ describe('ConfigManager', () => {
     it('切换环境后应该加载新环境配置', () => {
       configManager.setEnvironment(Environment.DEVELOPMENT);
       const devEnv = configManager.getEnvironment();
-      const devConfig = configManager.getAll();
 
       configManager.setEnvironment(Environment.PRODUCTION);
       const prodEnv = configManager.getEnvironment();
-      const prodConfig = configManager.getAll();
 
       expect(devEnv).toBe(Environment.DEVELOPMENT);
       expect(prodEnv).toBe(Environment.PRODUCTION);
@@ -1081,7 +1079,7 @@ describe('ConfigManager', () => {
     it('应该记录验证错误的详细信息', () => {
       configManager.set('VITE_API_BASE_URL', 'invalid-url');
 
-      const result = configManager.validate();
+      configManager.validate();
 
       const logs = logService.queryLogs({
         category: LogCategory.SYSTEM,
@@ -1093,7 +1091,7 @@ describe('ConfigManager', () => {
       );
       expect(validationLog).toBeDefined();
       expect(validationLog?.details).toHaveProperty('errors');
-      expect(Array.isArray(validationLog?.details.errors)).toBe(true);
+      expect(Array.isArray(validationLog?.details?.errors)).toBe(true);
     });
   });
 
@@ -1141,7 +1139,7 @@ describe('ConfigManager', () => {
 
   describe('并发测试', () => {
     it('应该正确处理并发读取', async () => {
-      const promises = Array.from({ length: 100 }, (_, i) => 
+      const promises = Array.from({ length: 100 }, () => 
         Promise.resolve(configManager.get('VITE_API_BASE_URL'))
       );
 

@@ -7,7 +7,7 @@
  * @created 2025-01-30
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 import { ChatInterface } from './ChatInterface';
 import { ToolboxPanel } from './ToolboxPanel';
 import { InsightsDashboard } from './InsightsDashboard';
@@ -16,15 +16,10 @@ import { UIManager } from './UIManager';
 import {
   ChatMessage,
   Tool,
-  MetricData,
-  ChartData,
   Insight,
   Workflow,
-  WorkflowNode,
-  WorkflowEdge,
   Notification,
   Modal,
-  UIEvent,
 } from './types';
 
 export interface UISystemConfig {

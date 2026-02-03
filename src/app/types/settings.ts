@@ -26,6 +26,8 @@ export interface SettingOption {
   value: string | number | boolean;
 }
 
+export type SettingValue = string | number | boolean | string[] | Record<string, unknown>;
+
 export interface SystemSetting {
   id: string;
   key: string;
@@ -33,15 +35,15 @@ export interface SystemSetting {
   description: string;
   category: SettingCategory;
   type: SettingType;
-  value: any;
-  defaultValue: any;
+  value: SettingValue;
+  defaultValue: SettingValue;
   options?: SettingOption[];
   min?: number;
   max?: number;
   step?: number;
   required: boolean;
   sensitive: boolean;
-  validation?: (value: any) => boolean | string;
+  validation?: (value: SettingValue) => boolean | string;
   updatedAt: string;
   updatedBy: string;
 }

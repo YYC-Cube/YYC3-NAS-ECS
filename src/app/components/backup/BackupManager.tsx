@@ -67,7 +67,7 @@ export const BackupManager: React.FC = () => {
       await backupService.createBackup(configId, 'current-user');
       toast.success('备份创建成功');
       loadData();
-    } catch (error) {
+    } catch (_error) {
       toast.error('备份创建失败');
     } finally {
       setIsBackingUp(false);
@@ -112,7 +112,7 @@ export const BackupManager: React.FC = () => {
         excludedPaths: '/tmp,/cache'
       });
       loadData();
-    } catch (error) {
+    } catch (_error) {
       toast.error('备份配置创建失败');
     }
   };
@@ -430,10 +430,22 @@ export const BackupManager: React.FC = () => {
 
         {/* Create Config Modal */}
         {showCreateConfig && (
-          <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50" onClick={() => setShowCreateConfig(false)}>
-            <div 
+          <div
+            className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50"
+            onClick={() => setShowCreateConfig(false)}
+            onKeyDown={(e) => e.key === 'Escape' && setShowCreateConfig(false)}
+            role="button"
+            tabIndex={-1}
+            aria-label="关闭对话框"
+          >
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+            <div
               className="bg-[#2d3748] rounded-lg border border-gray-600 max-w-lg w-full mx-4"
               onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-label="创建备份配置"
             >
               <div className="flex items-center justify-between p-4 border-b border-gray-600">
                 <h3 className="text-lg font-bold text-white">创建备份配置</h3>
@@ -446,8 +458,9 @@ export const BackupManager: React.FC = () => {
               </div>
               <div className="p-4 space-y-4 max-h-[60vh] overflow-auto">
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">配置名称</label>
-                  <input 
+                  <label htmlFor="backup-config-name" className="block text-sm text-gray-400 mb-2">配置名称</label>
+                  <input
+                    id="backup-config-name"
                     type="text" 
                     value={newConfig.name}
                     onChange={(e) => setNewConfig({ ...newConfig, name: e.target.value })}
@@ -457,8 +470,9 @@ export const BackupManager: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-gray-400 mb-2">备份类型</label>
-                    <select 
+                    <label htmlFor="backup-config-type" className="block text-sm text-gray-400 mb-2">备份类型</label>
+                    <select
+                      id="backup-config-type"
                       value={newConfig.type}
                       onChange={(e) => setNewConfig({ ...newConfig, type: e.target.value as BackupType })}
                       className="w-full bg-[#4b5563] border border-gray-500 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-blue-500"
@@ -469,8 +483,9 @@ export const BackupManager: React.FC = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-400 mb-2">存储方式</label>
-                    <select 
+                    <label htmlFor="backup-config-storage" className="block text-sm text-gray-400 mb-2">存储方式</label>
+                    <select
+                      id="backup-config-storage"
                       value={newConfig.storage}
                       onChange={(e) => setNewConfig({ ...newConfig, storage: e.target.value as BackupStorage })}
                       className="w-full bg-[#4b5563] border border-gray-500 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-blue-500"
@@ -483,8 +498,9 @@ export const BackupManager: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-gray-400 mb-2">备份计划 (Cron)</label>
-                    <input 
+                    <label htmlFor="backup-config-schedule" className="block text-sm text-gray-400 mb-2">备份计划 (Cron)</label>
+                    <input
+                      id="backup-config-schedule"
                       type="text" 
                       value={newConfig.schedule}
                       onChange={(e) => setNewConfig({ ...newConfig, schedule: e.target.value })}
@@ -493,8 +509,9 @@ export const BackupManager: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-400 mb-2">保留天数</label>
-                    <input 
+                    <label htmlFor="backup-config-retention" className="block text-sm text-gray-400 mb-2">保留天数</label>
+                    <input
+                      id="backup-config-retention"
                       type="number" 
                       value={newConfig.retentionDays}
                       onChange={(e) => setNewConfig({ ...newConfig, retentionDays: parseInt(e.target.value) })}
@@ -504,8 +521,9 @@ export const BackupManager: React.FC = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">本地存储路径</label>
-                  <input 
+                  <label htmlFor="backup-config-localpath" className="block text-sm text-gray-400 mb-2">本地存储路径</label>
+                  <input
+                    id="backup-config-localpath"
                     type="text" 
                     value={newConfig.localPath}
                     onChange={(e) => setNewConfig({ ...newConfig, localPath: e.target.value })}
@@ -515,8 +533,9 @@ export const BackupManager: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-gray-400 mb-2">包含路径 (逗号分隔)</label>
-                    <input 
+                    <label htmlFor="backup-config-included" className="block text-sm text-gray-400 mb-2">包含路径 (逗号分隔)</label>
+                    <input
+                      id="backup-config-included"
                       type="text" 
                       value={newConfig.includedPaths}
                       onChange={(e) => setNewConfig({ ...newConfig, includedPaths: e.target.value })}
@@ -525,8 +544,9 @@ export const BackupManager: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-400 mb-2">排除路径 (逗号分隔)</label>
-                    <input 
+                    <label htmlFor="backup-config-excluded" className="block text-sm text-gray-400 mb-2">排除路径 (逗号分隔)</label>
+                    <input
+                      id="backup-config-excluded"
                       type="text" 
                       value={newConfig.excludedPaths}
                       onChange={(e) => setNewConfig({ ...newConfig, excludedPaths: e.target.value })}
@@ -576,10 +596,22 @@ export const BackupManager: React.FC = () => {
 
         {/* Config Detail Modal */}
         {selectedConfig && (
-          <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50" onClick={() => setSelectedConfig(null)}>
-            <div 
+          <div
+            className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50"
+            onClick={() => setSelectedConfig(null)}
+            onKeyDown={(e) => e.key === 'Escape' && setSelectedConfig(null)}
+            role="button"
+            tabIndex={-1}
+            aria-label="关闭对话框"
+          >
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+            <div
               className="bg-[#2d3748] rounded-lg border border-gray-600 max-w-lg w-full mx-4"
               onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-label="配置详情"
             >
               <div className="flex items-center justify-between p-4 border-b border-gray-600">
                 <h3 className="text-lg font-bold text-white">配置详情</h3>
@@ -593,29 +625,29 @@ export const BackupManager: React.FC = () => {
               <div className="p-4 space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-[#4b5563] rounded-lg p-3">
-                    <label className="block text-xs text-gray-400 mb-1">配置名称</label>
+                    <span className="block text-xs text-gray-400 mb-1">配置名称</span>
                     <div className="text-sm font-medium text-white">{selectedConfig.name}</div>
                   </div>
                   <div className="bg-[#4b5563] rounded-lg p-3">
-                    <label className="block text-xs text-gray-400 mb-1">备份类型</label>
+                    <span className="block text-xs text-gray-400 mb-1">备份类型</span>
                     <div className="text-sm font-medium text-blue-400">{getBackupTypeLabel(selectedConfig.type)}</div>
                   </div>
                   <div className="bg-[#4b5563] rounded-lg p-3">
-                    <label className="block text-xs text-gray-400 mb-1">存储方式</label>
+                    <span className="block text-xs text-gray-400 mb-1">存储方式</span>
                     <div className="text-sm font-medium text-purple-400">{getStorageLabel(selectedConfig.storage)}</div>
                   </div>
                   <div className="bg-[#4b5563] rounded-lg p-3">
-                    <label className="block text-xs text-gray-400 mb-1">保留天数</label>
+                    <span className="block text-xs text-gray-400 mb-1">保留天数</span>
                     <div className="text-sm font-medium text-green-400">{selectedConfig.retentionDays} 天</div>
                   </div>
                 </div>
                 <div className="bg-[#4b5563] rounded-lg p-3">
-                  <label className="block text-xs text-gray-400 mb-2">备份计划</label>
+                  <span className="block text-xs text-gray-400 mb-2">备份计划</span>
                   <div className="text-sm font-medium text-white">{selectedConfig.schedule}</div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-[#4b5563] rounded-lg p-3">
-                    <label className="block text-xs text-gray-400 mb-2">包含路径</label>
+                    <span className="block text-xs text-gray-400 mb-2">包含路径</span>
                     <div className="text-xs text-gray-300 space-y-1">
                       {selectedConfig.includedPaths.map((path, idx) => (
                         <div key={idx} className="bg-[#374151] px-2 py-1 rounded">{path}</div>
@@ -623,7 +655,7 @@ export const BackupManager: React.FC = () => {
                     </div>
                   </div>
                   <div className="bg-[#4b5563] rounded-lg p-3">
-                    <label className="block text-xs text-gray-400 mb-2">排除路径</label>
+                    <span className="block text-xs text-gray-400 mb-2">排除路径</span>
                     <div className="text-xs text-gray-300 space-y-1">
                       {selectedConfig.excludedPaths.map((path, idx) => (
                         <div key={idx} className="bg-[#374151] px-2 py-1 rounded">{path}</div>

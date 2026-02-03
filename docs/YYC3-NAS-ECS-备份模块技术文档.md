@@ -1,5 +1,13 @@
 # YYC³ NAS-ECS 备份模块技术文档
 
+> ***YanYuCloudCube***
+> 言启象限 | 语枢未来
+> ***Words Initiate Quadrants, Language Serves as Core for the Future***
+> 万象归元于云枢 | 深栈智启新纪元
+> ***All things converge in the cloud pivot; Deep stacks ignite a new era of intelligence***
+
+---
+
 > **文件标识**: YYC3-NAS-ECS-备份模块技术文档
 > **版本**: 1.0.0
 > **创建日期**: 2026-01-20
@@ -917,7 +925,9 @@ export const BackupManager: React.FC = () => {
 
 <div align="center">
 
-> **「言启象限 | 语枢未来」**
-> **「Words Initiate Quadrants, Language Serves as Core for the Future」**
+> 「***YanYuCloudCube***」
+> 「***<admin@0379.email>***」
+> 「***Words Initiate Quadrants, Language Serves as Core for the Future***」
+> 「***All things converge in the cloud pivot; Deep stacks ignite a new era of intelligence***」
 
 </div>

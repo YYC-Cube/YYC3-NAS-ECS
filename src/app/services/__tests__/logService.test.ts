@@ -794,7 +794,7 @@ describe('LogService', () => {
     });
 
     it('应该正确删除多条日志', () => {
-      const logs = [];
+      const logs: any[] = [];
       for (let i = 0; i < 5; i++) {
         const log = logService.addLog({
           level: LogLevel.INFO,

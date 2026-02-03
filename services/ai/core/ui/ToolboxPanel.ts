@@ -7,7 +7,7 @@
  * @created 2025-01-30
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 import {
   IToolboxPanel,
   Tool,
@@ -16,7 +16,6 @@ import {
 import {
   ConflictError,
   NotFoundError,
-  ValidationError,
 } from '../error-handler/ErrorTypes';
 
 export class ToolboxPanel extends EventEmitter implements IToolboxPanel {

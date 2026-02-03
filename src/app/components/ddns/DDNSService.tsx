@@ -89,7 +89,7 @@ export const DDNSService: React.FC = () => {
 
   // 模拟从服务器加载状态
   useEffect(() => {
-    loadStatus();
+    setTimeout(() => loadStatus(), 0);
     loadLogs();
     const interval = setInterval(() => {
       loadStatus();
@@ -120,7 +120,7 @@ export const DDNSService: React.FC = () => {
         const status = await reportResponse.json();
         setReportStatus(status);
       }
-    } catch (error) {
+    } catch (_error) {
       // 模拟状态数据
       setDDNSStatus({
         running: true,
@@ -158,7 +158,7 @@ export const DDNSService: React.FC = () => {
         const data = await response.json();
         setLogs(data.logs);
       }
-    } catch (error) {
+    } catch (_error) {
       // 模拟日志数据
       setLogs([
         { timestamp: '2025-01-30 10:15:30', level: 'success', message: 'DDNS update successful: nas.0379.email -> 8.152.195.33', service: 'ddns' },

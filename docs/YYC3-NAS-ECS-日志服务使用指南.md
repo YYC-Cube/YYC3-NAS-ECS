@@ -1,8 +1,10 @@
 # YYC3-NAS-ECS 日志服务使用指南
 
-> **YYC³ 团队智能应用开发标准规范**  
-> **言启象限 | 语枢未来**  
-> **Words Initiate Quadrants, Language Serves as Core for the Future**
+> ***YanYuCloudCube***
+> 言启象限 | 语枢未来
+> ***Words Initiate Quadrants, Language Serves as Core for the Future***
+> 万象归元于云枢 | 深栈智启新纪元
+> ***All things converge in the cloud pivot; Deep stacks ignite a new era of intelligence***
 
 ---
 
@@ -1260,9 +1262,9 @@ A: 当前版本不支持多标签页同步，每个标签页维护独立的日�
 
 <div align="center">
 
-> **「YanYuCloudCube」**  
-> **「<admin@0379.email>」**  
-> **「Words Initiate Quadrants, Language Serves as Core for the Future」**  
-> **「All things converge in the cloud pivot; Deep stacks ignite a new era of intelligence」**
+> 「***YanYuCloudCube***」
+> 「***<admin@0379.email>***」
+> 「***Words Initiate Quadrants, Language Serves as Core for the Future***」
+> 「***All things converge in the cloud pivot; Deep stacks ignite a new era of intelligence***」
 
 </div>

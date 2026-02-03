@@ -36,9 +36,12 @@ export interface AdaptiveLearning {
 export class IntelligentContentGenerator {
   async generateTrainingContent(learningObjective: string, agent: Agent): Promise<TrainingContent> {
     const baseContent = await this.getBaseContent(learningObjective);
-    const _personalizedContent = await this.personalizeContent(baseContent, agent);
+    await this.personalizeContent(baseContent, agent);
 
     return {
+      topic: learningObjective,
+      complexity: 0.5,
+      keyConcepts: [],
       theoreticalKnowledge: await this.generateTheoreticalContent(learningObjective, agent),
       practicalExercises: await this.generatePracticalExercises(learningObjective, agent),
       caseStudies: await this.generateRelevantCaseStudies(learningObjective, agent),
@@ -60,23 +63,23 @@ export class IntelligentContentGenerator {
     };
   }
 
-  private async generateTheoreticalContent(learningObjective: string, _agent: Agent): Promise<any> {
+  private async generateTheoreticalContent(_learningObjective: string, _agent: Agent): Promise<any> {
     return {};
   }
 
-  private async generatePracticalExercises(learningObjective: string, _agent: Agent): Promise<any> {
+  private async generatePracticalExercises(_learningObjective: string, _agent: Agent): Promise<any> {
     return {};
   }
 
-  private async generateRelevantCaseStudies(learningObjective: string, _agent: Agent): Promise<any> {
+  private async generateRelevantCaseStudies(_learningObjective: string, _agent: Agent): Promise<any> {
     return {};
   }
 
-  private async createAssessmentTests(learningObjective: string, _agent: Agent): Promise<any> {
+  private async createAssessmentTests(_learningObjective: string, _agent: Agent): Promise<any> {
     return {};
   }
 
-  private async createInteractiveSimulations(learningObjective: string, _agent: Agent): Promise<any> {
+  private async createInteractiveSimulations(_learningObjective: string, _agent: Agent): Promise<any> {
     return {};
   }
 

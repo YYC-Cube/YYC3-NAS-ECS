@@ -40,7 +40,7 @@ export class BrainComputerInterface {
       frequencyRange: [0.5, 100],
       filterOrder: 4
     };
-    
+
     this.signalBuffer = [];
     this.decodedIntents = [];
     this.feedbackQueue = [];
@@ -95,7 +95,7 @@ export class BrainComputerInterface {
 
     const signalData: SignalData = {
       timestamp: Date.now(),
-      channels: Array(this.signalConfig.channelCount).fill(null).map(() => 
+      channels: Array(this.signalConfig.channelCount).fill(null).map(() =>
         Array(1000).fill(null).map(() => Math.sin(Date.now() / 1000) * 0.5 + Math.random() * 0.1)
       ),
       metadata: {
@@ -116,7 +116,7 @@ export class BrainComputerInterface {
   async acquireNeuralSignals(): Promise<SignalData> {
     const signalData: SignalData = {
       timestamp: Date.now(),
-      channels: Array(32).fill(null).map(() => 
+      channels: Array(32).fill(null).map(() =>
         Array(500).fill(null).map(() => Math.random() > 0.95 ? 1 : 0)
       ),
       metadata: {
@@ -134,25 +134,25 @@ export class BrainComputerInterface {
   async fuseMultimodalSignals(signals: SignalData[]): Promise<SignalData> {
     const fusedChannels: number[][] = [];
     const maxChannels = Math.max(...signals.map(s => s.channels.length));
-    
+
     for (let i = 0; i < maxChannels; i++) {
       const fusedChannel: number[] = [];
       const maxLength = Math.max(...signals.map(s => s.channels[i]?.length || 0));
-      
+
       for (let j = 0; j < maxLength; j++) {
         let sum = 0;
         let count = 0;
-        
+
         for (const signal of signals) {
           if (signal.channels[i] && signal.channels[i][j] !== undefined) {
             sum += signal.channels[i][j];
             count++;
           }
         }
-        
+
         fusedChannel.push(count > 0 ? sum / count : 0);
       }
-      
+
       fusedChannels.push(fusedChannel);
     }
 
@@ -172,8 +172,8 @@ export class BrainComputerInterface {
 
   async preprocessSignals(signalData: SignalData): Promise<SignalData> {
     const startTime = Date.now();
-    
-    const filteredChannels = signalData.channels.map(channel => 
+
+    const filteredChannels = signalData.channels.map(channel =>
       this.applyBandpassFilter(channel, this.signalConfig.frequencyRange[0], this.signalConfig.frequencyRange[1])
     );
 
@@ -191,11 +191,7 @@ export class BrainComputerInterface {
     return preprocessedSignal;
   }
 
-  private applyBandpassFilter(signal: number[], lowFreq: number, highFreq: number): number[] {
-    const nyquist = this.signalConfig.samplingRate / 2;
-    const low = lowFreq / nyquist;
-    const high = highFreq / nyquist;
-    
+  private applyBandpassFilter(signal: number[], _lowFreq: number, _highFreq: number): number[] {
     return signal.map((value, index) => {
       const filtered = value * (1 - Math.abs(index - signal.length / 2) / (signal.length / 2));
       return filtered + Math.random() * 0.01;
@@ -204,15 +200,15 @@ export class BrainComputerInterface {
 
   async extractFeatures(signalData: SignalData): Promise<Map<string, number[]>> {
     const features = new Map<string, number[]>();
-    
+
     for (const channel of signalData.channels) {
       const mean = channel.reduce((a, b) => a + b, 0) / channel.length;
       const variance = channel.reduce((a, b) => a + Math.pow(b - mean, 2), 0) / channel.length;
       const stdDev = Math.sqrt(variance);
-      
+
       const powerSpectrum = this.calculatePowerSpectrum(channel);
       const dominantFrequency = this.findDominantFrequency(powerSpectrum);
-      
+
       features.set('mean', [...(features.get('mean') || []), mean]);
       features.set('variance', [...(features.get('variance') || []), variance]);
       features.set('stdDev', [...(features.get('stdDev') || []), stdDev]);
@@ -225,20 +221,20 @@ export class BrainComputerInterface {
   private calculatePowerSpectrum(signal: number[]): number[] {
     const n = signal.length;
     const spectrum: number[] = [];
-    
+
     for (let k = 0; k < n / 2; k++) {
       let real = 0;
       let imag = 0;
-      
+
       for (let i = 0; i < n; i++) {
         const angle = 2 * Math.PI * k * i / n;
         real += signal[i] * Math.cos(angle);
         imag -= signal[i] * Math.sin(angle);
       }
-      
+
       spectrum.push((real * real + imag * imag) / n);
     }
-    
+
     return spectrum;
   }
 
@@ -250,7 +246,7 @@ export class BrainComputerInterface {
   async decodeIntent(signalData: SignalData): Promise<DecodedIntent> {
     const features = await this.extractFeatures(signalData);
     const intent = this.classifyIntent(features);
-    
+
     const decodedIntent: DecodedIntent = {
       type: intent,
       confidence: 0.85 + Math.random() * 0.14,
@@ -269,7 +265,7 @@ export class BrainComputerInterface {
   private classifyIntent(features: Map<string, number[]>): string {
     const meanValues = features.get('mean') || [];
     const avgMean = meanValues.reduce((a, b) => a + b, 0) / meanValues.length;
-    
+
     if (avgMean > 0.5) {
       return 'motor_movement';
     } else if (avgMean > 0.2) {
@@ -279,9 +275,9 @@ export class BrainComputerInterface {
     }
   }
 
-  private extractIntentParameters(features: Map<string, number[]>, intent: string): Record<string, number> {
+  private extractIntentParameters(_features: Map<string, number[]>, intent: string): Record<string, number> {
     const parameters: Record<string, number> = {};
-    
+
     switch (intent) {
       case 'motor_movement':
         parameters.direction = Math.random() * 360;
@@ -298,14 +294,14 @@ export class BrainComputerInterface {
         parameters.alertness = 0.2 + Math.random() * 0.6;
         break;
     }
-    
+
     return parameters;
   }
 
   async recognizeMotorIntent(signalData: SignalData): Promise<DecodedIntent> {
     const features = await this.extractFeatures(signalData);
     const intent = this.classifyMotorIntent(features);
-    
+
     return {
       type: intent,
       confidence: 0.88 + Math.random() * 0.12,
@@ -317,7 +313,7 @@ export class BrainComputerInterface {
   private classifyMotorIntent(features: Map<string, number[]>): string {
     const meanValues = features.get('mean') || [];
     const avgMean = meanValues.reduce((a, b) => a + b, 0) / meanValues.length;
-    
+
     if (avgMean > 0.6) {
       return 'hand_movement';
     } else if (avgMean > 0.4) {
@@ -329,7 +325,7 @@ export class BrainComputerInterface {
     }
   }
 
-  private extractMotorParameters(features: Map<string, number[]>, intent: string): Record<string, number> {
+  private extractMotorParameters(_features: Map<string, number[]>, _intent: string): Record<string, number> {
     return {
       direction: Math.random() * 360,
       speed: 0.1 + Math.random() * 0.9,
@@ -341,7 +337,7 @@ export class BrainComputerInterface {
   async recognizeCognitiveIntent(signalData: SignalData): Promise<DecodedIntent> {
     const features = await this.extractFeatures(signalData);
     const intent = this.classifyCognitiveIntent(features);
-    
+
     return {
       type: intent,
       confidence: 0.86 + Math.random() * 0.14,
@@ -353,7 +349,7 @@ export class BrainComputerInterface {
   private classifyCognitiveIntent(features: Map<string, number[]>): string {
     const varianceValues = features.get('variance') || [];
     const avgVariance = varianceValues.reduce((a, b) => a + b, 0) / varianceValues.length;
-    
+
     if (avgVariance > 0.3) {
       return 'problem_solving';
     } else if (avgVariance > 0.2) {
@@ -365,7 +361,7 @@ export class BrainComputerInterface {
     }
   }
 
-  private extractCognitiveParameters(features: Map<string, number[]>, intent: string): Record<string, number> {
+  private extractCognitiveParameters(_features: Map<string, number[]>, _intent: string): Record<string, number> {
     return {
       complexity: Math.random(),
       duration: 1 + Math.random() * 4,
@@ -377,7 +373,7 @@ export class BrainComputerInterface {
   async recognizeEmotionalIntent(signalData: SignalData): Promise<DecodedIntent> {
     const features = await this.extractFeatures(signalData);
     const intent = this.classifyEmotionalIntent(features);
-    
+
     return {
       type: intent,
       confidence: 0.84 + Math.random() * 0.16,
@@ -389,7 +385,7 @@ export class BrainComputerInterface {
   private classifyEmotionalIntent(features: Map<string, number[]>): string {
     const meanValues = features.get('mean') || [];
     const avgMean = meanValues.reduce((a, b) => a + b, 0) / meanValues.length;
-    
+
     if (avgMean > 0.5) {
       return 'positive_emotion';
     } else if (avgMean > 0.3) {
@@ -399,7 +395,7 @@ export class BrainComputerInterface {
     }
   }
 
-  private extractEmotionalParameters(features: Map<string, number[]>, intent: string): Record<string, number> {
+  private extractEmotionalParameters(_features: Map<string, number[]>, _intent: string): Record<string, number> {
     return {
       valence: Math.random() * 2 - 1,
       arousal: Math.random(),
@@ -448,11 +444,11 @@ export class BrainComputerInterface {
       'negative_emotion': 'amygdala',
       'neutral_emotion': 'anterior_cingulate'
     };
-    
+
     return targetAreas[intent] || 'default_cortex';
   }
 
-  async provideRehabilitationTraining(intent: DecodedIntent): Promise<void> {
+  async provideRehabilitationTraining(_intent: DecodedIntent): Promise<void> {
     const feedback: FeedbackSignal = {
       type: 'rehabilitation',
       intensity: 0.3 + Math.random() * 0.7,
@@ -471,9 +467,9 @@ export class BrainComputerInterface {
 
   private async deliverFeedback(feedback: FeedbackSignal): Promise<void> {
     const startTime = Date.now();
-    
+
     await this.processFeedback(feedback);
-    
+
     const deliveryTime = Date.now() - startTime;
     this.performanceMetrics.set('feedback_delivery_time', deliveryTime);
   }

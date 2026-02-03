@@ -28,6 +28,183 @@ import { EmailList } from '../EmailList';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ModuleCard } from '../ModuleCard';
 
+/* ==================== 子组件 ==================== */
+
+/**
+ * 主题切换器组件
+ */
+interface ThemeSwitcherProps {
+  currentTheme: string;
+  setTheme: (theme: string) => void;
+}
+
+const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ currentTheme, setTheme }) => (
+  <div className="p-4 border-t" style={{ borderColor: 'rgba(0, 0, 0, 0.06)' }}>
+    <div className="text-xs mb-2 font-medium" style={{ color: 'var(--module-cpu-shadow)' }}>
+      主题模块
+    </div>
+    <div className="grid grid-cols-5 gap-2">
+      {(['cpu', 'memory', 'storage', 'network', 'security'] as const).map((theme) => (
+        <motion.button
+          key={theme}
+          className="h-8 rounded transition-all duration-200"
+          style={{
+            backgroundColor: currentTheme === theme
+              ? `var(--module-${theme}-primary)`
+              : `var(--module-${theme}-light)`,
+            border: `2px solid ${currentTheme === theme ? `var(--module-${theme}-primary)` : 'transparent'}`,
+            boxShadow: currentTheme === theme ? `0 2px 4px rgba(0, 0, 0, 0.1)` : 'none',
+          }}
+          onClick={() => setTheme(theme)}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          aria-label={`切换到${theme}主题`}
+        />
+      ))}
+    </div>
+    <div className="text-xs mt-2 text-center text-gray-400">
+      CPU | 内存 | 存储 | 网络 | 安全
+    </div>
+  </div>
+);
+
+/**
+ * 头部按钮组件
+ */
+interface HeaderButtonProps {
+  icon: React.ReactNode;
+  label: string;
+}
+
+const HeaderButton: React.FC<HeaderButtonProps> = ({ icon, label }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <motion.button
+      className="p-2 rounded-lg transition-all duration-200"
+      style={{
+        backgroundColor: isHovered ? 'var(--module-cpu-light)' : 'transparent',
+        color: isHovered ? 'var(--module-cpu-primary)' : '#6b7280', // gray-500
+        border: `2px solid ${isHovered ? 'var(--module-cpu-primary)' : 'transparent'}`,
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      whileHover={{ scale: 1.05 }}
+      whileTap={{ scale: 0.95 }}
+      aria-label={label}
+    >
+      {icon}
+    </motion.button>
+  );
+};
+
+/**
+ * 侧边栏菜单项组件
+ */
+interface SidebarMenuItemProps {
+  icon: React.ElementType;
+  label: string;
+  count?: number;
+  isActive: boolean;
+  onClick: () => void;
+  isSpecial?: boolean;
+}
+
+const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
+  icon: Icon,
+  label,
+  count,
+  isActive,
+  onClick,
+  isSpecial
+}) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <motion.button
+      className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg mb-1 transition-all duration-200"
+      style={{
+        backgroundColor: isActive
+          ? 'var(--module-cpu-primary)'
+          : isHovered
+            ? 'var(--module-cpu-light)'
+            : 'transparent',
+        color: isActive ? '#ffffff' : isHovered ? 'var(--module-cpu-dark)' : '#4b5563', // gray-600
+        borderLeft: `3px solid ${isActive ? 'var(--module-cpu-dark)' : 'transparent'}`,
+        boxShadow: isActive ? '0 2px 4px rgba(0, 0, 0, 0.1)' : 'none', // 优化阴影
+        transform: isHovered && !isActive ? 'translateX(2px)' : 'translateX(0)',
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      onClick={onClick}
+      whileHover={!isActive ? { x: 2 } : {}}
+      whileTap={{ scale: 0.98 }}
+    >
+      <div className="flex items-center space-x-3">
+        <Icon className={`h-5 w-5 ${isSpecial ? 'animate-pulse' : ''}`} />
+        <span className="font-medium">{label}</span>
+      </div>
+      {count !== undefined && count > 0 && (
+        <span
+          className="text-xs px-2 py-0.5 rounded-full"
+          style={{
+            backgroundColor: isActive ? 'rgba(255, 255, 255, 0.2)' : 'var(--module-cpu-primary)',
+            color: isActive ? '#ffffff' : '#ffffff',
+          }}
+        >
+          {count}
+        </span>
+      )}
+    </motion.button>
+  );
+};
+
+/**
+ * AI功能卡片组件
+ */
+interface AIFeatureCardProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+}
+
+const AIFeatureCard: React.FC<AIFeatureCardProps> = ({ icon, title, description }) => {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <motion.div
+      className="p-6 rounded-lg transition-all duration-200"
+      style={{
+        backgroundColor: isHovered ? 'var(--module-cpu-light)' : '#ffffff',
+        border: `1px solid ${isHovered ? 'var(--module-cpu-primary)' : 'rgba(0, 0, 0, 0.05)'}`,
+        boxShadow: isHovered ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : '0 1px 2px 0 rgba(0, 0, 0, 0.05)', // 阴影灰
+      }}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      whileHover={{ scale: 1.03, y: -2 }}
+      whileTap={{ scale: 0.98 }}
+    >
+      <div
+        className="inline-flex items-center justify-center w-12 h-12 rounded-lg mb-3"
+        style={{
+          backgroundColor: 'var(--module-cpu-primary)',
+          color: '#ffffff',
+        }}
+      >
+        {icon}
+      </div>
+      <h4 className="font-semibold mb-2" style={{ color: 'var(--module-cpu-dark)' }}>
+        {title}
+      </h4>
+      <p className="text-sm text-gray-500">
+        {description}
+      </p>
+    </motion.div>
+  );
+};
+
+/* ==================== 主组件 ==================== */
+
 /**
  * 邮件服务主组件
  */
@@ -55,37 +232,6 @@ export const EmailService: React.FC = () => {
     setEmailForm((prev: typeof emailForm) => ({ ...prev, to: '' }));
   };
   // ---------------------------
-
-  // 主题切换器
-  const ThemeSwitcher = () => (
-    <div className="p-4 border-t" style={{ borderColor: 'rgba(0, 0, 0, 0.06)' }}>
-      <div className="text-xs mb-2 font-medium" style={{ color: 'var(--module-cpu-shadow)' }}>
-        主题模块
-      </div>
-      <div className="grid grid-cols-5 gap-2">
-        {(['cpu', 'memory', 'storage', 'network', 'security'] as const).map((theme) => (
-          <motion.button
-            key={theme}
-            className="h-8 rounded transition-all duration-200"
-            style={{
-              backgroundColor: currentTheme === theme
-                ? `var(--module-${theme}-primary)`
-                : `var(--module-${theme}-light)`,
-              border: `2px solid ${currentTheme === theme ? `var(--module-${theme}-primary)` : 'transparent'}`,
-              boxShadow: currentTheme === theme ? `0 2px 4px rgba(0, 0, 0, 0.1)` : 'none',
-            }}
-            onClick={() => setTheme(theme)}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            aria-label={`切换到${theme}主题`}
-          />
-        ))}
-      </div>
-      <div className="text-xs mt-2 text-center text-gray-400">
-        CPU | 内存 | 存储 | 网络 | 安全
-      </div>
-    </div>
-  );
 
   // 菜单项数据
   const menuItems = [
@@ -234,7 +380,7 @@ export const EmailService: React.FC = () => {
             </nav>
 
             {/* 主题切换器 */}
-            <ThemeSwitcher />
+            <ThemeSwitcher currentTheme={currentTheme} setTheme={setTheme} />
           </aside>
 
           {/* 主内容区 */}
@@ -288,8 +434,9 @@ export const EmailService: React.FC = () => {
                 <ModuleCard title="发送测试邮件" level={1}>
                   <form onSubmit={handleSend} className="space-y-4 max-w-lg">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">收件人</label>
+                      <label htmlFor="email-to" className="block text-sm font-medium text-gray-700 mb-1">收件人</label>
                       <input
+                        id="email-to"
                         type="email"
                         value={emailForm.to}
                         onChange={(e) => setEmailForm({...emailForm, to: e.target.value})}
@@ -299,8 +446,9 @@ export const EmailService: React.FC = () => {
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">模板</label>
+                      <label htmlFor="email-template" className="block text-sm font-medium text-gray-700 mb-1">模板</label>
                       <select
+                        id="email-template"
                         value={emailForm.template}
                         onChange={(e) => setEmailForm({...emailForm, template: e.target.value})}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -364,7 +512,7 @@ export const EmailService: React.FC = () => {
                   <div className="grid grid-cols-2 gap-4 max-w-2xl mx-auto">
                     <AIFeatureCard
                       icon={<Mail className="h-6 w-6" />}
-                      title="��能回复"
+                      title="智能回复"
                       description="基于邮件内容自动生成回复建议"
                     />
                     <AIFeatureCard
@@ -412,139 +560,4 @@ export const EmailService: React.FC = () => {
   );
 };
 
-/* ==================== 子组件 ==================== */
-
-/**
- * 头部按钮组件
- */
-interface HeaderButtonProps {
-  icon: React.ReactNode;
-  label: string;
-}
-
-const HeaderButton: React.FC<HeaderButtonProps> = ({ icon, label }) => {
-  const [isHovered, setIsHovered] = useState(false);
-
-  return (
-    <motion.button
-      className="p-2 rounded-lg transition-all duration-200"
-      style={{
-        backgroundColor: isHovered ? 'var(--module-cpu-light)' : 'transparent',
-        color: isHovered ? 'var(--module-cpu-primary)' : '#6b7280', // gray-500
-        border: `2px solid ${isHovered ? 'var(--module-cpu-primary)' : 'transparent'}`,
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      aria-label={label}
-    >
-      {icon}
-    </motion.button>
-  );
-};
-
-/**
- * 侧边栏菜单项组件
- */
-interface SidebarMenuItemProps {
-  icon: React.ElementType;
-  label: string;
-  count?: number;
-  isActive: boolean;
-  onClick: () => void;
-  isSpecial?: boolean;
-}
-
-const SidebarMenuItem: React.FC<SidebarMenuItemProps> = ({
-  icon: Icon,
-  label,
-  count,
-  isActive,
-  onClick,
-  isSpecial
-}) => {
-  const [isHovered, setIsHovered] = useState(false);
-
-  return (
-    <motion.button
-      className="w-full flex items-center justify-between px-3 py-2.5 rounded-lg mb-1 transition-all duration-200"
-      style={{
-        backgroundColor: isActive
-          ? 'var(--module-cpu-primary)'
-          : isHovered
-            ? 'var(--module-cpu-light)'
-            : 'transparent',
-        color: isActive ? '#ffffff' : isHovered ? 'var(--module-cpu-dark)' : '#4b5563', // gray-600
-        borderLeft: `3px solid ${isActive ? 'var(--module-cpu-dark)' : 'transparent'}`,
-        boxShadow: isActive ? '0 2px 4px rgba(0, 0, 0, 0.1)' : 'none', // 优化阴影
-        transform: isHovered && !isActive ? 'translateX(2px)' : 'translateX(0)',
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      onClick={onClick}
-      whileHover={!isActive ? { x: 2 } : {}}
-      whileTap={{ scale: 0.98 }}
-    >
-      <div className="flex items-center space-x-3">
-        <Icon className={`h-5 w-5 ${isSpecial ? 'animate-pulse' : ''}`} />
-        <span className="font-medium">{label}</span>
-      </div>
-      {count !== undefined && count > 0 && (
-        <span
-          className="text-xs px-2 py-0.5 rounded-full"
-          style={{
-            backgroundColor: isActive ? 'rgba(255, 255, 255, 0.2)' : 'var(--module-cpu-primary)',
-            color: isActive ? '#ffffff' : '#ffffff',
-          }}
-        >
-          {count}
-        </span>
-      )}
-    </motion.button>
-  );
-};
-
-/**
- * AI功能卡片组件
- */
-interface AIFeatureCardProps {
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-}
-
-const AIFeatureCard: React.FC<AIFeatureCardProps> = ({ icon, title, description }) => {
-  const [isHovered, setIsHovered] = useState(false);
-
-  return (
-    <motion.div
-      className="p-6 rounded-lg transition-all duration-200"
-      style={{
-        backgroundColor: isHovered ? 'var(--module-cpu-light)' : '#ffffff',
-        border: `1px solid ${isHovered ? 'var(--module-cpu-primary)' : 'rgba(0, 0, 0, 0.05)'}`,
-        boxShadow: isHovered ? '0 4px 6px -1px rgba(0, 0, 0, 0.1)' : '0 1px 2px 0 rgba(0, 0, 0, 0.05)', // 阴影灰
-      }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-      whileHover={{ scale: 1.03, y: -2 }}
-      whileTap={{ scale: 0.98 }}
-    >
-      <div
-        className="inline-flex items-center justify-center w-12 h-12 rounded-lg mb-3"
-        style={{
-          backgroundColor: 'var(--module-cpu-primary)',
-          color: '#ffffff',
-        }}
-      >
-        {icon}
-      </div>
-      <h4 className="font-semibold mb-2" style={{ color: 'var(--module-cpu-dark)' }}>
-        {title}
-      </h4>
-      <p className="text-sm text-gray-500">
-        {description}
-      </p>
-    </motion.div>
-  );
-};
+export default EmailService;
