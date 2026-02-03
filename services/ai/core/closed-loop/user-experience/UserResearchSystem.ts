@@ -3,14 +3,10 @@
  * @description 用户研究系统 - 进行用户研究和反馈收集
  */
 
-import type { AutonomousAIConfig } from '../../autonomous-ai-widget/types';
 import type { ClosedLoopMetrics } from '../types';
 
 export class UserResearchSystem {
-  private config: AutonomousAIConfig;
-
-  constructor(config: AutonomousAIConfig) {
-    this.config = config;
+  constructor() {
   }
 
   /**

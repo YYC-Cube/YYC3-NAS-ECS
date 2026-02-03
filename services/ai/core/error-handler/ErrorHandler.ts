@@ -1,12 +1,9 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 import {
   YYC3Error,
   ErrorSeverity,
   ErrorCategory,
   isYYC3Error,
-  getErrorCode,
-  getErrorCategory,
-  getErrorSeverity,
   isRetryable
 } from './ErrorTypes';
 
@@ -213,7 +210,6 @@ export class ErrorHandler extends EventEmitter {
         const maxAttempts = this.config.recoveryConfig?.retryConfig?.maxAttempts || this.config.maxRetryAttempts;
         const retryDelay = this.config.recoveryConfig?.retryConfig?.initialDelay || this.config.retryDelay;
 
-        let lastError: any;
         for (let attempt = 0; attempt < maxAttempts; attempt++) {
           try {
             const result = await recoveryFunction();
@@ -222,7 +218,6 @@ export class ErrorHandler extends EventEmitter {
             this.emit('recovery', { error: yyc3Error, result });
             break;
           } catch (recoveryError) {
-            lastError = recoveryError;
             if (attempt < maxAttempts - 1) {
               await this.sleep(retryDelay);
             }
@@ -234,7 +229,7 @@ export class ErrorHandler extends EventEmitter {
           report.success = false;
         }
       } else {
-        report.recoverySuccess = await this.attemptRecovery(yyc3Error, context);
+        report.recoverySuccess = await this.attemptRecovery(yyc3Error);
         report.success = report.recoverySuccess;
       }
     }
@@ -374,8 +369,7 @@ export class ErrorHandler extends EventEmitter {
   }
 
   private async attemptRecovery(
-    error: YYC3Error,
-    context: Record<string, any>
+    error: YYC3Error
   ): Promise<boolean> {
     const strategies = this.recoveryStrategies.get(error.category) || [];
 

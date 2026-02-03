@@ -236,13 +236,13 @@ export interface ParadigmComparison {
   weaknesses: string[];
 }
 
-export interface ClassicalCompute implements ComputeParadigm {
+export interface ClassicalCompute extends ComputeParadigm {
   type: 'classical';
   capabilities: ParadigmCapabilities;
   config: ParadigmConfig;
 }
 
-export interface QuantumCompute implements ComputeParadigm {
+export interface QuantumCompute extends ComputeParadigm {
   type: 'quantum';
   capabilities: ParadigmCapabilities;
   config: ParadigmConfig;
@@ -257,7 +257,7 @@ export interface QuantumGate {
   parameters?: number[];
 }
 
-export interface NeuromorphicCompute implements ComputeParadigm {
+export interface NeuromorphicCompute extends ComputeParadigm {
   type: 'neuromorphic';
   capabilities: ParadigmCapabilities;
   config: ParadigmConfig;
@@ -272,7 +272,7 @@ export type NeuromorphicArchitecture =
   | 'brain_inspired'
   | 'custom';
 
-export interface HybridCompute implements ComputeParadigm {
+export interface HybridCompute extends ComputeParadigm {
   type: 'hybrid';
   capabilities: ParadigmCapabilities;
   config: ParadigmConfig;
@@ -292,7 +292,7 @@ export type OrchestrationStrategy =
   | 'adaptive'
   | 'custom';
 
-export interface SymbolicCompute implements ComputeParadigm {
+export interface SymbolicCompute extends ComputeParadigm {
   type: 'symbolic';
   capabilities: ParadigmCapabilities;
   config: ParadigmConfig;
@@ -365,7 +365,7 @@ export interface Relation {
   range: string;
 }
 
-export interface ConnectionistCompute implements ComputeParadigm {
+export interface ConnectionistCompute extends ComputeParadigm {
   type: 'connectionist';
   capabilities: ParadigmCapabilities;
   config: ParadigmConfig;
@@ -419,7 +419,7 @@ export interface TrainingConfig {
   metrics: string[];
 }
 
-export interface EvolutionaryCompute implements ComputeParadigm {
+export interface EvolutionaryCompute extends ComputeParadigm {
   type: 'evolutionary';
   capabilities: ParadigmCapabilities;
   config: ParadigmConfig;

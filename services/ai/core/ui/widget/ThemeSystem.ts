@@ -10,7 +10,7 @@
  * @license MIT
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 
 export interface ThemeColors {
   primary: string;
@@ -127,9 +127,9 @@ export type ThemeChangeEvent = {
 };
 
 export class ThemeSystem extends EventEmitter {
-  private config: Required<ThemeSystemConfig>;
+  private config: ThemeSystemConfig;
   private themes: Map<string, Theme>;
-  private currentTheme: Theme;
+  private currentTheme!: Theme;
   private previousTheme: Theme | null;
   private autoMode: boolean;
   private transitionEnabled: boolean;
@@ -152,17 +152,16 @@ export class ThemeSystem extends EventEmitter {
       enablePersistence: true,
       persistenceKey: 'yyc3-widget-theme',
       customThemes: [],
-      onThemeChange: undefined,
       ...config,
     };
 
     this.themes = new Map();
-    this.autoMode = this.config.enableAutoMode;
-    this.transitionEnabled = this.config.enableTransitions;
-    this.transitionDuration = this.config.transitionDuration;
-    this.transitionEasing = this.config.transitionEasing;
-    this.persistenceEnabled = this.config.enablePersistence;
-    this.persistenceKey = this.config.persistenceKey;
+    this.autoMode = this.config.enableAutoMode ?? true;
+    this.transitionEnabled = this.config.enableTransitions ?? true;
+    this.transitionDuration = this.config.transitionDuration ?? 300;
+    this.transitionEasing = this.config.transitionEasing ?? 'ease-in-out';
+    this.persistenceEnabled = this.config.enablePersistence ?? true;
+    this.persistenceKey = this.config.persistenceKey ?? 'yyc3-widget-theme';
     this.systemThemeListener = null;
     this.rootElement = null;
     this.previousTheme = null;
@@ -515,7 +514,7 @@ export class ThemeSystem extends EventEmitter {
     this.emit('theme:deleted', themeId);
 
     if (this.currentTheme.id === themeId) {
-      this.setTheme(this.config.defaultTheme);
+      this.setTheme(this.config.defaultTheme || 'light');
     }
   }
 
@@ -670,16 +669,17 @@ export class ThemeSystem extends EventEmitter {
 
       return theme;
     } catch (error) {
-      throw new Error(`Failed to import theme: ${error.message}`);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`Failed to import theme: ${errorMessage}`);
     }
   }
 
   resetToDefault(): void {
-    this.setTheme(this.config.defaultTheme);
+    this.setTheme(this.config.defaultTheme ?? 'light');
     this.autoMode = false;
-    this.transitionEnabled = this.config.enableTransitions;
-    this.transitionDuration = this.config.transitionDuration;
-    this.transitionEasing = this.config.transitionEasing;
+    this.transitionEnabled = this.config.enableTransitions ?? true;
+    this.transitionDuration = this.config.transitionDuration ?? 300;
+    this.transitionEasing = this.config.transitionEasing ?? 'ease-in-out';
     this.savePersistedTheme();
     this.emit('theme:reset');
   }

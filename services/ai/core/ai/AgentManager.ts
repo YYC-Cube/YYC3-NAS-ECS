@@ -10,7 +10,7 @@
  * @license MIT
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 import { v4 as uuidv4 } from 'uuid';
 import {
   AgentMessage,

@@ -471,7 +471,8 @@ VITE_LOG_LEVEL=debug
 
 **问题描述**: BackupService的所有测试用例失败
 
-**失败原因**: 
+**失败原因**:
+
 - localStorage在测试环境中未正确初始化
 - BackupService在模块加载时尝试访问localStorage
 
@@ -480,6 +481,7 @@ VITE_LOG_LEVEL=debug
 **严重程度**: 🔴 高
 
 **解决方案**:
+
 1. 在测试setup中正确初始化localStorage
 2. 修改BackupService构造函数，延迟localStorage访问
 3. 添加localStorage可用性检查
@@ -489,6 +491,7 @@ VITE_LOG_LEVEL=debug
 **问题描述**: ConfigManager的所有测试用例失败
 
 **失败原因**:
+
 - ConfigManager在模块加载时初始化，此时localStorage未准备好
 - 测试环境中的localStorage模拟不完整
 
@@ -497,6 +500,7 @@ VITE_LOG_LEVEL=debug
 **严重程度**: 🔴 高
 
 **解决方案**:
+
 1. 延迟ConfigManager实例化
 2. 在测试setup中提供完整的localStorage模拟
 3. 添加环境检测，在测试环境中跳过localStorage访问
@@ -506,6 +510,7 @@ VITE_LOG_LEVEL=debug
 **问题描述**: 所有集成测试用例失败
 
 **失败原因**:
+
 - 依赖的服务（BackupService、ConfigManager）初始化失败
 - 服务间依赖关系未正确处理
 
@@ -514,6 +519,7 @@ VITE_LOG_LEVEL=debug
 **严重程度**: 🔴 高
 
 **解决方案**:
+
 1. 修复依赖服务的初始化问题
 2. 在集成测试中正确设置测试环境
 3. 添加服务初始化顺序控制
@@ -523,6 +529,7 @@ VITE_LOG_LEVEL=debug
 **问题描述**: 所有性能测试用例失败
 
 **失败原因**:
+
 - 与集成测试相同，依赖服务初始化失败
 - 性能测试需要真实的服务实例
 
@@ -531,6 +538,7 @@ VITE_LOG_LEVEL=debug
 **严重程度**: 🔴 高
 
 **解决方案**:
+
 1. 修复依赖服务初始化问题
 2. 为性能测试提供专门的测试环境
 3. 添加性能基准数据
@@ -540,6 +548,7 @@ VITE_LOG_LEVEL=debug
 **问题描述**: 4个环境配置测试用例失败
 
 **失败原因**:
+
 - 部分环境配置项缺失或值不正确
 - 测试用例期望值与实际配置不匹配
 
@@ -548,6 +557,7 @@ VITE_LOG_LEVEL=debug
 **严重程度**: 🟡 中
 
 **解决方案**:
+
 1. 检查并补充缺失的环境配置项
 2. 更新测试用例期望值
 3. 添加配置验证机制
@@ -654,11 +664,13 @@ VITE_LOG_LEVEL=debug
 **建议**: 暂缓上线，待修复关键问题后重新测试
 
 **理由**:
+
 1. 备份服务和配置管理服务测试未通过
 2. 集成测试和性能测试未完成
 3. 代码覆盖率未达到80%的目标
 
 **上线条件**:
+
 1. 修复localStorage初始化问题
 2. 所有测试用例通过率≥95%
 3. 代码覆盖率≥80%

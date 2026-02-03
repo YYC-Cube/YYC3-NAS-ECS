@@ -13,7 +13,7 @@ export interface ChatMessage {
   content: string;
   timestamp: number;
   attachments?: Attachment[];
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   status?: 'sending' | 'sent' | 'delivered' | 'read' | 'error';
   reactions?: MessageReaction[];
 }
@@ -40,7 +40,7 @@ export interface ChatSession {
   messages: ChatMessage[];
   createdAt: number;
   updatedAt: number;
-  metadata?: Record<string, any>;
+  metadata?: Record<string, unknown>;
   model?: string;
   template?: SessionTemplate;
 }

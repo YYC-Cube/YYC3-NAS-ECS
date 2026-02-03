@@ -1,4 +1,5 @@
 export { AdvancedDragSystem } from './AdvancedDragSystem';
+export type { DragConfig, DragPosition, DragDelta, DragState, DragEvent } from './AdvancedDragSystem';
 export { AnalysisSystem } from './AnalysisSystem';
 export { AnimationSystem } from './AnimationSystem';
 export { ErrorHandlingSystem } from './ErrorHandlingSystem';

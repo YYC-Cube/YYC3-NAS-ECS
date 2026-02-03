@@ -1,5 +1,13 @@
 # YYC³ NAS-ECS 监控面板使用示例
 
+> ***YanYuCloudCube***
+> 言启象限 | 语枢未来
+> ***Words Initiate Quadrants, Language Serves as Core for the Future***
+> 万象归元于云枢 | 深栈智启新纪元
+> ***All things converge in the cloud pivot; Deep stacks ignite a new era of intelligence***
+
+---
+
 **创建日期**: 2026-01-25  
 **作者**: YYC³ Team  
 **版本**: 1.0.0
@@ -24,11 +32,13 @@
 ### 1. 访问监控面板
 
 **步骤**:
+
 1. 登录YYC³ NAS-ECS系统
 2. 点击左侧导航栏的"监控面板"
 3. 进入实时监控界面
 
 **界面说明**:
+
 ```
 ┌─────────────────────────────────────────────────┐
 │  监控面板                        [刷新] [设置]  │
@@ -45,6 +55,7 @@
 ### 2. 查看系统状态
 
 **系统状态指标**:
+
 - **CPU使用率**: 当前CPU使用百分比
 - **内存使用率**: 当前内存使用百分比
 - **磁盘使用率**: 当前磁盘使用百分比
@@ -53,6 +64,7 @@
 - **运行时间**: 系统连续运行时间
 
 **状态颜色说明**:
+
 - 🟢 绿色: 正常（< 70%）
 - 🟡 黄色: 警告（70-90%）
 - 🔴 红色: 严重（> 90%）
@@ -60,6 +72,7 @@
 ### 3. 设置告警阈值
 
 **步骤**:
+
 1. 点击右上角"设置"按钮
 2. 进入告警配置页面
 3. 设置各项告警阈值:
@@ -69,6 +82,7 @@
 4. 点击"保存"按钮
 
 **配置示例**:
+
 ```typescript
 // 告警阈值配置
 const alertThresholds = {
@@ -83,6 +97,7 @@ const alertThresholds = {
 ### 4. 查看历史数据
 
 **步骤**:
+
 1. 点击"历史"按钮
 2. 选择时间范围:
    - 1小时
@@ -97,6 +112,7 @@ const alertThresholds = {
 4. 查看历史趋势图
 
 **导出数据**:
+
 ```typescript
 // 导出历史数据为CSV
 const exportData = async (timeRange: string, dataType: string) => {
@@ -160,6 +176,7 @@ getSystemStats();
 ```
 
 **响应示例**:
+
 ```json
 {
   "success": true,
@@ -229,6 +246,7 @@ setAlertThresholds(thresholds);
 ```
 
 **请求示例**:
+
 ```json
 {
   "cpu": 80,
@@ -240,6 +258,7 @@ setAlertThresholds(thresholds);
 ```
 
 **响应示例**:
+
 ```json
 {
   "success": true,
@@ -288,6 +307,7 @@ getHistoryData(historyParams);
 ```
 
 **响应示例**:
+
 ```json
 {
   "success": true,
@@ -354,6 +374,7 @@ addCustomMonitor(customMonitor);
 ```
 
 **请求示例**:
+
 ```json
 {
   "name": "Node.js进程监控",
@@ -461,6 +482,7 @@ getBatchMetrics(metrics);
 ```
 
 **响应示例**:
+
 ```json
 {
   "success": true,
@@ -913,6 +935,7 @@ restartMonitorService();
 ### 1. 合理设置告警阈值
 
 **建议**:
+
 - CPU告警阈值: 80-85%
 - 内存告警阈值: 85-90%
 - 磁盘告警阈值: 90-95%
@@ -920,6 +943,7 @@ restartMonitorService();
 - 系统负载: 根据CPU核心数设置（如8核心设置为5）
 
 **示例**:
+
 ```typescript
 const recommendedThresholds = {
   cpu: 80,
@@ -933,11 +957,13 @@ const recommendedThresholds = {
 ### 2. 使用多级告警
 
 **优势**:
+
 - 避免告警疲劳
 - 区分告警严重程度
 - 提高告警准确性
 
 **示例**:
+
 ```typescript
 const multiLevelAlerts = {
   warning: { threshold: 70, actions: ['log'] },
@@ -948,6 +974,7 @@ const multiLevelAlerts = {
 ### 3. 定期审查监控配置
 
 **建议**:
+
 - 每月审查一次告警阈值
 - 每季度审查一次监控项
 - 根据实际情况调整配置
@@ -955,11 +982,13 @@ const multiLevelAlerts = {
 ### 4. 使用智能告警
 
 **优势**:
+
 - 基于历史数据学习
 - 自动识别异常
 - 减少误报
 
 **示例**:
+
 ```typescript
 const smartAlertConfig = {
   algorithm: 'anomaly_detection',
@@ -971,6 +1000,7 @@ const smartAlertConfig = {
 ### 5. 建立告警响应流程
 
 **建议**:
+
 1. 接收告警通知
 2. 评估告警严重程度
 3. 查看监控数据和日志

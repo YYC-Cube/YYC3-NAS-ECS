@@ -5,13 +5,27 @@
     <link rel="icon" type="image/png" href="/yyc3-pwa-icon.png" />
     <link rel="apple-touch-icon" href="/yyc3-pwa-icon.png" />
     <link rel="manifest" href="/manifest.json" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="description" content="YYC³ NAS-ECS 企业管理平台 - 言启象限 | 语枢未来" />
     <meta name="theme-color" content="#2563eb" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="YYC³ NAS-ECS" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="application-name" content="YYC³ NAS-ECS" />
     <title>YYC³ NAS-ECS 企业管理平台</title>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch((err) => {
+            console.log('Service Worker registration failed:', err);
+          });
+        });
+      }
+    </script>
   </body>
 </html>

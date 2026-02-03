@@ -11,4 +11,7 @@ export interface ClosedLoopMetrics {
   dataQuality?: number;
   userSatisfaction?: number;
   businessValue?: number;
+  accuracy?: number;
+  satisfaction?: number;
+  usageFrequency?: number;
 }

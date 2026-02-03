@@ -62,7 +62,7 @@ export const ConfigManager: React.FC = () => {
     { name: 'monitor-0379', content: '[monitor-0379]\ntype = http\nlocalIP = 127.0.0.1\nlocalPort = 6006\nsubdomain = monitor' },
     { name: 'ddns-0379', content: '[ddns-0379]\ntype = http\nlocalIP = 127.0.0.1\nlocalPort = 6007\nsubdomain = ddns' },
   ]);
-  
+
   const [globalConfig, setGlobalConfig] = useState<FRPGlobalConfig>({
     serverAddr: '8.152.195.33',
     serverPort: 7001,
@@ -72,14 +72,14 @@ export const ConfigManager: React.FC = () => {
     logLevel: 'debug',
     tlsEnabled: true
   });
-  
+
   const [currentProxyIndex, setCurrentProxyIndex] = useState(0);
   const [newProxyName, setNewProxyName] = useState('');
   const [serviceStatus, setServiceStatus] = useState<FRPServiceStatus>({ running: false });
   const [clientStatus, setClientStatus] = useState<FRPClientStatus>({ connected: false });
   const [isLoading, setIsLoading] = useState(false);
   const [showBackups, setShowBackups] = useState(false);
-  const [backups, setBackups] = useState<any[]>([]);
+  const [backups, setBackups] = useState<Array<{ filename: string; created: string; content: string }>>([]);
   const { generateConfig, isGenerating } = useLLM();
 
   const currentProxy = proxies[currentProxyIndex];
@@ -102,8 +102,8 @@ export const ConfigManager: React.FC = () => {
           setProxies(data.proxies);
         }
       }
-    } catch (error) {
-      toast.error('加载配置失败: ' + (error as Error).message);
+    } catch (_error) {
+      toast.error('加载配置失败');
     } finally {
       setIsLoading(false);
     }
@@ -133,8 +133,8 @@ export const ConfigManager: React.FC = () => {
       } else {
         toast.error('保存配置失败');
       }
-    } catch (error) {
-      toast.error('保存配置失败: ' + (error as Error).message);
+    } catch (_error) {
+      toast.error('保存配置失败');
     } finally {
       setIsLoading(false);
     }
@@ -151,8 +151,8 @@ export const ConfigManager: React.FC = () => {
       } else {
         toast.error('启动服务失败');
       }
-    } catch (error) {
-      toast.error('启动服务失败: ' + (error as Error).message);
+    } catch (_error) {
+      toast.error('启动服务失败');
     } finally {
       setIsLoading(false);
     }
@@ -169,8 +169,8 @@ export const ConfigManager: React.FC = () => {
       } else {
         toast.error('停止服务失败');
       }
-    } catch (error) {
-      toast.error('停止服务失败: ' + (error as Error).message);
+    } catch (_error) {
+      toast.error('停止服务失败');
     } finally {
       setIsLoading(false);
     }
@@ -203,7 +203,7 @@ export const ConfigManager: React.FC = () => {
         const status = await response.json();
         setServiceStatus(status);
       }
-    } catch (error) {
+    } catch (_error) {
       setServiceStatus({ running: false, error: '无法连接到服务' });
     }
   };
@@ -216,7 +216,7 @@ export const ConfigManager: React.FC = () => {
         const status = await response.json();
         setClientStatus(status);
       }
-    } catch (error) {
+    } catch (_error) {
       setClientStatus({ connected: false, error: '客户端未连接' });
     }
   };
@@ -266,7 +266,7 @@ export const ConfigManager: React.FC = () => {
   const aiOptimize = async () => {
     toast.info("AI 正在分析并优化配置...");
     const suggestion = await generateConfig(currentProxy.content, "请优化此FRP配置");
-    
+
     const newProxies = [...proxies];
     newProxies[currentProxyIndex].content = suggestion;
     setProxies(newProxies);
@@ -284,7 +284,7 @@ export const ConfigManager: React.FC = () => {
       });
 
       const result = await response.json();
-      
+
       if (result.valid) {
         if (result.warnings.length > 0) {
           toast.warning('配置验证通过，但存在警告: ' + result.warnings.join(', '));
@@ -418,9 +418,9 @@ export const ConfigManager: React.FC = () => {
             <RefreshCw size={14} />
             重启服务
           </Button>
-          <Button 
-            onClick={() => setShowBackups(!showBackups)} 
-            disabled={isLoading} 
+          <Button
+            onClick={() => setShowBackups(!showBackups)}
+            disabled={isLoading}
             variant="outline"
             className="flex items-center gap-2"
           >
@@ -452,15 +452,16 @@ export const ConfigManager: React.FC = () => {
                   添加
                 </Button>
               </div>
-              <ul className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
+              <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2">
                 {proxies.map((proxy, index) => (
-                  <li 
+                  <button
                     key={proxy.name}
                     onClick={() => setCurrentProxyIndex(index)}
+                    type="button"
                     className={`
-                      p-3 rounded-lg cursor-pointer transition flex items-center justify-between
-                      ${currentProxyIndex === index 
-                        ? 'bg-blue-50 text-blue-600 border border-blue-200 shadow-sm' 
+                      w-full p-3 rounded-lg cursor-pointer transition flex items-center justify-between
+                      ${currentProxyIndex === index
+                        ? 'bg-blue-50 text-blue-600 border border-blue-200 shadow-sm'
                         : 'hover:bg-gray-50 text-gray-700'}
                     `}
                   >
@@ -469,16 +470,16 @@ export const ConfigManager: React.FC = () => {
                       <span className="truncate">{proxy.name}</span>
                     </div>
                     {currentProxyIndex === index && (
-                      <button 
+                      <button
                         onClick={deleteProxy}
                         className="text-red-500 hover:text-red-700 p-1 rounded"
                       >
                         <Trash2 size={14} />
                       </button>
                     )}
-                  </li>
+                  </button>
                 ))}
-              </ul>
+              </div>
             </div>
           </ModuleCard>
 
@@ -513,9 +514,9 @@ export const ConfigManager: React.FC = () => {
           {showBackups && (
             <ModuleCard title="配置备份" level={1}>
               <div className="space-y-3">
-                <Button 
-                  onClick={backupConfig} 
-                  disabled={isLoading} 
+                <Button
+                  onClick={backupConfig}
+                  disabled={isLoading}
                   variant="outline"
                   className="w-full"
                 >
@@ -529,7 +530,7 @@ export const ConfigManager: React.FC = () => {
                 ) : (
                   <ul className="space-y-2 max-h-[300px] overflow-y-auto">
                     {backups.map((backup) => (
-                      <li 
+                      <li
                         key={backup.filename}
                         className="p-3 bg-gray-50 rounded-lg flex items-center justify-between"
                       >
@@ -580,7 +581,7 @@ export const ConfigManager: React.FC = () => {
                 AI优化器
               </TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="editor" className="flex-1 flex flex-col overflow-hidden">
               <ModuleCard title={`${currentProxy.name}.toml`} level={1} className="h-full flex flex-col">
                 <div className="flex-1 flex flex-col min-h-[600px]">
@@ -589,8 +590,8 @@ export const ConfigManager: React.FC = () => {
                       FRP 代理配置 (TOML 格式)
                     </span>
                     <div className="flex gap-2">
-                      <Button 
-                        onClick={aiOptimize} 
+                      <Button
+                        onClick={aiOptimize}
                         disabled={isGenerating}
                         variant="secondary"
                         className="flex items-center gap-2"
@@ -617,7 +618,7 @@ export const ConfigManager: React.FC = () => {
                 </div>
               </ModuleCard>
             </TabsContent>
-            
+
             <TabsContent value="global" className="flex-1">
               <ModuleCard title="全局配置" level={1} className="h-full">
                 <div className="space-y-6">
@@ -697,7 +698,7 @@ export const ConfigManager: React.FC = () => {
                 </div>
               </ModuleCard>
             </TabsContent>
-            
+
             <TabsContent value="status" className="flex-1">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
@@ -739,7 +740,7 @@ export const ConfigManager: React.FC = () => {
                     </div>
                   </CardContent>
                 </Card>
-                
+
                 <Card>
                   <CardHeader>
                     <CardTitle>FRP客户端状态</CardTitle>
@@ -781,7 +782,7 @@ export const ConfigManager: React.FC = () => {
                 </Card>
               </div>
             </TabsContent>
-            
+
             <TabsContent value="ai-optimizer" className="flex-1 overflow-y-auto">
               <FRPAIConfigOptimizer />
             </TabsContent>

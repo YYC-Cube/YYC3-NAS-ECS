@@ -1,6 +1,6 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from '../../../utils/EventEmitter';
 import { YYC3Error, ErrorSeverity, isYYC3Error } from './ErrorTypes';
-import { ErrorHandler, ErrorReport } from './ErrorHandler';
+import { ErrorHandler } from './ErrorHandler';
 
 export interface ErrorBoundaryConfig {
   fallbackComponent?: () => void;

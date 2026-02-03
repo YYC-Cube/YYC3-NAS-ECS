@@ -223,8 +223,8 @@ export const Mailbox: React.FC = () => {
       } else {
         setSelectedEmail(null);
       }
-    } catch (error) {
-      console.error(error);
+    } catch (_error) {
+      console.error(_error);
       toast.error('加载邮件失败');
     } finally {
       setLoading(false);
@@ -245,7 +245,7 @@ export const Mailbox: React.FC = () => {
         setSelectedEmail(prev => prev ? { ...prev, starred: !prev.starred } : null);
       }
       toast.success(email.starred ? '已取消星标' : '已添加星标');
-    } catch (error) {
+    } catch (_error) {
       toast.error('操作失败');
     }
   }, [selectedEmail]);
@@ -257,7 +257,7 @@ export const Mailbox: React.FC = () => {
         setEmails(prev => prev.filter(e => e.id !== selectedEmail.id));
         setSelectedEmail(null);
         toast.success('邮件已归档');
-      } catch (error) {
+      } catch (_error) {
         toast.error('归档失败');
       }
     }
@@ -319,11 +319,6 @@ export const Mailbox: React.FC = () => {
     loadEmails(activeFolder);
   }, [activeFolder]);
 
-  const handleSelectEmail = useCallback((email: Email) => {
-    setSelectedEmail(email);
-    handleMarkAsRead();
-  }, []);
-
   const handleMarkAsRead = useCallback(async () => {
     if (selectedEmail && !selectedEmail.read) {
       try {
@@ -331,11 +326,16 @@ export const Mailbox: React.FC = () => {
         setEmails(prev => prev.map(e =>
           e.id === selectedEmail.id ? { ...e, read: true } : e
         ));
-      } catch (error) {
+      } catch (_error) {
         toast.error('标记已读失败');
       }
     }
   }, [selectedEmail]);
+
+  const handleSelectEmail = useCallback((email: Email) => {
+    setSelectedEmail(email);
+    handleMarkAsRead();
+  }, [handleMarkAsRead]);
 
   const handleDelete = useCallback(async () => {
     if (selectedEmail) {
@@ -344,7 +344,7 @@ export const Mailbox: React.FC = () => {
         setEmails(prev => prev.filter(e => e.id !== selectedEmail.id));
         setSelectedEmail(null);
         toast.success('邮件已删除');
-      } catch (error) {
+      } catch (_error) {
         toast.error('删除邮件失败');
       }
     }
@@ -386,24 +386,27 @@ export const Mailbox: React.FC = () => {
             </h2>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-1">收件人</label>
+                <label htmlFor="email-to" className="block text-sm font-medium mb-1">收件人</label>
                 <input
+                  id="email-to"
                   type="email"
                   className="w-full border rounded-md px-3 py-2"
                   defaultValue={selectedEmail?.from}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">主题</label>
+                <label htmlFor="email-subject" className="block text-sm font-medium mb-1">主题</label>
                 <input
+                  id="email-subject"
                   type="text"
                   className="w-full border rounded-md px-3 py-2"
                   defaultValue={selectedEmail?.subject}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">内容</label>
+                <label htmlFor="email-body" className="block text-sm font-medium mb-1">内容</label>
                 <textarea
+                  id="email-body"
                   className="w-full border rounded-md px-3 py-2 h-48"
                   defaultValue={selectedEmail?.body}
                 />

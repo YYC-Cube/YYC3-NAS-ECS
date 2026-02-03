@@ -18,14 +18,14 @@ export function AIWidgetProvider({
   shortcut = 'Ctrl+K'
 }: AIWidgetProviderProps) {
   const { showWidget, toggleWidget } = useAIWidget();
-  const [isInitialized, setIsInitialized] = React.useState(false);
+  const isInitializedRef = React.useRef(false);
 
   useEffect(() => {
-    if (autoInit && !isInitialized) {
+    if (autoInit && !isInitializedRef.current) {
       showWidget();
-      setIsInitialized(true);
+      isInitializedRef.current = true;
     }
-  }, [autoInit, isInitialized, showWidget]);
+  }, [autoInit, showWidget]);
 
   useEffect(() => {
     if (!enableShortcut) return;

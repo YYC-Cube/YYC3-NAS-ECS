@@ -41,7 +41,7 @@ async function request<T>(
 
   // 如果使用真实API，添加认证
   if (!envConfig.shouldUseMockData()) {
-    const token = localStorage.getItem('auth_token');
+    const token = typeof localStorage !== 'undefined' && localStorage ? localStorage.getItem('auth_token') : null;
     if (token) {
       defaultOptions.headers = {
         ...defaultOptions.headers,

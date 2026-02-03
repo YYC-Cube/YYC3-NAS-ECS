@@ -3,14 +3,10 @@
  * @description 价值验证框架 - 验证系统创造的价值是否达到预期目标
  */
 
-import type { AutonomousAIConfig } from '../../autonomous-ai-widget/types';
 import type { ClosedLoopMetrics } from '../types';
 
 export class ValueValidationFramework {
-  private config: AutonomousAIConfig;
-
-  constructor(config: AutonomousAIConfig) {
-    this.config = config;
+  constructor() {
   }
 
   /**

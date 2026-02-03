@@ -16,9 +16,31 @@ class HelpService {
   private tickets: SupportTicket[] = [];
   private contactInfo!: ContactInfo;
   private storageKey = 'yyc3-help-data';
+  private isLocalStorageAvailable: boolean = false;
 
   constructor() {
+    this.checkLocalStorageAvailability();
     this.initialize();
+  }
+
+  private checkLocalStorageAvailability(): void {
+    try {
+      if (typeof localStorage === 'undefined' || localStorage === null) {
+        this.isLocalStorageAvailable = false;
+        return;
+      }
+      if (typeof localStorage.setItem !== 'function' || typeof localStorage.getItem !== 'function') {
+        this.isLocalStorageAvailable = false;
+        return;
+      }
+      const testKey = '__yyc3_storage_test__';
+      localStorage.setItem(testKey, 'test');
+      localStorage.removeItem(testKey);
+      this.isLocalStorageAvailable = true;
+    } catch (error) {
+      logger.warn('localStorage is not available:', error);
+      this.isLocalStorageAvailable = false;
+    }
   }
 
   private initialize(): void {
@@ -27,6 +49,9 @@ class HelpService {
   }
 
   private loadFromStorage(): void {
+    if (!this.isLocalStorageAvailable) {
+      return;
+    }
     try {
       const stored = localStorage.getItem(this.storageKey);
       if (stored) {
@@ -42,6 +67,9 @@ class HelpService {
   }
 
   private saveToStorage(): void {
+    if (!this.isLocalStorageAvailable) {
+      return;
+    }
     try {
       const data = {
         faqs: this.faqs,
@@ -773,4 +801,5 @@ YYC³ NAS-ECS 提供多层次的安全保护，确保您的系统和数据安全
   }
 }
 
+export { HelpService };
 export const helpService = new HelpService();

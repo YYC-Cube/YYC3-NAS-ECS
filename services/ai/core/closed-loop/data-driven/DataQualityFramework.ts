@@ -3,14 +3,10 @@
  * @description 数据质量框架 - 确保数据质量符合标准
  */
 
-import type { AutonomousAIConfig } from '../../autonomous-ai-widget/types';
 import type { ClosedLoopMetrics } from '../types';
 
 export class DataQualityFramework {
-  private config: AutonomousAIConfig;
-
-  constructor(config: AutonomousAIConfig) {
-    this.config = config;
+  constructor() {
   }
 
   /**

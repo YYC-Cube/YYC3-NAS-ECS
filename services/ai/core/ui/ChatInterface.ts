@@ -7,7 +7,7 @@
  * @created 2025-01-30
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 import {
   IChatInterface,
   ChatMessage,
@@ -29,8 +29,7 @@ import {
 import {
   NotFoundError,
   ValidationError,
-  InternalError,
-  YYC3Error
+  InternalError
 } from '../error-handler/ErrorTypes';
 import { ErrorHandler } from '../error-handler/ErrorHandler';
 import { ErrorBoundary } from '../error-handler/ErrorBoundary';
@@ -38,13 +37,11 @@ import { ErrorBoundary } from '../error-handler/ErrorBoundary';
 export class ChatInterface extends EventEmitter implements IChatInterface {
   private sessions: Map<string, ChatSession>;
   private currentSessionId: string | null;
-  private isTyping: boolean;
   private theme: ChatTheme;
   private layout: ChatLayout;
-  private themeConfig: ChatThemeConfig;
+  private themeConfig!: ChatThemeConfig;
   private visible: boolean;
   private minimized: boolean;
-  private messageQueue: Map<string, ChatMessage[]>;
   private errorHandler: ErrorHandler;
   private errorBoundary: ErrorBoundary;
 
@@ -52,12 +49,10 @@ export class ChatInterface extends EventEmitter implements IChatInterface {
     super();
     this.sessions = new Map();
     this.currentSessionId = null;
-    this.isTyping = false;
     this.theme = 'auto';
     this.layout = 'default';
     this.visible = true;
     this.minimized = false;
-    this.messageQueue = new Map();
     
     this.errorHandler = errorHandler || new ErrorHandler({ enableAutoRecovery: true });
     this.errorBoundary = new ErrorBoundary(this.errorHandler, {
@@ -121,9 +116,10 @@ export class ChatInterface extends EventEmitter implements IChatInterface {
         throw error;
       }
     }, {
-      operation: 'sendMessage',
-      sessionId: this.currentSessionId,
-      messageId: message.id
+      context: {
+        sessionId: this.currentSessionId,
+        messageId: message.id
+      }
     });
   }
 
@@ -197,16 +193,16 @@ export class ChatInterface extends EventEmitter implements IChatInterface {
 
     let messages = [...session.messages];
 
-    if (!options?.includeSystem) {
+    if (options?.includeSystem) {
       messages = messages.filter(m => m.role !== 'system');
     }
 
-    if (options?.before) {
-      messages = messages.filter(m => m.timestamp < options.before);
+    if (options?.before !== undefined) {
+      messages = messages.filter(m => m.timestamp < options.before!);
     }
 
-    if (options?.after) {
-      messages = messages.filter(m => m.timestamp > options.after);
+    if (options?.after !== undefined) {
+      messages = messages.filter(m => m.timestamp > options.after!);
     }
 
     if (options?.limit) {
@@ -297,7 +293,7 @@ export class ChatInterface extends EventEmitter implements IChatInterface {
     this.emit('session:renamed', { sessionId, oldName, newName });
   }
 
-  async suggestReplies(context: ReplyContext): Promise<SuggestedReply[]> {
+  async suggestReplies(_context: ReplyContext): Promise<SuggestedReply[]> {
     const suggestions: SuggestedReply[] = [
       {
         text: '请详细说明一下',
@@ -525,12 +521,10 @@ export class ChatInterface extends EventEmitter implements IChatInterface {
   }
 
   startTypingIndicator(): void {
-    this.isTyping = true;
     this.emit('typing:started');
   }
 
   stopTypingIndicator(): void {
-    this.isTyping = false;
     this.emit('typing:stopped');
   }
 

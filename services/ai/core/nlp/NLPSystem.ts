@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 import { SemanticUnderstandingEngine, SemanticAnalysis } from './semantic-understanding/SemanticUnderstandingEngine';
 import { DialogueManager, DialogueResponse } from './dialogue/DialogueManager';
 

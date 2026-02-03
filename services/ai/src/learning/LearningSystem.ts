@@ -1,5 +1,5 @@
 // src/learning/LearningSystem.ts
-  import { EventEmitter } from 'events';
+  import { EventEmitter } from '@utils/EventEmitter';
 
   // 核心类型定义
   export interface LearningConfig {

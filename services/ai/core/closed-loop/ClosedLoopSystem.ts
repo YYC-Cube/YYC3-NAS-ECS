@@ -15,24 +15,21 @@ import { UserResearchSystem } from './user-experience/UserResearchSystem';
 import { BusinessValueFramework } from './business-value/BusinessValueFramework';
 import { ROIcalculator } from './business-value/ROICalculator';
 
-import type { AutonomousAIConfig } from '../autonomous-ai-widget/types';
 import type { ClosedLoopMetrics } from './types';
 
 export class ClosedLoopSystem {
-  private config: AutonomousAIConfig;
-  private goalManagementSystem: GoalManagementSystem;
-  private valueValidationFramework: ValueValidationFramework;
-  private technicalMaturityModel: TechnicalMaturityModel;
-  private technologyRoadmap: TechnologyRoadmap;
-  private dataOptimizationLoop: DataOptimizationLoop;
-  private dataQualityFramework: DataQualityFramework;
-  private uxOptimizationLoop: UXOptimizationLoop;
-  private userResearchSystem: UserResearchSystem;
-  private businessValueFramework: BusinessValueFramework;
-  private roiCalculator: ROIcalculator;
+  private goalManagementSystem!: GoalManagementSystem;
+  private valueValidationFramework!: ValueValidationFramework;
+  private technicalMaturityModel!: TechnicalMaturityModel;
+  private technologyRoadmap!: TechnologyRoadmap;
+  private dataOptimizationLoop!: DataOptimizationLoop;
+  private dataQualityFramework!: DataQualityFramework;
+  private uxOptimizationLoop!: UXOptimizationLoop;
+  private userResearchSystem!: UserResearchSystem;
+  private businessValueFramework!: BusinessValueFramework;
+  private roiCalculator!: ROIcalculator;
 
-  constructor(config: AutonomousAIConfig) {
-    this.config = config;
+  constructor() {
     this.initializeSystems();
   }
 
@@ -40,16 +37,16 @@ export class ClosedLoopSystem {
    * 初始化五维闭环系统的各个子系统
    */
   private initializeSystems(): void {
-    this.goalManagementSystem = new GoalManagementSystem(this.config);
-    this.valueValidationFramework = new ValueValidationFramework(this.config);
-    this.technicalMaturityModel = new TechnicalMaturityModel(this.config);
-    this.technologyRoadmap = new TechnologyRoadmap(this.config);
-    this.dataOptimizationLoop = new DataOptimizationLoop(this.config);
-    this.dataQualityFramework = new DataQualityFramework(this.config);
-    this.uxOptimizationLoop = new UXOptimizationLoop(this.config);
-    this.userResearchSystem = new UserResearchSystem(this.config);
-    this.businessValueFramework = new BusinessValueFramework(this.config);
-    this.roiCalculator = new ROIcalculator(this.config);
+    this.goalManagementSystem = new GoalManagementSystem();
+    this.valueValidationFramework = new ValueValidationFramework();
+    this.technicalMaturityModel = new TechnicalMaturityModel();
+    this.technologyRoadmap = new TechnologyRoadmap();
+    this.dataOptimizationLoop = new DataOptimizationLoop();
+    this.dataQualityFramework = new DataQualityFramework();
+    this.uxOptimizationLoop = new UXOptimizationLoop();
+    this.userResearchSystem = new UserResearchSystem();
+    this.businessValueFramework = new BusinessValueFramework();
+    this.roiCalculator = new ROIcalculator();
   }
 
   /**

@@ -30,15 +30,15 @@ export const RBACManager: React.FC = () => {
     password: ''
   });
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
   const loadData = () => {
     setUsers(rbacService.getUsers());
     setRolePermissions(rbacService.getRolePermissions());
     setAuditLogs(rbacService.getAuditLogs(50));
   };
+
+  useEffect(() => {
+    setTimeout(() => loadData(), 0);
+  }, []);
 
   const handleCreateUser = () => {
     if (!newUser.username || !newUser.email || !newUser.password) {
@@ -59,7 +59,7 @@ export const RBACManager: React.FC = () => {
       setShowCreateUser(false);
       setNewUser({ username: '', email: '', role: Role.USER, password: '' });
       loadData();
-    } catch (error) {
+    } catch (_error) {
       toast.error('用户创建失败');
     }
   };
@@ -70,7 +70,7 @@ export const RBACManager: React.FC = () => {
         rbacService.deleteUser(userId);
         toast.success('用户删除成功');
         loadData();
-      } catch (error) {
+      } catch (_error) {
         toast.error('用户删除失败');
       }
     }
@@ -81,7 +81,7 @@ export const RBACManager: React.FC = () => {
       rbacService.assignRole(userId, newRole);
       toast.success('角色分配成功');
       loadData();
-    } catch (error) {
+    } catch (_error) {
       toast.error('角色分配失败');
     }
   };
@@ -345,10 +345,22 @@ export const RBACManager: React.FC = () => {
 
         {/* Create User Modal */}
         {showCreateUser && (
-          <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50" onClick={() => setShowCreateUser(false)}>
-            <div 
+          <div
+            className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50"
+            onClick={() => setShowCreateUser(false)}
+            onKeyDown={(e) => e.key === 'Escape' && setShowCreateUser(false)}
+            role="button"
+            tabIndex={-1}
+            aria-label="关闭对话框"
+          >
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+            <div
               className="bg-[#2d3748] rounded-lg border border-gray-600 max-w-md w-full mx-4"
               onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-label="添加新用户"
             >
               <div className="flex items-center justify-between p-4 border-b border-gray-600">
                 <h3 className="text-lg font-bold text-white">添加新用户</h3>
@@ -361,8 +373,9 @@ export const RBACManager: React.FC = () => {
               </div>
               <div className="p-4 space-y-4">
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">用户名</label>
-                  <input 
+                  <label htmlFor="rbac-username" className="block text-sm text-gray-400 mb-2">用户名</label>
+                  <input
+                    id="rbac-username"
                     type="text" 
                     value={newUser.username}
                     onChange={(e) => setNewUser({ ...newUser, username: e.target.value })}
@@ -371,8 +384,9 @@ export const RBACManager: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">邮箱</label>
-                  <input 
+                  <label htmlFor="rbac-email" className="block text-sm text-gray-400 mb-2">邮箱</label>
+                  <input
+                    id="rbac-email"
                     type="email" 
                     value={newUser.email}
                     onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
@@ -381,8 +395,9 @@ export const RBACManager: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">密码</label>
-                  <input 
+                  <label htmlFor="rbac-password" className="block text-sm text-gray-400 mb-2">密码</label>
+                  <input
+                    id="rbac-password"
                     type="password" 
                     value={newUser.password}
                     onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
@@ -391,8 +406,9 @@ export const RBACManager: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">角色</label>
-                  <select 
+                  <label htmlFor="rbac-role" className="block text-sm text-gray-400 mb-2">角色</label>
+                  <select
+                    id="rbac-role"
                     value={newUser.role}
                     onChange={(e) => setNewUser({ ...newUser, role: e.target.value as Role })}
                     className="w-full bg-[#4b5563] border border-gray-500 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-blue-500"
@@ -423,10 +439,22 @@ export const RBACManager: React.FC = () => {
 
         {/* User Detail Modal */}
         {selectedUser && (
-          <div className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50" onClick={() => setSelectedUser(null)}>
-            <div 
+          <div
+            className="fixed inset-0 bg-gray-900/50 flex items-center justify-center z-50"
+            onClick={() => setSelectedUser(null)}
+            onKeyDown={(e) => e.key === 'Escape' && setSelectedUser(null)}
+            role="button"
+            tabIndex={-1}
+            aria-label="关闭对话框"
+          >
+            {/* eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions */}
+            <div
               className="bg-[#2d3748] rounded-lg border border-gray-600 max-w-lg w-full mx-4"
               onClick={(e) => e.stopPropagation()}
+              onKeyDown={(e) => e.stopPropagation()}
+              role="dialog"
+              aria-modal="true"
+              aria-label="用户详情"
             >
               <div className="flex items-center justify-between p-4 border-b border-gray-600">
                 <h3 className="text-lg font-bold text-white">用户详情</h3>
@@ -449,30 +477,30 @@ export const RBACManager: React.FC = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-[#4b5563] rounded-lg p-3">
-                    <label className="block text-xs text-gray-400 mb-1">角色</label>
+                    <span className="block text-xs text-gray-400 mb-1">角色</span>
                     <div className={`text-sm font-medium ${getRoleColor(selectedUser.role)}`}>
                       {getRoleLabel(selectedUser.role)}
                     </div>
                   </div>
                   <div className="bg-[#4b5563] rounded-lg p-3">
-                    <label className="block text-xs text-gray-400 mb-1">权限数量</label>
+                    <span className="block text-xs text-gray-400 mb-1">权限数量</span>
                     <div className="text-sm font-medium text-white">{selectedUser.permissions.length}</div>
                   </div>
                   <div className="bg-[#4b5563] rounded-lg p-3">
-                    <label className="block text-xs text-gray-400 mb-1">状态</label>
+                    <span className="block text-xs text-gray-400 mb-1">状态</span>
                     <div className={`text-sm font-medium ${selectedUser.isActive ? 'text-green-400' : 'text-red-400'}`}>
                       {selectedUser.isActive ? '启用' : '禁用'}
                     </div>
                   </div>
                   <div className="bg-[#4b5563] rounded-lg p-3">
-                    <label className="block text-xs text-gray-400 mb-1">创建时间</label>
+                    <span className="block text-xs text-gray-400 mb-1">创建时间</span>
                     <div className="text-sm font-medium text-white">
                       {new Date(selectedUser.createdAt).toLocaleString('zh-CN')}
                     </div>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm text-gray-400 mb-2">权限列表</label>
+                  <span className="block text-sm text-gray-400 mb-2">权限列表</span>
                   <div className="bg-[#4b5563] rounded-lg p-3 max-h-48 overflow-auto">
                     <div className="flex flex-wrap gap-2">
                       {selectedUser.permissions.map(permission => (

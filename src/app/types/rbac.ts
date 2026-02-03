@@ -118,7 +118,7 @@ export interface AccessControlPolicy {
   conditions?: {
     timeRange?: { start: string; end: string };
     ipWhitelist?: string[];
-    custom?: Record<string, any>;
+    custom?: Record<string, unknown>;
   };
   isActive: boolean;
 }
@@ -132,5 +132,5 @@ export interface AuditLog {
   result: 'success' | 'failure';
   timestamp: string;
   ip?: string;
-  details?: Record<string, any>;
+  details?: Record<string, unknown>;
 }

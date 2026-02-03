@@ -1,8 +1,6 @@
 import {
   AnomalyMonitoring,
   AnomalyReport,
-  OutlierDetector,
-  PatternAnalyzer,
   AlertManager,
   AnomalyData
 } from './types';
@@ -15,15 +13,11 @@ export interface AnomalyDetectionConfig {
 }
 
 export class AnomalyDetection {
-  private outlierDetector: OutlierDetector;
-  private patternAnalyzer: PatternAnalyzer;
   private alertManager: AlertManager;
   private config: AnomalyDetectionConfig;
   private historicalData: Map<string, number[]> = new Map();
 
   constructor(config: Partial<AnomalyDetectionConfig> = {}) {
-    this.outlierDetector = new OutlierDetector();
-    this.patternAnalyzer = new PatternAnalyzer();
     this.alertManager = new AlertManager();
     this.config = {
       zScoreThreshold: 3,
@@ -128,7 +122,7 @@ export class AnomalyDetection {
     return (value - mean) / stdDev;
   }
 
-  private detectIQRAnomalies(history: number[], value: number, metric: any): AnomalyData[] {
+  private detectIQRAnomalies(history: number[], value: number, _metric: any): AnomalyData[] {
     const anomalies: AnomalyData[] = [];
     const sorted = [...history].sort((a, b) => a - b);
     const q1 = sorted[Math.floor(sorted.length * 0.25)];
@@ -152,7 +146,7 @@ export class AnomalyDetection {
     return anomalies;
   }
 
-  private async detectTrendAnomalies(history: number[], metric: any): Promise<AnomalyData[]> {
+  private async detectTrendAnomalies(history: number[], _metric: any): Promise<AnomalyData[]> {
     const anomalies: AnomalyData[] = [];
     const recent = history.slice(-10);
     const older = history.slice(0, -10);
@@ -240,7 +234,7 @@ export class AnomalyDetection {
     return recommendations;
   }
 
-  private async determineEscalationPath(severity: string, impact: string): Promise<any> {
+  private async determineEscalationPath(severity: string, _impact: string): Promise<any> {
     return {
       level: severity,
       notify: severity === 'critical' || severity === 'high',

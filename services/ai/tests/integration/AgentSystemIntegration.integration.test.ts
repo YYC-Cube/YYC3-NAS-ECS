@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 
 interface AgentConfig {
   id: string;
@@ -27,7 +27,7 @@ interface PopupInstance {
 
 class MockAgentSystem extends EventEmitter {
   private initialized = false;
-  private config: any;
+  public config: any;
 
   constructor(config: any) {
     super();
@@ -44,36 +44,36 @@ class MockAgentSystem extends EventEmitter {
 
   createLayoutAgent(config: AgentConfig): any {
     const agent = new EventEmitter();
-    agent.config = config;
-    agent.bindToPopup = vi.fn();
+    (agent as any).config = config;
+    (agent as any).bindToPopup = vi.fn();
     return agent;
   }
 
   createBehaviorAgent(config: AgentConfig): any {
     const agent = new EventEmitter();
-    agent.config = config;
-    agent.bindToPopup = vi.fn();
+    (agent as any).config = config;
+    (agent as any).bindToPopup = vi.fn();
     return agent;
   }
 
   createContentAgent(config: AgentConfig): any {
     const agent = new EventEmitter();
-    agent.config = config;
-    agent.bindToPopup = vi.fn();
+    (agent as any).config = config;
+    (agent as any).bindToPopup = vi.fn();
     return agent;
   }
 
   createAssistantAgent(config: AgentConfig): any {
     const agent = new EventEmitter();
-    agent.config = config;
-    agent.bindToPopup = vi.fn();
+    (agent as any).config = config;
+    (agent as any).bindToPopup = vi.fn();
     return agent;
   }
 
   createMonitoringAgent(config: AgentConfig): any {
     const agent = new EventEmitter();
-    agent.config = config;
-    agent.bindToPopup = vi.fn();
+    (agent as any).config = config;
+    (agent as any).bindToPopup = vi.fn();
     return agent;
   }
 

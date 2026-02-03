@@ -126,8 +126,20 @@ export const PromptTemplateManager: React.FC = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [previewTemplate, setPreviewTemplate] = useState<PromptTemplate | null>(null);
 
+  const loadTemplates = useCallback(async () => {
+    try {
+      const saved = localStorage.getItem('prompt-templates');
+      if (saved) {
+        setTemplates(JSON.parse(saved));
+      }
+    } catch (error) {
+      console.error('Load templates error:', error);
+    }
+  }, []);
+
   useEffect(() => {
     loadTemplates();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filteredTemplates = useMemo(() => {
@@ -480,7 +492,7 @@ export const PromptTemplateManager: React.FC = () => {
                 <Label htmlFor="template-category">分类</Label>
                 <Select
                   value={editingTemplate.category}
-                  onValueChange={(value: any) => setEditingTemplate({ ...editingTemplate, category: value })}
+                  onValueChange={(value: string) => setEditingTemplate({ ...editingTemplate, category: value })}
                 >
                   <SelectTrigger id="template-category">
                     <SelectValue />

@@ -7,7 +7,7 @@
  * @created 2025-01-30
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 
 export interface DragConfig {
   enabled?: boolean;
@@ -445,7 +445,7 @@ export class AdvancedDragSystem extends EventEmitter {
       const newY = startY + velocityY * easeOut;
 
       this.currentPosition = { x: newX, y: newY };
-      this.element.style.transform = `translate(${newX}px, ${newY}px)`;
+      this.element!.style.transform = `translate(${newX}px, ${newY}px)`;
 
       if (progress < 1) {
         this.inertiaRafId = requestAnimationFrame(animate);

@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 import { AnomalyDetectionEngine, AnomalyData, AnomalyDetectionResult } from './AnomalyDetectionEngine';
 
 export interface Threat {

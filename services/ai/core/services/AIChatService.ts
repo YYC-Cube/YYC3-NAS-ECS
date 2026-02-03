@@ -7,7 +7,7 @@
  * @created 2025-01-19
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 
@@ -30,7 +30,7 @@ export interface AIModel {
   supportsTools: boolean;
 }
 
-export interface ChatMessage {
+export interface AIChatMessage {
   id: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
@@ -57,7 +57,7 @@ export class AIChatService extends EventEmitter {
   private currentProviderId: string | null = null;
   private openaiClient: OpenAI | null = null;
   private anthropicClient: Anthropic | null = null;
-  private conversationHistory: ChatMessage[] = [];
+  private conversationHistory: AIChatMessage[] = [];
   private isGenerating: boolean = false;
 
   constructor() {
@@ -318,7 +318,7 @@ export class AIChatService extends EventEmitter {
       throw new Error('Already generating a response');
     }
 
-    const userMessage: ChatMessage = {
+    const userMessage: AIChatMessage = {
       id: this.generateId(),
       role: 'user',
       content,
@@ -335,7 +335,7 @@ export class AIChatService extends EventEmitter {
     try {
       const response = await this.generateResponse(content, options);
       
-      const assistantMessage: ChatMessage = {
+      const assistantMessage: AIChatMessage = {
         id: this.generateId(),
         role: 'assistant',
         content: response,
@@ -348,7 +348,7 @@ export class AIChatService extends EventEmitter {
 
       return assistantMessage;
     } catch (error) {
-      const errorMessage: ChatMessage = {
+      const errorMessage: AIChatMessage = {
         id: this.generateId(),
         role: 'assistant',
         content: '',
@@ -375,7 +375,7 @@ export class AIChatService extends EventEmitter {
       throw new Error('Already generating a response');
     }
 
-    const userMessage: ChatMessage = {
+    const userMessage: AIChatMessage = {
       id: this.generateId(),
       role: 'user',
       content,
@@ -392,7 +392,7 @@ export class AIChatService extends EventEmitter {
     try {
       const fullResponse = await this.generateResponseStream(content, options, onChunk);
       
-      const assistantMessage: ChatMessage = {
+      const assistantMessage: AIChatMessage = {
         id: this.generateId(),
         role: 'assistant',
         content: fullResponse,
@@ -405,7 +405,7 @@ export class AIChatService extends EventEmitter {
 
       return assistantMessage;
     } catch (error) {
-      const errorMessage: ChatMessage = {
+      const errorMessage: AIChatMessage = {
         id: this.generateId(),
         role: 'assistant',
         content: '',
@@ -642,7 +642,7 @@ export class AIChatService extends EventEmitter {
     return fullPrompt;
   }
 
-  getConversationHistory(): ChatMessage[] {
+  getConversationHistory(): AIChatMessage[] {
     return [...this.conversationHistory];
   }
 

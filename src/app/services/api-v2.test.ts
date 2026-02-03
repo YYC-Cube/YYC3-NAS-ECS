@@ -1414,7 +1414,7 @@ describe('边界情况测试', () => {
         json: async () => mockData,
       });
 
-      const result = await apiClient.get('/test');
+      const result = await apiClient.get<{ id: number; name: string; value: number }>('/test');
       expect(result).toHaveProperty('id');
       expect(result).toHaveProperty('name');
       expect(result).toHaveProperty('value');
@@ -1441,7 +1441,7 @@ describe('边界情况测试', () => {
         json: async () => mockData,
       });
 
-      const result = await apiClient.get('/test');
+      const result = await apiClient.get<{ user: { id: number; profile: { name: string; settings: { theme: string; notifications: boolean } } } }>('/test');
       expect(result.user.profile.settings.theme).toBe('dark');
     });
 
@@ -1456,7 +1456,7 @@ describe('边界情况测试', () => {
         json: async () => mockData,
       });
 
-      const result = await apiClient.get('/test');
+      const result = await apiClient.get<{ id: number; name: string }[]>('/test');
       expect(Array.isArray(result)).toBe(true);
       expect(result.length).toBe(3);
     });
@@ -1491,9 +1491,9 @@ describe('并发请求测试', () => {
     ]);
 
     expect(results.length).toBe(3);
-    expect(results[0].id).toBe(1);
-    expect(results[1].id).toBe(2);
-    expect(results[2].id).toBe(3);
+    expect((results[0] as any).id).toBe(1);
+    expect((results[1] as any).id).toBe(2);
+    expect((results[2] as any).id).toBe(3);
   });
 
   it('应该处理多个并发POST请求', async () => {
@@ -1510,7 +1510,7 @@ describe('并发请求测试', () => {
 
     expect(results.length).toBe(3);
     results.forEach(result => {
-      expect(result.success).toBe(true);
+      expect((result as any).success).toBe(true);
     });
   });
 
@@ -1586,7 +1586,7 @@ describe('性能测试', () => {
     });
 
     const startTime = Date.now();
-    const result = await apiClient.get('/test');
+    const result = await apiClient.get<any[]>('/test');
     const endTime = Date.now();
 
     expect(result.length).toBe(10000);

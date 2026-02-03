@@ -162,7 +162,7 @@ export class EdgeAIInference {
     };
   }
 
-  async evaluateModelAccuracy(testData: number[][], testLabels: number[]): Promise<{
+  async evaluateModelAccuracy(_testData: number[], _testLabels: number[]): Promise<{
     accuracy: number;
     precision: number[];
     recall: number[];
@@ -189,7 +189,7 @@ export class EdgeAIInference {
     };
   }
 
-  async measureInferenceLatency(inputSize: number = 224): Promise<{
+  async measureInferenceLatency(_inputSize: number = 224): Promise<{
     averageLatency: number;
     minLatency: number;
     maxLatency: number;
@@ -332,7 +332,7 @@ export class EdgeAIInference {
     };
   }
 
-  async performInference(input: number[]): Promise<number[]> {
+  async performInference(_input: number[]): Promise<number[]> {
     const output: number[] = [];
     for (let i = 0; i < 10; i++) {
       output.push(Math.random());
@@ -348,7 +348,7 @@ export class EdgeAIInference {
     return outputs;
   }
 
-  async optimizeForEdge(constraints: Record<string, number>): Promise<{
+  async optimizeForEdge(_constraints: Record<string, number>): Promise<{
     optimizedArchitecture: ModelArchitecture;
     optimizationStrategy: string;
     performanceImprovement: Record<string, number>;

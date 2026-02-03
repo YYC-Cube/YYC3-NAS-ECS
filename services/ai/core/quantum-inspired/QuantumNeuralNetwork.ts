@@ -84,7 +84,7 @@ export class QuantumNeuralNetwork {
         const state = Math.random();
         layerStates.push(state);
 
-        const quantumState = Math.cos(state * Math.PI) + Math.sin(state * Math.PI) * 1j;
+        const quantumState = Math.cos(state * Math.PI) + Math.sin(state * Math.PI) * 1;
         layerQuantumStates.push(quantumState as any);
       }
 

@@ -10,7 +10,7 @@
  * @license MIT
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 import { AgentSystem } from '../ai/index';
 import { AgentConfig, AgentMessage, AgentCapability } from '../ai/AgentProtocol';
 import { AutonomousAIEngine } from '../pluggable/AutonomousAIEngine';

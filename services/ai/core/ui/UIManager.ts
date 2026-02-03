@@ -7,7 +7,7 @@
  * @created 2025-01-30
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 import {
   IUIManager,
   UIEvent,
@@ -17,7 +17,7 @@ import {
 } from './types';
 import { ErrorHandler } from '../error-handler/ErrorHandler';
 import { ErrorBoundary } from '../error-handler/ErrorBoundary';
-import { ValidationError, InternalError } from '../error-handler/ErrorTypes';
+import { ValidationError } from '../error-handler/ErrorTypes';
 
 export class UIManager extends EventEmitter implements IUIManager {
   private eventHandlers: Map<string, Set<UIEventHandler>>;

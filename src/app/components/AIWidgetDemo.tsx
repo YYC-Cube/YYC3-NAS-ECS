@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useAIWidget } from '@/app/lib/ai-integration';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
@@ -6,8 +6,8 @@ import { Input } from './ui/input';
 import { Badge } from './ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { 
-  Bot, MessageSquare, Settings, Zap, Shield, Database, 
-  Activity, Clock, CheckCircle, XCircle, AlertCircle 
+  Bot, MessageSquare, Zap, Shield, Database, 
+  Activity
 } from 'lucide-react';
 
 export default function AIWidgetDemo() {
@@ -23,12 +23,7 @@ export default function AIWidgetDemo() {
     activeSessionId,
     createSession,
     switchSession,
-    deleteSession,
-    messageBus,
-    taskScheduler,
-    stateManager,
-    toolRegistry,
-    knowledgeBase
+    deleteSession
   } = useAIWidget();
 
   const [messageInput, setMessageInput] = useState('');
@@ -51,11 +46,6 @@ export default function AIWidgetDemo() {
   const stats = [
     { label: '消息数量', value: messages.length, icon: MessageSquare },
     { label: '会话数量', value: sessions.length, icon: Database },
-    { label: '消息总线', value: messageBus ? '已连接' : '未连接', icon: Zap },
-    { label: '任务调度器', value: taskScheduler ? '已连接' : '未连接', icon: Activity },
-    { label: '状态管理器', value: stateManager ? '已连接' : '未连接', icon: Shield },
-    { label: '工具注册表', value: toolRegistry ? '已连接' : '未连接', icon: CheckCircle },
-    { label: '知识库', value: knowledgeBase ? '已连接' : '未连接', icon: Database },
   ];
 
   return (
@@ -266,51 +256,6 @@ export default function AIWidgetDemo() {
                       <Badge variant={isVisible ? 'default' : 'secondary'}>
                         {isVisible ? '可见' : '隐藏'}
                       </Badge>
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-semibold">组件连接状态</h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">消息总线</span>
-                      {messageBus ? (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <XCircle className="h-4 w-4 text-red-500" />
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">任务调度器</span>
-                      {taskScheduler ? (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <XCircle className="h-4 w-4 text-red-500" />
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">状态管理器</span>
-                      {stateManager ? (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <XCircle className="h-4 w-4 text-red-500" />
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">工具注册表</span>
-                      {toolRegistry ? (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <XCircle className="h-4 w-4 text-red-500" />
-                      )}
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm">知识库</span>
-                      {knowledgeBase ? (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <XCircle className="h-4 w-4 text-red-500" />
-                      )}
                     </div>
                   </div>
                 </div>

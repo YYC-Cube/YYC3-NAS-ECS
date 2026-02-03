@@ -50,7 +50,7 @@ export const SettingsManager: React.FC = () => {
       toast.success('设置保存成功');
       setModifiedSettings({});
       loadData();
-    } catch (error) {
+    } catch (_error) {
       toast.error('设置保存失败');
     } finally {
       setIsSaving(false);
@@ -62,7 +62,7 @@ export const SettingsManager: React.FC = () => {
       await settingsService.resetSetting(settingId);
       toast.success('设置重置成功');
       loadData();
-    } catch (error) {
+    } catch (_error) {
       toast.error('设置重置失败');
     }
   };
@@ -76,7 +76,7 @@ export const SettingsManager: React.FC = () => {
       await settingsService.resetAllSettings();
       toast.success('所有设置已重置');
       loadData();
-    } catch (error) {
+    } catch (_error) {
       toast.error('设置重置失败');
     }
   };
@@ -94,7 +94,7 @@ export const SettingsManager: React.FC = () => {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       toast.success('设置导出成功');
-    } catch (error) {
+    } catch (_error) {
       toast.error('设置导出失败');
     }
   };

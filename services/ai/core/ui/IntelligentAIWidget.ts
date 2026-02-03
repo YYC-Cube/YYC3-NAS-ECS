@@ -7,7 +7,7 @@
  * @created 2025-01-30
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 import { ChatInterface } from './ChatInterface';
 import { ToolboxPanel } from './ToolboxPanel';
 import { InsightsDashboard } from './InsightsDashboard';
@@ -18,29 +18,9 @@ import { AdvancedDragSystem } from './widget/AdvancedDragSystem';
 import { ResizeSystem } from './widget/ResizeSystem';
 import { ThemeSystem } from './widget/ThemeSystem';
 import { AnimationSystem } from './widget/AnimationSystem';
-import { StatePersistence } from './widget/StatePersistence';
-import { StateSyncManager } from './widget/StateSyncManager';
-import { WebSocketManager } from './widget/WebSocketManager';
-import { MessageQueue } from './widget/MessageQueue';
-import { EventBus } from './widget/EventBus';
-import { RenderOptimizer } from './widget/RenderOptimizer';
-import { MemoryManager } from './widget/MemoryManager';
-import { LazyLoader } from './widget/LazyLoader';
-import { AccessibilityManager } from './widget/AccessibilityManager';
-import { ScreenReaderSupport } from './widget/ScreenReaderSupport';
-import { KeyboardNavigation } from './widget/KeyboardNavigation';
-import { WidgetSandbox } from './widget/WidgetSandbox';
-import { PermissionManager } from './widget/PermissionManager';
-import { ContentSecurity } from './widget/ContentSecurity';
+
 import {
   ChatMessage,
-  Tool,
-  MetricData,
-  ChartData,
-  Insight,
-  Workflow,
-  Notification,
-  Modal,
 } from './types';
 
 export interface WidgetConfig {
@@ -107,28 +87,9 @@ export class IntelligentAIWidget extends EventEmitter {
   private chatInterface: ChatInterface;
   private toolPanel: ToolboxPanel;
   private workflowDesigner: WorkflowDesigner;
-  private knowledgeViewer: any;
   private insightsDashboard: InsightsDashboard;
 
   private state: WidgetState;
-  private persistence: StatePersistence;
-  private syncManager: StateSyncManager;
-
-  private websocketManager: WebSocketManager;
-  private messageQueue: MessageQueue;
-  private eventBus: EventBus;
-
-  private renderOptimizer: RenderOptimizer;
-  private memoryManager: MemoryManager;
-  private lazyLoader: LazyLoader;
-
-  private a11yManager: AccessibilityManager;
-  private screenReader: ScreenReaderSupport;
-  private keyboardNav: KeyboardNavigation;
-
-  private sandbox: WidgetSandbox;
-  private permissionManager: PermissionManager;
-  private contentSecurity: ContentSecurity;
 
   private uiSystem: UISystem;
   private config: WidgetConfig;
@@ -183,7 +144,9 @@ export class IntelligentAIWidget extends EventEmitter {
       enableTransitions: true,
       enablePersistence: true,
     });
-    this.animationSystem = new AnimationSystem(this.config.animationEnabled!);
+    this.animationSystem = new AnimationSystem({
+      enabled: this.config.animationEnabled!
+    });
 
     this.uiSystem = new UISystem({
       enableChatInterface: true,
@@ -197,24 +160,6 @@ export class IntelligentAIWidget extends EventEmitter {
     this.toolPanel = this.uiSystem.getToolboxPanel()!;
     this.insightsDashboard = this.uiSystem.getInsightsDashboard()!;
     this.workflowDesigner = this.uiSystem.getWorkflowDesigner()!;
-
-    this.persistence = new StatePersistence(this.state);
-    this.syncManager = new StateSyncManager(this.state);
-    this.websocketManager = new WebSocketManager();
-    this.messageQueue = new MessageQueue();
-    this.eventBus = new EventBus();
-
-    this.renderOptimizer = new RenderOptimizer();
-    this.memoryManager = new MemoryManager();
-    this.lazyLoader = new LazyLoader();
-
-    this.a11yManager = new AccessibilityManager();
-    this.screenReader = new ScreenReaderSupport();
-    this.keyboardNav = new KeyboardNavigation();
-
-    this.sandbox = new WidgetSandbox();
-    this.permissionManager = new PermissionManager();
-    this.contentSecurity = new ContentSecurity();
 
     this.initialized = false;
     this.metrics = {
@@ -253,12 +198,6 @@ export class IntelligentAIWidget extends EventEmitter {
       this.setupResizeSystem();
       this.setupThemeSystem();
       this.setupAnimationSystem();
-      this.setupPersistence();
-      this.setupSyncManager();
-      this.setupEventBus();
-      this.setupPerformanceMonitoring();
-      this.setupAccessibility();
-      this.setupSecurity();
 
       this.initialized = true;
       this.emit('initialized');
@@ -300,7 +239,6 @@ export class IntelligentAIWidget extends EventEmitter {
 
     this.dragSystem.on('drag:end', (data) => {
       this.emit('drag:end', data);
-      this.persistence.save();
     });
   }
 
@@ -318,7 +256,6 @@ export class IntelligentAIWidget extends EventEmitter {
 
     this.resizeSystem.on('resize:end', (data) => {
       this.emit('resize:end', data);
-      this.persistence.save();
     });
   }
 
@@ -342,169 +279,6 @@ export class IntelligentAIWidget extends EventEmitter {
     this.animationSystem.on('animation:completed', (animationId: string) => {
       this.emit('animation:completed', animationId);
     });
-  }
-
-  private setupPersistence(): void {
-    if (!this.config.enablePersistence) return;
-
-    this.persistence.on('state:saved', (state: WidgetState) => {
-      this.emit('state:saved', state);
-    });
-
-    this.persistence.on('state:loaded', (state: WidgetState) => {
-      this.state = state;
-      this.emit('state:loaded', state);
-    });
-
-    this.persistence.load();
-  }
-
-  private setupSyncManager(): void {
-    if (!this.config.enableSync) return;
-
-    this.syncManager.on('sync:started', () => {
-      this.emit('sync:started');
-    });
-
-    this.syncManager.on('sync:completed', (state: WidgetState) => {
-      this.state = state;
-      this.emit('sync:completed', state);
-    });
-
-    this.syncManager.on('sync:error', (error: Error) => {
-      this.emit('sync:error', error);
-    });
-  }
-
-  private setupEventBus(): void {
-    this.eventBus.on('message:received', (message: any) => {
-      this.handleMessage(message);
-    });
-
-    this.eventBus.on('event:triggered', (event: any) => {
-      this.handleEvent(event);
-    });
-  }
-
-  private setupPerformanceMonitoring(): void {
-    setInterval(() => {
-      this.updateMetrics();
-      this.updatePerformance();
-    }, 1000);
-  }
-
-  private setupAccessibility(): void {
-    if (!this.config.enableAccessibility) return;
-
-    this.a11yManager.on('a11y:enabled', () => {
-      this.emit('a11y:enabled');
-    });
-
-    this.a11yManager.on('a11y:disabled', () => {
-      this.emit('a11y:disabled');
-    });
-
-    this.keyboardNav.on('keyboard:navigation', (action: string) => {
-      this.handleKeyboardNavigation(action);
-    });
-  }
-
-  private setupSecurity(): void {
-    if (!this.config.enableSecurity) return;
-
-    this.sandbox.on('sandbox:violation', (violation: any) => {
-      this.emit('security:violation', violation);
-    });
-
-    this.permissionManager.on('permission:requested', (permission: string) => {
-      this.emit('permission:requested', permission);
-    });
-
-    this.contentSecurity.on('csp:violation', (violation: any) => {
-      this.emit('security:violation', violation);
-    });
-  }
-
-  private handleMessage(message: any): void {
-    switch (message.type) {
-      case 'chat':
-        this.handleChatMessage(message.data);
-        break;
-      case 'tool':
-        this.handleToolMessage(message.data);
-        break;
-      case 'workflow':
-        this.handleWorkflowMessage(message.data);
-        break;
-      default:
-        console.warn('Unknown message type:', message.type);
-    }
-  }
-
-  private handleEvent(event: any): void {
-    this.emit('event:received', event);
-  }
-
-  private handleKeyboardNavigation(action: string): void {
-    this.emit('keyboard:navigation', action);
-  }
-
-  private async handleChatMessage(data: any): Promise<void> {
-    try {
-      const message: ChatMessage = {
-        id: data.id,
-        role: data.role,
-        content: data.content,
-        timestamp: data.timestamp || Date.now(),
-        metadata: data.metadata,
-      };
-
-      await this.chatInterface.sendMessage(message);
-    } catch (error) {
-      console.error('Failed to handle chat message:', error);
-      this.emit('error', error);
-    }
-  }
-
-  private async handleToolMessage(data: any): Promise<void> {
-    try {
-      await this.toolPanel.executeTool(data.toolId, data.params);
-    } catch (error) {
-      console.error('Failed to handle tool message:', error);
-      this.emit('error', error);
-    }
-  }
-
-  private async handleWorkflowMessage(data: any): Promise<void> {
-    try {
-      const workflow = this.workflowDesigner.loadWorkflow(data.workflowId);
-      await this.workflowDesigner.executeWorkflow(workflow);
-    } catch (error) {
-      console.error('Failed to handle workflow message:', error);
-      this.emit('error', error);
-    }
-  }
-
-  private updateMetrics(): void {
-    this.metrics = {
-      renderTime: this.renderOptimizer.getRenderTime(),
-      memoryUsage: this.memoryManager.getMemoryUsage(),
-      cpuUsage: this.memoryManager.getCPUUsage(),
-      networkRequests: this.websocketManager.getRequestCount(),
-      cacheHitRate: this.renderOptimizer.getCacheHitRate(),
-      errorCount: this.metrics.errorCount,
-      warningCount: this.metrics.warningCount,
-    };
-  }
-
-  private updatePerformance(): void {
-    this.performance = {
-      fps: this.renderOptimizer.getFPS(),
-      loadTime: this.performance.loadTime,
-      responseTime: this.performance.responseTime,
-      throughput: this.messageQueue.getThroughput(),
-      concurrency: this.messageQueue.getConcurrency(),
-    };
   }
 
   async sendMessage(message: ChatMessage): Promise<string> {
@@ -551,7 +325,7 @@ export class IntelligentAIWidget extends EventEmitter {
   }
 
   getTheme(): WidgetTheme {
-    return this.themeSystem.getTheme();
+    return this.themeSystem.getCurrentTheme().mode as WidgetTheme;
   }
 
   getState(): WidgetState {
@@ -582,7 +356,7 @@ export class IntelligentAIWidget extends EventEmitter {
     return this.workflowDesigner;
   }
 
-  async exportData(format: 'json' | 'xml' | 'yaml' = 'json'): Promise<any> {
+  async exportData(): Promise<any> {
     return this.uiSystem.exportAllData();
   }
 
@@ -598,20 +372,6 @@ export class IntelligentAIWidget extends EventEmitter {
     this.resizeSystem.destroy();
     this.themeSystem.destroy();
     this.animationSystem.destroy();
-    this.persistence.destroy();
-    this.syncManager.destroy();
-    this.websocketManager.destroy();
-    this.messageQueue.destroy();
-    this.eventBus.destroy();
-    this.renderOptimizer.destroy();
-    this.memoryManager.destroy();
-    this.lazyLoader.destroy();
-    this.a11yManager.destroy();
-    this.screenReader.destroy();
-    this.keyboardNav.destroy();
-    this.sandbox.destroy();
-    this.permissionManager.destroy();
-    this.contentSecurity.destroy();
     this.uiSystem.destroy();
 
     this.removeAllListeners();

@@ -49,19 +49,22 @@ function PaginationLink({
   ...props
 }: PaginationLinkProps) {
   return (
-    <a
-      aria-current={isActive ? "page" : undefined}
-      data-slot="pagination-link"
-      data-active={isActive}
-      className={cn(
-        buttonVariants({
-          variant: isActive ? "outline" : "ghost",
-          size,
-        }),
-        className,
-      )}
-      {...props}
-    />
+    <>
+      {/* eslint-disable-next-line jsx-a11y/anchor-has-content */}
+      <a
+        aria-current={isActive ? "page" : undefined}
+        data-slot="pagination-link"
+        data-active={isActive}
+        className={cn(
+          buttonVariants({
+            variant: isActive ? "outline" : "ghost",
+            size,
+          }),
+          className,
+        )}
+        {...props}
+      />
+    </>
   );
 }
 

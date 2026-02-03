@@ -157,7 +157,6 @@ describe('RBACService', () => {
     it('应该返回true当用户拥有权限时', () => {
       rbacService.login('admin', 'admin123');
       const result = rbacService.checkPermission({
-        userId: 'admin-001',
         permission: Permission.DASHBOARD_VIEW
       });
       expect(result).toBe(true);
@@ -166,7 +165,6 @@ describe('RBACService', () => {
     it('应该返回false当用户没有权限时', () => {
       rbacService.login('operator', 'operator123');
       const result = rbacService.checkPermission({
-        userId: 'user-001',
         permission: Permission.RBAC_EDIT
       });
       expect(result).toBe(false);
@@ -174,7 +172,6 @@ describe('RBACService', () => {
 
     it('应该返回false当未登录时', () => {
       const result = rbacService.checkPermission({
-        userId: 'admin-001',
         permission: Permission.DASHBOARD_VIEW
       });
       expect(result).toBe(false);
@@ -548,7 +545,6 @@ describe('RBACService', () => {
   describe('边界情况测试', () => {
     it('应该处理空用户列表', () => {
       const users = rbacService.getUsers();
-      const initialCount = users.length;
 
       for (const user of users) {
         if (user.username !== 'admin') {
@@ -563,7 +559,6 @@ describe('RBACService', () => {
 
     it('应该处理空策略列表', () => {
       const policies = rbacService.getPolicies();
-      const initialCount = policies.length;
 
       for (const policy of policies) {
         if (policy.id !== 'policy-001') {

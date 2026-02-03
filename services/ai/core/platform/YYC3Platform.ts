@@ -28,7 +28,7 @@ import {
   PlatformDeployment as PlatformDeploymentType
 } from './PlatformTypes';
 import { ModuleIntegrationInterface, ModuleConfig as IntegrationModuleConfig } from '../integration/ModuleIntegrationInterface';
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 
 export class YYC3Platform extends EventEmitter {
   private config: PlatformConfig | null = null;

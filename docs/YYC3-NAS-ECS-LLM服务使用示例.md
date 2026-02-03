@@ -1,5 +1,13 @@
 # YYC³ NAS-ECS LLM服务使用示例
 
+> ***YanYuCloudCube***
+> 言启象限 | 语枢未来
+> ***Words Initiate Quadrants, Language Serves as Core for the Future***
+> 万象归元于云枢 | 深栈智启新纪元
+> ***All things converge in the cloud pivot; Deep stacks ignite a new era of intelligence***
+
+---
+
 **创建日期**: 2026-01-25  
 **作者**: YYC³ Team  
 **版本**: 1.0.0
@@ -24,11 +32,13 @@
 ### 1. 访问LLM服务
 
 **步骤**:
+
 1. 登录YYC³ NAS-ECS系统
 2. 点击左侧导航栏的"AI服务" > "LLM对话"
 3. 进入AI智能助手界面
 
 **界面说明**:
+
 ```
 ┌─────────────────────────────────────────────────┐
 │  AI智能助手              [新对话] [设置] [模型]  │
@@ -61,6 +71,7 @@
 ### 2. 选择模型
 
 **可用模型**:
+
 - **qwen:7b** - 轻量级模型，适合快速响应
 - **qwen:14b** - 中等规模模型，平衡性能和质量
 - **qwen:72b** - 大规模模型，适合复杂任务
@@ -68,6 +79,7 @@
 - **llama3:70b** - 大规模模型，高质量输出
 
 **选择建议**:
+
 - 简单问答: qwen:7b 或 llama3:8b
 - 代码生成: qwen:14b
 - 文档分析: qwen:72b 或 llama3:70b
@@ -76,12 +88,14 @@
 ### 3. 发送消息
 
 **步骤**:
+
 1. 在输入框中输入消息
 2. 选择模型（可选）
 3. 点击"发送"按钮
 4. 等待AI响应
 
 **消息格式**:
+
 ```
 用户: 帮我分析一下NAS系统的性能
 AI: 我来帮您分析NAS系统的性能状况。让我查看一下当前的监控数据...
@@ -102,6 +116,7 @@ AI: 我来帮您分析NAS系统的性能状况。让我查看一下当前的监�
 ### 4. 查看对话历史
 
 **步骤**:
+
 1. 点击"历史"按钮
 2. 选择要查看的对话
 3. 查看完整对话内容
@@ -152,6 +167,7 @@ console.log('AI响应:', response.message);
 ```
 
 **请求示例**:
+
 ```json
 {
   "model": "qwen:7b",
@@ -166,6 +182,7 @@ console.log('AI响应:', response.message);
 ```
 
 **响应示例**:
+
 ```json
 {
   "success": true,
@@ -340,6 +357,7 @@ console.log('文档摘要:', docResponse.message);
 ```
 
 **请求示例**:
+
 ```json
 {
   "template": "code-generation",
@@ -1141,6 +1159,7 @@ console.log('模型状态:', modelStatus);
 ```
 
 **响应示例**:
+
 ```json
 {
   "success": true,
@@ -1193,12 +1212,14 @@ console.log('下载结果:', downloadResult);
 ### 1. 选择合适的模型
 
 **建议**:
+
 - 简单问答: 使用轻量级模型（qwen:7b, llama3:8b）
 - 代码生成: 使用中等规模模型（qwen:14b）
 - 文档分析: 使用大规模模型（qwen:72b, llama3:70b）
 - 实时对话: 使用轻量级模型以获得快速响应
 
 **示例**:
+
 ```typescript
 const modelSelection = {
   simpleQA: 'qwen:7b',
@@ -1211,6 +1232,7 @@ const modelSelection = {
 ### 2. 优化提示词
 
 **建议**:
+
 - 明确指定任务和期望
 - 提供足够的上下文信息
 - 使用结构化的提示词格式
@@ -1218,6 +1240,7 @@ const modelSelection = {
 - 包含示例和约束条件
 
 **示例**:
+
 ```typescript
 const goodPrompt = `你是一个资深的软件工程师。
 
@@ -1239,11 +1262,13 @@ const badPrompt = '写一个处理CSV文件的函数';
 ### 3. 使用流式响应
 
 **优势**:
+
 - 更好的用户体验
 - 实时反馈
 - 减少等待时间
 
 **示例**:
+
 ```typescript
 // 使用流式响应
 await streamMessage('帮我写一个Python脚本', (chunk) => {
@@ -1254,12 +1279,14 @@ await streamMessage('帮我写一个Python脚本', (chunk) => {
 ### 4. 管理对话历史
 
 **建议**:
+
 - 定期清理不重要的对话
 - 为重要对话添加标签
 - 导出重要对话
 - 使用对话搜索功能
 
 **示例**:
+
 ```typescript
 // 导出重要对话
 const importantConversations = ['conv-001', 'conv-005', 'conv-010'];
@@ -1272,12 +1299,14 @@ for (const convId of importantConversations) {
 ### 5. 监控模型性能
 
 **建议**:
+
 - 监控响应时间
 - 监控token使用量
 - 监控内存使用
 - 定期评估模型效果
 
 **示例**:
+
 ```typescript
 // 监控模型性能
 const startTime = Date.now();

@@ -8,12 +8,12 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { UISystem } from '@/ui/UISystem';
-import { ChatInterface } from '@/ui/ChatInterface';
-import { ToolboxPanel } from '@/ui/ToolboxPanel';
-import { InsightsDashboard } from '@/ui/InsightsDashboard';
-import { WorkflowDesigner } from '@/ui/WorkflowDesigner';
-import { UIManager } from '@/ui/UIManager';
+import { UISystem } from '../../core/ui/UISystem';
+import { ChatInterface } from '../../core/ui/ChatInterface';
+import { ToolboxPanel } from '../../core/ui/ToolboxPanel';
+import { InsightsDashboard } from '../../core/ui/InsightsDashboard';
+import { WorkflowDesigner } from '../../core/ui/WorkflowDesigner';
+import { UIManager } from '../../core/ui/UIManager';
 
 class MockEventEmitter {
   private listeners: Map<string, Function[]> = new Map();

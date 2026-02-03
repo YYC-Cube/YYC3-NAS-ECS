@@ -4,13 +4,14 @@
  * @description 实现价值创造维度的目标管理功能
  */
 
-import type { AutonomousAIConfig } from '../../autonomous-ai-widget/types';
-
 export interface ClosedLoopMetrics {
   cycleEfficiency: any;
   improvementImpact: any;
   learningVelocity: any;
   overallEffectiveness: number;
+  accuracy?: number;
+  satisfaction?: number;
+  usageFrequency?: number;
 }
 
 /**
@@ -29,11 +30,9 @@ interface SystemGoal {
 }
 
 export class GoalManagementSystem {
-  private config: AutonomousAIConfig;
   private goals: SystemGoal[] = [];
 
-  constructor(_config: AutonomousAIConfig) {
-    this.config = _config;
+  constructor() {
     this.initializeGoals();
   }
 

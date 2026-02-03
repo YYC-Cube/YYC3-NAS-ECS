@@ -8,12 +8,12 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { BaseAgent } from '@/ai/BaseAgent';
+import { BaseAgent } from '@services/ai/core/ai/BaseAgent';
 import {
   AgentConfig,
   AgentMessage,
   AgentCapability
-} from '@/ai/AgentProtocol';
+} from '@services/ai/core/ai/AgentProtocol';
 
 class TestAgent extends BaseAgent {
   protected setupCapabilities(): void {

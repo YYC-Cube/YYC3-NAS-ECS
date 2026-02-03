@@ -4,8 +4,6 @@
  * @description 实现技术演进维度的技术路线图规划和管理功能
  */
 
-import type { AutonomousAIConfig } from '../../autonomous-ai-widget/types';
-
 export interface ClosedLoopMetrics {
   cycleEfficiency: any;
   improvementImpact: any;
@@ -40,12 +38,10 @@ enum RoadmapPhase {
 }
 
 export class TechnologyRoadmap {
-  private config: AutonomousAIConfig;
   private milestones: TechnologyMilestone[] = [];
   private currentPhase: RoadmapPhase;
 
-  constructor(_config: AutonomousAIConfig) {
-    this.config = _config;
+  constructor() {
     this.currentPhase = RoadmapPhase.FOUNDATION;
     this.initializeMilestones();
   }

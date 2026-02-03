@@ -19,14 +19,23 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    
+
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
-      "@services/*": ["./services/*"]
-    },
-    "types": ["vite/client", "node"]
+      "@services/*": ["./services/*"],
+      "@utils/*": ["./src/utils/*", "./services/utils/*"]
+    }
   },
-  "include": ["src"],
+  "include": ["src", "services"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "build",
+    "**/docs/**",
+    "**/ai/docs/**",
+    "**/ai/docs/YYC3-MovAISys-*/**",
+    "**/YYC3-MovAISys-*/**"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

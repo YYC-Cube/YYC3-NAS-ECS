@@ -255,8 +255,9 @@ export const LLMService: React.FC = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium">选择模型</label>
+                <label htmlFor="llm-model-select" className="text-sm font-medium">选择模型</label>
                 <select
+                  id="llm-model-select"
                   value={selectedModel}
                   onChange={(e) => setSelectedModel(e.target.value)}
                   className="w-full border rounded-md px-3 py-2"
@@ -269,8 +270,9 @@ export const LLMService: React.FC = () => {
                 </select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">系统提示词</label>
+                <label htmlFor="llm-system-prompt" className="text-sm font-medium">系统提示词</label>
                 <textarea
+                  id="llm-system-prompt"
                   value={systemPrompt}
                   onChange={(e) => setSystemPrompt(e.target.value)}
                   className="w-full border rounded-md px-3 py-2 min-h-[80px]"
@@ -278,8 +280,9 @@ export const LLMService: React.FC = () => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium">API Key</label>
+                <label htmlFor="llm-api-key" className="text-sm font-medium">API Key</label>
                 <Input
+                  id="llm-api-key"
                   type="password"
                   value={apiKey}
                   onChange={(e) => setApiKey(e.target.value)}

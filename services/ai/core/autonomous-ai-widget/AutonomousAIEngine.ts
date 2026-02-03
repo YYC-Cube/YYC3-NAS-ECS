@@ -345,7 +345,7 @@ export class AutonomousAIEngine {
     };
   }
 
-  async processMessage(input: AgentMessage): Promise<AgentResponse> {
+  async processMessage(input: WidgetAgentMessage): Promise<WidgetAgentResponse> {
     const startTime = Date.now();
     const traceId = this.generateId();
 
@@ -438,7 +438,7 @@ export class AutonomousAIEngine {
         { context: { operation: 'memory.saveInteractionHistory', traceId, input, response: processedResponse } }
       );
 
-      const agentResponse: AgentResponse = {
+      const agentResponse: WidgetAgentResponse = {
         id: this.generateId(),
         content: processedResponse,
         timestamp: Date.now(),
@@ -636,11 +636,11 @@ export class AutonomousAIEngine {
     console.log('Debug mode disabled');
   }
 
-  private async preprocessMessage(input: AgentMessage): Promise<AgentMessage> {
+  private async preprocessMessage(input: WidgetAgentMessage): Promise<WidgetAgentMessage> {
     return input;
   }
 
-  private async buildContext(input: AgentMessage): Promise<any> {
+  private async buildContext(input: WidgetAgentMessage): Promise<any> {
     const recentConversations = await this.memory.getInteractionHistory(10);
     const userPreferences = await this.memory.getUserPreferences();
     const businessContext = this.config.businessContext;
@@ -661,7 +661,7 @@ export class AutonomousAIEngine {
     return this.toolRegistry.getAvailableTools();
   }
 
-  private async buildPrompt(input: AgentMessage, _context: any, _tools: any[]): Promise<string> {
+  private async buildPrompt(input: WidgetAgentMessage, _context: any, _tools: any[]): Promise<string> {
     return `User message: ${JSON.stringify(input.content)}`;
   }
 

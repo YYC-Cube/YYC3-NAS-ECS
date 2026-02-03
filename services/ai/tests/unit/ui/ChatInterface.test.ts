@@ -8,8 +8,8 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { ChatInterface } from '@/ui/ChatInterface';
-import { ChatMessage, ChatSession, ChatTheme, ChatLayout } from '@/ui/types';
+import { ChatInterface } from '../../core/ui/ChatInterface';
+import { ChatMessage, ChatSession, ChatTheme, ChatLayout } from '../../core/ui/types';
 
 describe('ChatInterface', () => {
   let chatInterface: ChatInterface;

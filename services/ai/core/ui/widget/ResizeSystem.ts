@@ -7,7 +7,7 @@
  * @created 2025-01-30
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 
 export interface ResizeConfig {
   enabled?: boolean;
@@ -86,7 +86,6 @@ export class ResizeSystem extends EventEmitter {
   private currentPosition: ResizePosition;
   private throttleTimer: NodeJS.Timeout | null;
   private rafId: number | null;
-  private resizeEdge: ResizeEdge | null;
 
   constructor(config: ResizeConfig = {}) {
     super();
@@ -122,7 +121,6 @@ export class ResizeSystem extends EventEmitter {
     this.currentPosition = { x: 0, y: 0 };
     this.throttleTimer = null;
     this.rafId = null;
-    this.resizeEdge = null;
   }
 
   private createInitialState(): ResizeState {
@@ -282,7 +280,6 @@ export class ResizeSystem extends EventEmitter {
     this.state.duration = 0;
 
     const rect = this.element.getBoundingClientRect();
-    const style = window.getComputedStyle(this.element);
 
     this.state.startWidth = rect.width;
     this.state.startHeight = rect.height;

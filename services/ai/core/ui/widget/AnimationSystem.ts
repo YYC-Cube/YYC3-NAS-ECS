@@ -10,7 +10,7 @@
  * @license MIT
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 
 export type EasingFunction = (t: number) => number;
 
@@ -83,8 +83,6 @@ export class AnimationSystem extends EventEmitter {
   private elementAnimations: WeakMap<HTMLElement, Set<string>>;
   private metrics: AnimationMetrics;
   private enabled: boolean;
-  private maxConcurrent: number;
-  private performanceMonitoring: boolean;
   private autoCleanup: boolean;
   private cleanupDelay: number;
   private requestAnimationFrame: (callback: FrameRequestCallback) => number;
@@ -122,8 +120,6 @@ export class AnimationSystem extends EventEmitter {
       totalDuration: 0,
     };
     this.enabled = this.config.enabled;
-    this.maxConcurrent = this.config.maxConcurrentAnimations;
-    this.performanceMonitoring = this.config.enablePerformanceMonitoring;
     this.autoCleanup = this.config.enableAutoCleanup;
     this.cleanupDelay = this.config.cleanupDelay;
     this.requestAnimationFrame = this.config.requestAnimationFrame;
@@ -175,7 +171,6 @@ export class AnimationSystem extends EventEmitter {
     const duration = config.duration || this.config.defaultDuration;
     const delay = config.delay || 0;
     const iterations = config.iterations || 1;
-    const direction = config.direction || 'normal';
     const fillMode = config.fillMode || 'forwards';
 
     this.metrics.totalAnimations++;
@@ -205,7 +200,6 @@ export class AnimationSystem extends EventEmitter {
       }
 
       const elapsed = timestamp - startTime;
-      const totalDuration = duration * iterations;
       const progress = Math.min(elapsed / duration, 1);
       const currentIteration = Math.floor(elapsed / duration);
 
@@ -397,7 +391,7 @@ export class AnimationSystem extends EventEmitter {
 
   private completeAnimation(
     animationId: string,
-    element: HTMLElement,
+    _element: HTMLElement,
     fillMode: string
   ): void {
     const state = this.animations.get(animationId);
@@ -476,13 +470,13 @@ export class AnimationSystem extends EventEmitter {
         break;
       case 'backgroundColor':
       case 'color':
-        element.style[property] = value;
+        (element.style as any)[property] = value;
         break;
       default:
         if (typeof value === 'number') {
-          element.style[property] = `${value}px`;
+          (element.style as any)[property] = `${value}px`;
         } else {
-          element.style[property] = value;
+          (element.style as any)[property] = value;
         }
     }
   }

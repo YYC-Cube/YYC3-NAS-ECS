@@ -3,14 +3,10 @@
  * @description 用户体验优化循环 - 持续优化用户体验
  */
 
-import type { AutonomousAIConfig } from '../../autonomous-ai-widget/types';
 import type { ClosedLoopMetrics } from '../types';
 
 export class UXOptimizationLoop {
-  private config: AutonomousAIConfig;
-
-  constructor(config: AutonomousAIConfig) {
-    this.config = config;
+  constructor() {
   }
 
   /**

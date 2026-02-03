@@ -88,6 +88,15 @@ export function IntelligentAIWidget({ className = '' }: IntelligentAIWidgetProps
           <div
             ref={dragHandleRef}
             onMouseDown={handleMouseDown}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                // Allow keyboard activation if needed
+              }
+            }}
+            role="button"
+            tabIndex={0}
+            aria-label="拖动以移动AI助手窗口"
             className="bg-gradient-to-r from-blue-500 to-purple-600 px-4 py-3 flex items-center justify-between cursor-move select-none"
           >
             <div className="flex items-center gap-2">
@@ -226,10 +235,12 @@ export function IntelligentAIWidget({ className = '' }: IntelligentAIWidgetProps
             )}
           </div>
 
+          {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
           <div
             ref={resizeHandleRef}
             onMouseDown={handleResizeMouseDown}
             className="absolute bottom-0 right-0 w-4 h-4 cursor-se-resize hover:bg-blue-500/20 rounded-bl-lg transition-colors"
+            aria-label="Resize widget"
           >
             <div className="w-2 h-2 border-b-2 border-r-2 border-gray-400 dark:border-gray-600" />
           </div>

@@ -10,7 +10,7 @@
  * @license MIT
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from '@utils/EventEmitter';
 
 export interface AnalysisConfig {
   enabled?: boolean;
@@ -132,7 +132,7 @@ export interface AnalysisMetrics {
 }
 
 export class AnalysisSystem extends EventEmitter {
-  private config: Required<AnalysisConfig>;
+  private config: AnalysisConfig;
   private dataStore: AnalysisData[];
   private analysisResults: AnalysisResult[];
   private detectedPatterns: DetectedPattern[];
@@ -160,9 +160,6 @@ export class AnalysisSystem extends EventEmitter {
       maxDataPoints: 10000,
       enableRealTimeAnalysis: true,
       analysisInterval: 60000,
-      onAnalysisComplete: undefined,
-      onPatternDetected: undefined,
-      onPredictionGenerated: undefined,
       ...config,
     };
 
@@ -182,11 +179,11 @@ export class AnalysisSystem extends EventEmitter {
       dataRetentionRate: 1.0,
     };
 
-    this.enabled = this.config.enabled;
-    this.realTimeAnalysisEnabled = this.config.enableRealTimeAnalysis;
-    this.dataRetentionDays = this.config.dataRetentionDays;
-    this.maxDataPoints = this.config.maxDataPoints;
-    this.samplingRate = this.config.samplingRate;
+    this.enabled = this.config.enabled ?? true;
+    this.realTimeAnalysisEnabled = this.config.enableRealTimeAnalysis ?? true;
+    this.dataRetentionDays = this.config.dataRetentionDays ?? 30;
+    this.maxDataPoints = this.config.maxDataPoints ?? 10000;
+    this.samplingRate = this.config.samplingRate ?? 1.0;
     this.analysisIntervalId = null;
 
     if (this.enabled) {
@@ -195,7 +192,7 @@ export class AnalysisSystem extends EventEmitter {
   }
 
   private initialize(): void {
-    if (this.config.enableRealTimeAnalysis && this.config.analysisInterval > 0) {
+    if (this.config.enableRealTimeAnalysis && (this.config.analysisInterval ?? 0) > 0) {
       this.startPeriodicAnalysis();
     }
 
@@ -796,7 +793,6 @@ export class AnalysisSystem extends EventEmitter {
     }
 
     const recentCount = recentData.length;
-    const totalRecent = behaviorData.slice(-100).length;
     const olderCount = behaviorData.filter(d => d.data.action === action && d.timestamp < recentData[0].timestamp).length;
 
     return (recentCount - olderCount) / olderCount;
@@ -1060,7 +1056,7 @@ export class AnalysisSystem extends EventEmitter {
   public setRealTimeAnalysis(enabled: boolean): void {
     this.realTimeAnalysisEnabled = enabled;
 
-    if (enabled && this.config.analysisInterval > 0) {
+    if (enabled && (this.config.analysisInterval ?? 0) > 0) {
       this.startPeriodicAnalysis();
     } else {
       this.stopPeriodicAnalysis();
@@ -1073,7 +1069,7 @@ export class AnalysisSystem extends EventEmitter {
     this.config = { ...this.config, ...config };
 
     if (config.analysisInterval !== undefined) {
-      if (this.config.enableRealTimeAnalysis && this.config.analysisInterval > 0) {
+      if (this.config.enableRealTimeAnalysis && (this.config.analysisInterval ?? 0) > 0) {
         this.startPeriodicAnalysis();
       } else {
         this.stopPeriodicAnalysis();
