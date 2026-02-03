@@ -151,6 +151,46 @@ secrets/
 credentials/
 .secrets/
 
+# Sensitive configuration files
+**/config/production.*
+**/config/staging.*
+**/config/secrets.*
+**/config/local.*
+**/*-secrets.*
+**/*-credentials.*
+
+# Sensitive documentation
+**/*-secret.md
+**/*-private.md
+**/*-internal.md
+**/*-confidential.md
+**/confidential/
+**/private-docs/
+**/internal-docs/
+**/sensitive-data/
+
+# Personal notes and drafts
+**/notes/
+**/personal/
+**/scratch/
+**/scratchpad/
+**/todo/
+**/todo.md
+**/TODO.md
+**/drafts/
+
+# Meeting notes and internal communications
+**/meeting-notes/
+**/standup-notes/
+**/sprint-notes/
+**/internal-meetings/
+
+# Architecture and design drafts
+**/architecture-drafts/
+**/design-drafts/
+**/wireframes/
+**/mockups/
+
 # ==================== Service-Specific ====================
 # FRP
 frp/frpc.log
@@ -184,6 +224,80 @@ api/.env
 
 # Config Services
 config/services/.env.local
+
+# ==================== Documentation ====================
+# Documentation build outputs
+docs/_site/
+docs/.vitepress/cache/
+docs/.vitepress/dist/
+docs/docusaurus/
+docs/.docusaurus/
+
+# Temporary and draft documents
+**/*.draft.md
+**/*.tmp.md
+**/*.bak.md
+**/*-draft.*
+**/*-backup.*
+**/*.swp.md
+
+# IDE generated documentation
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Documentation dependencies
+docs/node_modules/
+docs/.pnp
+docs/.pnp.js
+
+# Documentation cache and temp
+docs/.cache/
+docs/.temp/
+docs/tmp/
+
+# Auto-generated documentation
+**/generated-docs/
+**/auto-docs/
+**/api-docs/generated/
+
+# Document backups and versions
+*.orig
+*.rej
+*.patch.backup
+
+# Research and reference materials
+**/research/
+**/references/
+**/bibliography/
+**/citations/
+
+# User manuals and guides (drafts)
+**/user-manuals-draft/
+**/guides-draft/
+**/tutorials-draft/
+
+# Third-party documentation
+**/third-party-docs/
+**/vendor-docs/
+
+# Deprecated documentation
+**/deprecated/
+**/obsolete/
+**/archive-docs/
+
+# Documentation in other formats
+**/*.docx
+**/*.xlsx
+**/*.pptx
+**/*.pdf
+!docs/**/*.pdf
+!README.pdf
+
+# Local documentation overrides
+**/docs.local/
+**/docs-override/
 
 # ==================== Misc ====================
 *.pid
