@@ -25,6 +25,7 @@
 - [API接口](#api接口)
 - [功能特性](#功能特性)
 - [使用指南](#使用指南)
+- [高级使用示例](#高级使用示例)
 - [安全考虑](#安全考虑)
 - [最佳实践](#最佳实践)
 - [故障排除](#故障排除)
@@ -779,6 +780,476 @@ export const ProtectedRoute: React.FC<{
 <ProtectedRoute requiredPermission={Permission.EMAIL_SEND}>
   <EmailComponent />
 </ProtectedRoute>
+```
+
+### 高级使用示例
+
+#### 1. 动态权限控制
+
+根据用户角色动态显示不同的UI元素和功能。
+
+```typescript
+import React from 'react';
+import { rbacService, Role, Permission } from '@/services/rbacService';
+
+export const Dashboard: React.FC = () => {
+  const currentUser = rbacService.getCurrentUser();
+
+  if (!currentUser) {
+    return <div>请先登录</div>;
+  }
+
+  return (
+    <div className="dashboard">
+      <h1>仪表盘</h1>
+      
+      {/* 超级管理员专属功能 */}
+      {currentUser.role === Role.SUPER_ADMIN && (
+        <div className="admin-only">
+          <h2>系统管理</h2>
+          <button>用户管理</button>
+          <button>角色管理</button>
+          <button>系统配置</button>
+        </div>
+      )}
+
+      {/* 管理员功能 */}
+      {currentUser.role === Role.ADMIN && (
+        <div className="admin-panel">
+          <h2>管理面板</h2>
+          <button>监控管理</button>
+          <button>日志查看</button>
+        </div>
+      )}
+
+      {/* 操作员功能 */}
+      {currentUser.role === Role.OPERATOR && (
+        <div className="operator-panel">
+          <h2>操作面板</h2>
+          <button>发送邮件</button>
+          <button>查看日志</button>
+        </div>
+      )}
+
+      {/* 基于权限的按钮显示 */}
+      {rbacService.hasPermission(Permission.EMAIL_SEND) && (
+        <button>发送邮件</button>
+      )}
+
+      {rbacService.hasPermission(Permission.EMAIL_DELETE) && (
+        <button>删除邮件</button>
+      )}
+    </div>
+  );
+};
+```
+
+#### 2. 批量权限检查
+
+一次性检查多个权限，提高性能。
+
+```typescript
+import { rbacService, Permission } from '@/services/rbacService';
+
+interface PermissionCheckResult {
+  permission: Permission;
+  hasAccess: boolean;
+}
+
+export function checkPermissionsBatch(
+  permissions: Permission[]
+): PermissionCheckResult[] {
+  return permissions.map(permission => ({
+    permission,
+    hasAccess: rbacService.hasPermission(permission)
+  }));
+}
+
+// 使用示例
+const permissionResults = checkPermissionsBatch([
+  Permission.DASHBOARD_VIEW,
+  Permission.MONITORING_VIEW,
+  Permission.EMAIL_SEND,
+  Permission.EMAIL_DELETE,
+  Permission.FRP_CREATE
+]);
+
+// 根据检查结果动态渲染UI
+permissionResults.forEach(result => {
+  if (result.hasAccess) {
+    console.log(`用户拥有权限: ${result.permission}`);
+  } else {
+    console.log(`用户缺少权限: ${result.permission}`);
+  }
+});
+```
+
+#### 3. 权限缓存优化
+
+缓存权限检查结果，减少重复计算。
+
+```typescript
+import { rbacService, Permission } from '@/services/rbacService';
+
+class PermissionCache {
+  private cache: Map<string, boolean> = new Map();
+  private ttl: number = 60000; // 缓存1分钟
+  private timestamps: Map<string, number> = new Map();
+
+  hasPermission(permission: Permission): boolean {
+    const key = `${rbacService.getCurrentUser()?.id}-${permission}`;
+    const now = Date.now();
+    const timestamp = this.timestamps.get(key);
+
+    // 检查缓存是否过期
+    if (timestamp && now - timestamp < this.ttl) {
+      return this.cache.get(key) || false;
+    }
+
+    // 重新检查权限
+    const hasAccess = rbacService.hasPermission(permission);
+    this.cache.set(key, hasAccess);
+    this.timestamps.set(key, now);
+
+    return hasAccess;
+  }
+
+  clearCache(): void {
+    this.cache.clear();
+    this.timestamps.clear();
+  }
+
+  clearUserCache(userId: string): void {
+    for (const key of this.cache.keys()) {
+      if (key.startsWith(userId)) {
+        this.cache.delete(key);
+        this.timestamps.delete(key);
+      }
+    }
+  }
+}
+
+const permissionCache = new PermissionCache();
+
+// 使用示例
+if (permissionCache.hasPermission(Permission.EMAIL_SEND)) {
+  // 发送邮件
+}
+
+// 用户权限变更时清除缓存
+rbacService.assignRole('user-001', Role.ADMIN);
+permissionCache.clearUserCache('user-001');
+```
+
+#### 4. 审计日志分析
+
+分析审计日志，识别异常行为。
+
+```typescript
+import { rbacService } from '@/services/rbacService';
+
+interface AuditAnalysis {
+  totalOperations: number;
+  failedOperations: number;
+  suspiciousActivities: AuditLog[];
+  topUsers: { username: string; count: number }[];
+  topResources: { resource: string; count: number }[];
+}
+
+export function analyzeAuditLogs(days: number = 7): AuditAnalysis {
+  const logs = rbacService.getAuditLogs();
+  const cutoffDate = new Date();
+  cutoffDate.setDate(cutoffDate.getDate() - days);
+
+  const recentLogs = logs.filter(log => 
+    new Date(log.timestamp) > cutoffDate
+  );
+
+  const failedLogs = recentLogs.filter(log => log.result === 'failure');
+  
+  // 识别可疑活动（短时间内多次失败）
+  const userFailures = new Map<string, number>();
+  failedLogs.forEach(log => {
+    const count = userFailures.get(log.userId) || 0;
+    userFailures.set(log.userId, count + 1);
+  });
+
+  const suspiciousActivities = failedLogs.filter(log => 
+    (userFailures.get(log.userId) || 0) > 5
+  );
+
+  // 统计最活跃用户
+  const userCounts = new Map<string, number>();
+  recentLogs.forEach(log => {
+    const count = userCounts.get(log.username) || 0;
+    userCounts.set(log.username, count + 1);
+  });
+
+  const topUsers = Array.from(userCounts.entries())
+    .map(([username, count]) => ({ username, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  // 统计最常访问的资源
+  const resourceCounts = new Map<string, number>();
+  recentLogs.forEach(log => {
+    const count = resourceCounts.get(log.resource) || 0;
+    resourceCounts.set(log.resource, count + 1);
+  });
+
+  const topResources = Array.from(resourceCounts.entries())
+    .map(([resource, count]) => ({ resource, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  return {
+    totalOperations: recentLogs.length,
+    failedOperations: failedLogs.length,
+    suspiciousActivities,
+    topUsers,
+    topResources
+  };
+}
+
+// 使用示例
+const analysis = analyzeAuditLogs(7);
+console.log(`总操作数: ${analysis.totalOperations}`);
+console.log(`失败操作数: ${analysis.failedOperations}`);
+console.log(`可疑活动: ${analysis.suspiciousActivities.length}次`);
+console.log('最活跃用户:', analysis.topUsers);
+console.log('最常访问资源:', analysis.topResources);
+```
+
+#### 5. 条件访问控制
+
+基于多种条件实现灵活的访问控制。
+
+```typescript
+import { rbacService, Role, Permission } from '@/services/rbacService';
+
+interface AccessCondition {
+  timeRange?: {
+    start: string;
+    end: string;
+    weekdays?: number[];
+  };
+  ipWhitelist?: string[];
+  location?: string[];
+  deviceType?: string[];
+}
+
+export function checkConditionalAccess(
+  permission: Permission,
+  conditions: AccessCondition
+): boolean {
+  // 首先检查基本权限
+  if (!rbacService.hasPermission(permission)) {
+    return false;
+  }
+
+  const now = new Date();
+
+  // 时间限制检查
+  if (conditions.timeRange) {
+    const { start, end, weekdays } = conditions.timeRange;
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
+    const currentTime = currentHour * 60 + currentMinute;
+    
+    const [startHour, startMinute] = start.split(':').map(Number);
+    const [endHour, endMinute] = end.split(':').map(Number);
+    const startTime = startHour * 60 + startMinute;
+    const endTime = endHour * 60 + endMinute;
+
+    if (currentTime < startTime || currentTime > endTime) {
+      return false;
+    }
+
+    // 工作日检查
+    if (weekdays && !weekdays.includes(now.getDay())) {
+      return false;
+    }
+  }
+
+  // IP白名单检查（需要从请求中获取IP）
+  if (conditions.ipWhitelist && conditions.ipWhitelist.length > 0) {
+    const clientIP = getClientIP(); // 需要实现获取客户端IP的方法
+    if (!conditions.ipWhitelist.includes(clientIP)) {
+      return false;
+    }
+  }
+
+  // 位置检查（需要实现位置检测）
+  if (conditions.location && conditions.location.length > 0) {
+    const userLocation = getUserLocation(); // 需要实现获取用户位置的方法
+    if (!conditions.location.includes(userLocation)) {
+      return false;
+    }
+  }
+
+  // 设备类型检查
+  if (conditions.deviceType && conditions.deviceType.length > 0) {
+    const deviceType = getDeviceType(); // 需要实现获取设备类型的方法
+    if (!conditions.deviceType.includes(deviceType)) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
+// 使用示例 - 工作时间访问控制
+const workHoursCondition: AccessCondition = {
+  timeRange: {
+    start: '09:00',
+    end: '18:00',
+    weekdays: [1, 2, 3, 4, 5] // 周一到周五
+  }
+};
+
+if (checkConditionalAccess(Permission.EMAIL_SEND, workHoursCondition)) {
+  // 允许发送邮件
+} else {
+  console.log('当前时间不允许此操作');
+}
+
+// 使用示例 - IP白名单控制
+const ipWhitelistCondition: AccessCondition = {
+  ipWhitelist: ['192.168.1.100', '192.168.1.101']
+};
+
+if (checkConditionalAccess(Permission.SYSTEM_VIEW, ipWhitelistCondition)) {
+  // 允许访问系统信息
+}
+```
+
+#### 6. 权限变更通知
+
+监听权限变更事件，及时通知相关用户。
+
+```typescript
+import { rbacService } from '@/services/rbacService';
+
+interface PermissionChange {
+  userId: string;
+  username: string;
+  oldRole?: Role;
+  newRole?: Role;
+  addedPermissions?: Permission[];
+  removedPermissions?: Permission[];
+  timestamp: string;
+}
+
+class PermissionChangeNotifier {
+  private listeners: ((change: PermissionChange) => void)[] = [];
+  private previousState: Map<string, { role: Role; permissions: Permission[] }> = new Map();
+
+  startMonitoring(): void {
+    // 定期检查权限变更
+    setInterval(() => {
+      this.checkForChanges();
+    }, 5000); // 每5秒检查一次
+  }
+
+  private checkForChanges(): void {
+    const users = rbacService.getUsers();
+
+    users.forEach(user => {
+      const previous = this.previousState.get(user.id);
+
+      if (previous) {
+        const changes: PermissionChange = {
+          userId: user.id,
+          username: user.username,
+          timestamp: new Date().toISOString()
+        };
+
+        // 检查角色变更
+        if (previous.role !== user.role) {
+          changes.oldRole = previous.role;
+          changes.newRole = user.role;
+        }
+
+        // 检查权限变更
+        const addedPermissions = user.permissions.filter(
+          p => !previous.permissions.includes(p)
+        );
+        const removedPermissions = previous.permissions.filter(
+          p => !user.permissions.includes(p)
+        );
+
+        if (addedPermissions.length > 0) {
+          changes.addedPermissions = addedPermissions;
+        }
+
+        if (removedPermissions.length > 0) {
+          changes.removedPermissions = removedPermissions;
+        }
+
+        // 如果有变更，通知监听器
+        if (changes.oldRole || changes.newRole || 
+            changes.addedPermissions || changes.removedPermissions) {
+          this.notifyListeners(changes);
+        }
+      }
+
+      // 更新状态
+      this.previousState.set(user.id, {
+        role: user.role,
+        permissions: [...user.permissions]
+      });
+    });
+  }
+
+  private notifyListeners(change: PermissionChange): void {
+    this.listeners.forEach(listener => {
+      try {
+        listener(change);
+      } catch (error) {
+        console.error('权限变更通知失败:', error);
+      }
+    });
+  }
+
+  onChange(callback: (change: PermissionChange) => void): void {
+    this.listeners.push(callback);
+  }
+
+  removeChangeListener(callback: (change: PermissionChange) => void): void {
+    const index = this.listeners.indexOf(callback);
+    if (index > -1) {
+      this.listeners.splice(index, 1);
+    }
+  }
+}
+
+const notifier = new PermissionChangeNotifier();
+
+// 使用示例 - 监听权限变更
+notifier.startMonitoring();
+
+notifier.onChange((change) => {
+  console.log(`用户 ${change.username} 的权限发生变更:`);
+  
+  if (change.oldRole && change.newRole) {
+    console.log(`  角色变更: ${change.oldRole} -> ${change.newRole}`);
+  }
+
+  if (change.addedPermissions) {
+    console.log(`  新增权限: ${change.addedPermissions.join(', ')}`);
+  }
+
+  if (change.removedPermissions) {
+    console.log(`  移除权限: ${change.removedPermissions.join(', ')}`);
+  }
+
+  // 发送通知给用户
+  sendNotificationToUser(change.userId, {
+    title: '权限变更通知',
+    message: `您的权限已更新，请查看详情`,
+    timestamp: change.timestamp
+  });
+});
 ```
 
 ---
