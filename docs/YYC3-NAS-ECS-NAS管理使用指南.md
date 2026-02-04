@@ -25,8 +25,9 @@
 6. [用户管理](#用户管理)
 7. [API使用示例](#api使用示例)
 8. [代码示例](#代码示例)
-9. [故障排除](#故障排除)
-10. [最佳实践](#最佳实践)
+9. [高级使用示例](#高级使用示例)
+10. [故障排除](#故障排除)
+11. [最佳实践](#最佳实践)
 
 ---
 
@@ -1292,6 +1293,909 @@ export function useVolumes() {
 
   return { volumes, loading, error, refetch: fetchVolumes };
 }
+```
+
+---
+
+## 🎯 高级使用示例
+
+### 场景1：自动化备份策略
+
+#### 需求描述
+实现自动化备份策略，定期备份重要数据到远程存储或云存储。
+
+#### 配置步骤
+
+**步骤1：创建备份脚本**
+
+```bash
+nano /opt/yyc3/scripts/nas-backup.sh
+```
+
+```bash
+#!/bin/bash
+
+BACKUP_CONFIG="/opt/yyc3/config/backup.conf"
+LOG_FILE="/opt/yyc3/logs/backup.log"
+
+source "$BACKUP_CONFIG"
+
+create_backup() {
+    local source="$1"
+    local dest="$2"
+    local backup_name="$3"
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [BACKUP] 开始备份: $backup_name" >> "$LOG_FILE"
+    
+    # 使用rsync进行增量备份
+    rsync -avz --delete --progress \
+        "$source" \
+        "$dest/$backup_name/$(date +%Y%m%d)/" \
+        >> "$LOG_FILE" 2>&1
+    
+    if [ $? -eq 0 ]; then
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [BACKUP] 备份成功: $backup_name" >> "$LOG_FILE"
+        return 0
+    else
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR [BACKUP] 备份失败: $backup_name" >> "$LOG_FILE"
+        return 1
+    fi
+}
+
+cleanup_old_backups() {
+    local backup_dir="$1"
+    local keep_days="$2"
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [BACKUP] 清理旧备份: $backup_dir (保留 $keep_days 天)" >> "$LOG_FILE"
+    
+    # 删除超过保留天数的备份
+    find "$backup_dir" -type d -mtime +$keep_days -exec rm -rf {} \;
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [BACKUP] 清理完成" >> "$LOG_FILE"
+}
+
+upload_to_cloud() {
+    local backup_dir="$1"
+    local cloud_path="$2"
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [BACKUP] 上传到云存储: $cloud_path" >> "$LOG_FILE"
+    
+    # 使用rclone上传到云存储
+    rclone sync "$backup_dir" "$cloud_path" \
+        --progress \
+        --log-file="$LOG_FILE" \
+        --log-level=INFO
+    
+    if [ $? -eq 0 ]; then
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [BACKUP] 云存储上传成功" >> "$LOG_FILE"
+        return 0
+    else
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR [BACKUP] 云存储上传失败" >> "$LOG_FILE"
+        return 1
+    fi
+}
+
+main() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [BACKUP] ========== 开始备份任务 ==========" >> "$LOG_FILE"
+    
+    # 备份重要数据
+    create_backup "/volume1/Documents" "/volume1/Backups" "Documents"
+    create_backup "/volume1/Photos" "/volume1/Backups" "Photos"
+    create_backup "/volume1/Music" "/volume1/Backups" "Music"
+    
+    # 清理旧备份（保留30天）
+    cleanup_old_backups "/volume1/Backups" 30
+    
+    # 上传到云存储（如果配置了）
+    if [ "$CLOUD_BACKUP_ENABLED" = "1" ]; then
+        upload_to_cloud "/volume1/Backups" "$CLOUD_BACKUP_PATH"
+    fi
+    
+    # 发送备份完成通知
+    if [ "$NOTIFICATION_ENABLED" = "1" ]; then
+        /opt/yyc3/scripts/notify.sh "backup_completed" "备份任务已完成"
+    fi
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [BACKUP] ========== 备份任务完成 ==========" >> "$LOG_FILE"
+}
+
+main
+```
+
+**步骤2：配置备份参数**
+
+```bash
+nano /opt/yyc3/config/backup.conf
+```
+
+```bash
+# ======================
+# 备份配置
+# ======================
+
+# 云存储配置
+CLOUD_BACKUP_ENABLED="1"
+CLOUD_BACKUP_PATH="remote:yyc3-backups/nas"
+
+# 通知配置
+NOTIFICATION_ENABLED="1"
+NOTIFICATION_TYPE="email"
+
+# 备份保留天数
+BACKUP_RETENTION_DAYS="30"
+
+# 备份时间
+BACKUP_TIME="02:00"
+```
+
+**步骤3：创建备份定时器**
+
+```bash
+nano /etc/systemd/system/yyc3-nas-backup.service
+```
+
+```ini
+[Unit]
+Description=YYC³ NAS Backup Service
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/yyc3/scripts/nas-backup.sh
+User=root
+Group=root
+```
+
+```bash
+nano /etc/systemd/system/yyc3-nas-backup.timer
+```
+
+```ini
+[Unit]
+Description=YYC³ NAS Backup Timer
+
+[Timer]
+OnCalendar=*-*-* 02:00:00
+Unit=yyc3-nas-backup.service
+
+[Install]
+WantedBy=timers.target
+```
+
+**步骤4：启用备份定时器**
+
+```bash
+# 重新加载Systemd配置
+systemctl daemon-reload
+
+# 启用备份定时器
+systemctl enable yyc3-nas-backup.timer
+
+# 启动备份定时器
+systemctl start yyc3-nas-backup.timer
+
+# 查看定时器状态
+systemctl status yyc3-nas-backup.timer
+
+# 手动运行备份
+/opt/yyc3/scripts/nas-backup.sh
+
+# 查看备份日志
+tail -f /opt/yyc3/logs/backup.log
+```
+
+### 场景2：存储卷监控与告警
+
+#### 需求描述
+实时监控存储卷使用情况，当存储空间不足时发送告警通知。
+
+#### 配置步骤
+
+**步骤1：创建存储监控脚本**
+
+```bash
+nano /opt/yyc3/scripts/nas-storage-monitor.sh
+```
+
+```bash
+#!/bin/bash
+
+LOG_FILE="/opt/yyc3/logs/storage-monitor.log"
+ALERT_THRESHOLD=80
+CRITICAL_THRESHOLD=90
+
+get_storage_usage() {
+    local volume="$1"
+    local usage=$(df -h "$volume" | awk 'NR==2 {print $5}' | sed 's/%//')
+    echo "$usage"
+}
+
+send_alert() {
+    local level="$1"
+    local volume="$2"
+    local usage="$3"
+    
+    local subject="[NAS存储告警] $level - $volume"
+    local message="NAS存储空间告警
+
+级别: $level
+存储卷: $volume
+使用率: $usage%
+时间: $(date '+%Y-%m-%d %H:%M:%S')
+
+请及时清理存储空间或扩容。"
+    
+    # 发送邮件通知
+    if [ "$MAIL_ENABLED" = "1" ]; then
+        echo "$message" | mail -s "$subject" "$MAIL_TO"
+    fi
+    
+    # 发送Webhook通知
+    if [ "$WEBHOOK_ENABLED" = "1" ]; then
+        curl -X POST "$WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "{\"text\": \"$message\"}" \
+            --silent --show-error
+    fi
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] WARN [STORAGE] 发送告警: $level - $volume ($usage%)" >> "$LOG_FILE"
+}
+
+check_storage() {
+    local volumes=("/volume1" "/volume2")
+    
+    for volume in "${volumes[@]}"; do
+        if [ -d "$volume" ]; then
+            local usage=$(get_storage_usage "$volume")
+            
+            echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [STORAGE] $volume 使用率: $usage%" >> "$LOG_FILE"
+            
+            # 检查是否超过临界阈值
+            if [ "$usage" -ge "$CRITICAL_THRESHOLD" ]; then
+                send_alert "严重" "$volume" "$usage"
+            # 检查是否超过告警阈值
+            elif [ "$usage" -ge "$ALERT_THRESHOLD" ]; then
+                send_alert "警告" "$volume" "$usage"
+            fi
+        fi
+    done
+}
+
+generate_report() {
+    local report_file="/opt/yyc3/reports/storage-report-$(date +%Y%m%d).txt"
+    
+    echo "NAS存储报告 - $(date '+%Y-%m-%d %H:%M:%S')" > "$report_file"
+    echo "========================================" >> "$report_file"
+    echo "" >> "$report_file"
+    
+    df -h | grep -E "Filesystem|volume" >> "$report_file"
+    
+    echo "" >> "$report_file"
+    echo "详细存储信息:" >> "$report_file"
+    echo "" >> "$report_file"
+    
+    lsblk -o NAME,SIZE,TYPE,MOUNTPOINT >> "$report_file"
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [STORAGE] 生成存储报告: $report_file" >> "$LOG_FILE"
+}
+
+main() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [STORAGE] ========== 开始存储监控 ==========" >> "$LOG_FILE"
+    
+    # 检查存储使用情况
+    check_storage
+    
+    # 生成存储报告
+    generate_report
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [STORAGE] ========== 存储监控完成 ==========" >> "$LOG_FILE"
+}
+
+main
+```
+
+**步骤2：创建存储监控定时器**
+
+```bash
+nano /etc/systemd/system/yyc3-nas-storage-monitor.service
+```
+
+```ini
+[Unit]
+Description=YYC³ NAS Storage Monitor Service
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/yyc3/scripts/nas-storage-monitor.sh
+User=root
+Group=root
+```
+
+```bash
+nano /etc/systemd/system/yyc3-nas-storage-monitor.timer
+```
+
+```ini
+[Unit]
+Description=YYC³ NAS Storage Monitor Timer
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=30min
+Unit=yyc3-nas-storage-monitor.service
+
+[Install]
+WantedBy=timers.target
+```
+
+**步骤3：启用存储监控定时器**
+
+```bash
+# 重新加载Systemd配置
+systemctl daemon-reload
+
+# 启用存储监控定时器
+systemctl enable yyc3-nas-storage-monitor.timer
+
+# 启动存储监控定时器
+systemctl start yyc3-nas-storage-monitor.timer
+
+# 查看定时器状态
+systemctl status yyc3-nas-storage-monitor.timer
+
+# 手动运行存储监控
+/opt/yyc3/scripts/nas-storage-monitor.sh
+
+# 查看存储监控日志
+tail -f /opt/yyc3/logs/storage-monitor.log
+```
+
+### 场景3：文件共享权限管理
+
+#### 需求描述
+自动化管理文件共享权限，根据用户组动态调整访问权限。
+
+#### 配置步骤
+
+**步骤1：创建权限管理脚本**
+
+```bash
+nano /opt/yyc3/scripts/nas-permission-manager.sh
+```
+
+```bash
+#!/bin/bash
+
+LOG_FILE="/opt/yyc3/logs/permission-manager.log"
+
+set_share_permissions() {
+    local share_path="$1"
+    local group="$2"
+    local permissions="$3"
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [PERMISSION] 设置共享权限: $share_path -> $group:$permissions" >> "$LOG_FILE"
+    
+    # 设置目录权限
+    chown -R :"$group" "$share_path"
+    chmod -R "$permissions" "$share_path"
+    
+    # 设置SGID位，确保新文件继承组权限
+    find "$share_path" -type d -exec chmod g+s {} \;
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [PERMISSION] 权限设置完成" >> "$LOG_FILE"
+}
+
+apply_permission_policy() {
+    local policy_file="$1"
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [PERMISSION] 应用权限策略: $policy_file" >> "$LOG_FILE"
+    
+    while IFS=, read -r share_path group permissions; do
+        # 跳过注释行和空行
+        [[ "$share_path" =~ ^#.*$ ]] && continue
+        [[ -z "$share_path" ]] && continue
+        
+        # 应用权限
+        if [ -d "$share_path" ]; then
+            set_share_permissions "$share_path" "$group" "$permissions"
+        else
+            echo "[$(date '+%Y-%m-%d %H:%M:%S')] WARN [PERMISSION] 共享目录不存在: $share_path" >> "$LOG_FILE"
+        fi
+    done < "$policy_file"
+}
+
+audit_permissions() {
+    local audit_file="/opt/yyc3/reports/permission-audit-$(date +%Y%m%d).txt"
+    
+    echo "NAS权限审计报告 - $(date '+%Y-%m-%d %H:%M:%S')" > "$audit_file"
+    echo "========================================" >> "$audit_file"
+    echo "" >> "$audit_file"
+    
+    # 检查共享目录权限
+    find /volume1 -type d -name "shared*" -exec ls -ld {} \; >> "$audit_file"
+    
+    echo "" >> "$audit_file"
+    echo "异常权限检查:" >> "$audit_file"
+    echo "" >> "$audit_file"
+    
+    # 检查权限过宽的目录
+    find /volume1 -type d -perm 777 >> "$audit_file"
+    
+    # 检查无组权限的目录
+    find /volume1 -type d ! -perm -g=rwx >> "$audit_file"
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [PERMISSION] 生成权限审计报告: $audit_file" >> "$LOG_FILE"
+}
+
+fix_permission_issues() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [PERMISSION] 修复权限问题" >> "$LOG_FILE"
+    
+    # 修复权限过宽的目录
+    find /volume1 -type d -perm 777 -exec chmod 775 {} \;
+    
+    # 修复无组权限的目录
+    find /volume1 -type d ! -perm -g=rwx -exec chmod g+rx {} \;
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [PERMISSION] 权限修复完成" >> "$LOG_FILE"
+}
+
+main() {
+    case "$1" in
+        apply)
+            apply_permission_policy "$2"
+            ;;
+        audit)
+            audit_permissions
+            ;;
+        fix)
+            fix_permission_issues
+            ;;
+        *)
+            echo "Usage: $0 {apply|audit|fix} [policy_file]"
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"
+```
+
+**步骤2：创建权限策略文件**
+
+```bash
+nano /opt/yyc3/config/permission-policy.conf
+```
+
+```bash
+# ======================
+# 文件共享权限策略
+# ======================
+# 格式: 共享路径,用户组,权限
+
+# Documents共享 - 管理员组完全访问
+/volume1/Documents/shared,admin,770
+
+# Photos共享 - 家庭组读写访问
+/volume1/Photos/shared,family,775
+
+# Music共享 - 所有用户只读访问
+/volume1/Music/shared,users,755
+
+# Backup共享 - 管理员组完全访问
+/volume1/Backup/shared,admin,770
+```
+
+**步骤3：应用权限策略**
+
+```bash
+# 应用权限策略
+/opt/yyc3/scripts/nas-permission-manager.sh apply /opt/yyc3/config/permission-policy.conf
+
+# 审计权限
+/opt/yyc3/scripts/nas-permission-manager.sh audit
+
+# 修复权限问题
+/opt/yyc3/scripts/nas-permission-manager.sh fix
+
+# 查看权限管理日志
+tail -f /opt/yyc3/logs/permission-manager.log
+```
+
+### 场景4：文件同步与镜像
+
+#### 需求描述
+实现多台NAS之间的文件同步和镜像，确保数据一致性。
+
+#### 配置步骤
+
+**步骤1：创建文件同步脚本**
+
+```bash
+nano /opt/yyc3/scripts/nas-sync.sh
+```
+
+```bash
+#!/bin/bash
+
+LOG_FILE="/opt/yyc3/logs/sync.log"
+SYNC_CONFIG="/opt/yyc3/config/sync.conf"
+
+source "$SYNC_CONFIG"
+
+sync_to_remote() {
+    local source="$1"
+    local remote_host="$2"
+    local remote_path="$3"
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [SYNC] 开始同步: $source -> $remote_host:$remote_path" >> "$LOG_FILE"
+    
+    # 使用rsync同步文件
+    rsync -avz --delete --progress \
+        -e "ssh -p $SSH_PORT -i $SSH_KEY" \
+        "$source" \
+        "$SSH_USER@$remote_host:$remote_path" \
+        >> "$LOG_FILE" 2>&1
+    
+    if [ $? -eq 0 ]; then
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [SYNC] 同步成功: $source" >> "$LOG_FILE"
+        return 0
+    else
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR [SYNC] 同步失败: $source" >> "$LOG_FILE"
+        return 1
+    fi
+}
+
+sync_from_remote() {
+    local remote_host="$1"
+    local remote_path="$2"
+    local dest="$3"
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [SYNC] 开始同步: $remote_host:$remote_path -> $dest" >> "$LOG_FILE"
+    
+    # 使用rsync同步文件
+    rsync -avz --delete --progress \
+        -e "ssh -p $SSH_PORT -i $SSH_KEY" \
+        "$SSH_USER@$remote_host:$remote_path" \
+        "$dest" \
+        >> "$LOG_FILE" 2>&1
+    
+    if [ $? -eq 0 ]; then
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [SYNC] 同步成功: $dest" >> "$LOG_FILE"
+        return 0
+    else
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR [SYNC] 同步失败: $dest" >> "$LOG_FILE"
+        return 1
+    fi
+}
+
+bidirectional_sync() {
+    local local_path="$1"
+    local remote_host="$2"
+    local remote_path="$3"
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [SYNC] 开始双向同步: $local_path <-> $remote_host:$remote_path" >> "$LOG_FILE"
+    
+    # 创建临时目录用于冲突解决
+    local temp_dir="/tmp/sync-conflicts-$(date +%Y%m%d%H%M%S)"
+    mkdir -p "$temp_dir"
+    
+    # 先从远程同步到本地
+    rsync -avz --backup --backup-dir="$temp_dir" \
+        -e "ssh -p $SSH_PORT -i $SSH_KEY" \
+        "$SSH_USER@$remote_host:$remote_path" \
+        "$local_path" \
+        >> "$LOG_FILE" 2>&1
+    
+    # 再从本地同步到远程
+    rsync -avz --backup --backup-dir="$temp_dir" \
+        -e "ssh -p $SSH_PORT -i $SSH_KEY" \
+        "$local_path" \
+        "$SSH_USER@$remote_host:$remote_path" \
+        >> "$LOG_FILE" 2>&1
+    
+    if [ $? -eq 0 ]; then
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [SYNC] 双向同步成功" >> "$LOG_FILE"
+        
+        # 清理临时目录
+        rm -rf "$temp_dir"
+        return 0
+    else
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR [SYNC] 双向同步失败" >> "$LOG_FILE"
+        return 1
+    fi
+}
+
+main() {
+    case "$1" in
+        push)
+            sync_to_remote "$2" "$REMOTE_HOST" "$REMOTE_PATH"
+            ;;
+        pull)
+            sync_from_remote "$REMOTE_HOST" "$REMOTE_PATH" "$2"
+            ;;
+        bidirectional)
+            bidirectional_sync "$2" "$REMOTE_HOST" "$REMOTE_PATH"
+            ;;
+        *)
+            echo "Usage: $0 {push|pull|bidirectional} <local_path>"
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"
+```
+
+**步骤2：配置同步参数**
+
+```bash
+nano /opt/yyc3/config/sync.conf
+```
+
+```bash
+# ======================
+# 文件同步配置
+# ======================
+
+# 远程NAS配置
+REMOTE_HOST="192.168.3.46"
+SSH_USER="admin"
+SSH_PORT="22"
+SSH_KEY="/root/.ssh/id_rsa"
+
+# 同步路径
+REMOTE_PATH="/volume1/Sync"
+```
+
+**步骤3：执行文件同步**
+
+```bash
+# 推送到远程NAS
+/opt/yyc3/scripts/nas-sync.sh push /volume1/Documents
+
+# 从远程NAS拉取
+/opt/yyc3/scripts/nas-sync.sh pull /volume1/Documents
+
+# 双向同步
+/opt/yyc3/scripts/nas-sync.sh bidirectional /volume1/Documents
+
+# 查看同步日志
+tail -f /opt/yyc3/logs/sync.log
+```
+
+### 场景5：文件去重与清理
+
+#### 需求描述
+自动检测和清理重复文件，优化存储空间使用。
+
+#### 配置步骤
+
+**步骤1：创建文件去重脚本**
+
+```bash
+nano /opt/yyc3/scripts/nas-dedup.sh
+```
+
+```bash
+#!/bin/bash
+
+LOG_FILE="/opt/yyc3/logs/dedup.log"
+REPORT_FILE="/opt/yyc3/reports/dedup-report-$(date +%Y%m%d).txt"
+
+find_duplicates() {
+    local search_path="$1"
+    local min_size="$2"
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [DEDUP] 查找重复文件: $search_path (最小大小: ${min_size}MB)" >> "$LOG_FILE"
+    
+    # 使用fdupes查找重复文件
+    fdupes -r -S "$min_size" "$search_path" > /tmp/duplicates.txt
+    
+    local duplicate_count=$(grep -c "^$" /tmp/duplicates.txt)
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [DEDUP] 发现 $duplicate_count 组重复文件" >> "$LOG_FILE"
+    
+    cat /tmp/duplicates.txt
+}
+
+generate_dedup_report() {
+    local search_path="$1"
+    
+    echo "文件去重报告 - $(date '+%Y-%m-%d %H:%M:%S')" > "$REPORT_FILE"
+    echo "========================================" >> "$REPORT_FILE"
+    echo "" >> "$REPORT_FILE"
+    
+    echo "扫描路径: $search_path" >> "$REPORT_FILE"
+    echo "扫描时间: $(date '+%Y-%m-%d %H:%M:%S')" >> "$REPORT_FILE"
+    echo "" >> "$REPORT_FILE"
+    
+    echo "重复文件组:" >> "$REPORT_FILE"
+    echo "----------------------------------------" >> "$REPORT_FILE"
+    echo "" >> "$REPORT_FILE"
+    
+    # 查找重复文件并生成报告
+    fdupes -r "$search_path" | awk '
+        /^$/ { print ""; next }
+        { print "  " $0 }
+    ' >> "$REPORT_FILE"
+    
+    echo "" >> "$REPORT_FILE"
+    echo "========================================" >> "$REPORT_FILE"
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [DEDUP] 生成去重报告: $REPORT_FILE" >> "$LOG_FILE"
+}
+
+interactive_dedup() {
+    local duplicates_file="$1"
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [DEDUP] 开始交互式去重" >> "$LOG_FILE"`
+    
+    # 读取重复文件列表
+    local group=1
+    local files=()
+    
+    while IFS= read -r line; do
+        if [ -z "$line" ]; then
+            if [ ${#files[@]} -gt 0 ]; then
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [DEDUP] 处理重复组 #$group" >> "$LOG_FILE"
+                
+                # 显示重复文件
+                echo "重复组 #$group:"
+                for i in "${!files[@]}"; do
+                    echo "  [$((i+1))] ${files[$i]}"
+                done
+                
+                # 询问用户要保留哪个文件
+                echo -n "请选择要保留的文件编号 (1-${#files[@]}, 跳过按s): "
+                read choice
+                
+                if [ "$choice" = "s" ]; then
+                    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [DEDUP] 跳过重复组 #$group" >> "$LOG_FILE"
+                elif [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 1 ] && [ "$choice" -le ${#files[@]} ]; then
+                    local keep_index=$((choice - 1))
+                    local keep_file="${files[$keep_index]}"
+                    
+                    # 删除其他重复文件
+                    for i in "${!files[@]}"; do
+                        if [ "$i" -ne "$keep_index" ]; then
+                            rm -f "${files[$i]}"
+                            echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [DEDUP] 删除重复文件: ${files[$i]}" >> "$LOG_FILE"
+                        fi
+                    done
+                    
+                    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [DEDUP] 保留文件: $keep_file" >> "$LOG_FILE"
+                fi
+                
+                group=$((group + 1))
+                files=()
+            fi
+        else
+            files+=("$line")
+        fi
+    done < "$duplicates_file"
+}
+
+auto_dedup() {
+    local search_path="$1"
+    local strategy="$2"
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [DEDUP] 开始自动去重: $strategy" >> "$LOG_FILE"
+    
+    # 使用fdupes查找重复文件
+    fdupes -r "$search_path" | awk '
+        /^$/ { 
+            if (count > 1) {
+                # 根据策略选择要保留的文件
+                if (strategy == "newest") {
+                    keep = files[1]
+                    for (i = 2; i <= count; i++) {
+                        if (stat(files[i], "mtime") > stat(keep, "mtime")) {
+                            keep = files[i]
+                        }
+                    }
+                } else if (strategy == "oldest") {
+                    keep = files[1]
+                    for (i = 2; i <= count; i++) {
+                        if (stat(files[i], "mtime") < stat(keep, "mtime")) {
+                            keep = files[i]
+                        }
+                    }
+                } else if (strategy == "largest") {
+                    keep = files[1]
+                    for (i = 2; i <= count; i++) {
+                        if (stat(files[i], "size") > stat(keep, "size")) {
+                            keep = files[i]
+                        }
+                    }
+                } else if (strategy == "smallest") {
+                    keep = files[1]
+                    for (i = 2; i <= count; i++) {
+                        if (stat(files[i], "size") < stat(keep, "size")) {
+                            keep = files[i]
+                        }
+                    }
+                }
+                
+                # 删除其他重复文件
+                for (i = 1; i <= count; i++) {
+                    if (files[i] != keep) {
+                        system("rm -f \"" files[i] "\"")
+                        print "删除: " files[i]
+                    }
+                }
+                print "保留: " keep
+                print ""
+            }
+            count = 0
+            delete files
+            next
+        }
+        {
+            count++
+            files[count] = $0
+        }
+    ' strategy="$strategy"
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [DEDUP] 自动去重完成" >> "$LOG_FILE"
+}
+
+main() {
+    case "$1" in
+        find)
+            find_duplicates "$2" "${3:-1}"
+            ;;
+        report)
+            generate_dedup_report "$2"
+            ;;
+        interactive)
+            find_duplicates "$2" "${3:-1}" > /tmp/duplicates.txt
+            interactive_dedup /tmp/duplicates.txt
+            ;;
+        auto)
+            auto_dedup "$2" "$3"
+            ;;
+        *)
+            echo "Usage: $0 {find|report|interactive|auto} <search_path> [min_size|strategy]"
+            echo ""
+            echo "示例:"
+            echo "  $0 find /volume1/Documents 10      # 查找大于10MB的重复文件"
+            echo "  $0 report /volume1/Documents       # 生成去重报告"
+            echo "  $0 interactive /volume1/Documents # 交互式去重"
+            echo "  $0 auto /volume1/Documents newest # 自动去重（保留最新的）"
+            echo ""
+            echo "自动去重策略:"
+            echo "  newest   - 保留最新的文件"
+            echo "  oldest   - 保留最旧的文件"
+            echo "  largest  - 保留最大的文件"
+            echo "  smallest - 保留最小的文件"
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"
+```
+
+**步骤2：执行文件去重**
+
+```bash
+# 查找重复文件（大于10MB）
+/opt/yyc3/scripts/nas-dedup.sh find /volume1/Documents 10
+
+# 生成去重报告
+/opt/yyc3/scripts/nas-dedup.sh report /volume1/Documents
+
+# 交互式去重
+/opt/yyc3/scripts/nas-dedup.sh interactive /volume1/Documents 10
+
+# 自动去重（保留最新的文件）
+/opt/yyc3/scripts/nas-dedup.sh auto /volume1/Documents newest
+
+# 查看去重日志
+tail -f /opt/yyc3/logs/dedup.log
+
+# 查看去重报告
+cat /opt/yyc3/reports/dedup-report-$(date +%Y%m%d).txt
 ```
 
 ---

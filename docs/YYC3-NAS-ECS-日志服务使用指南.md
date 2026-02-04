@@ -756,6 +756,799 @@ export function useRecentLogs(count: number = 100) {
 
 ---
 
+## 🎯 高级使用示例
+
+### 场景1：实时日志监控与告警
+
+#### 需求描述
+实时监控系统日志，当检测到错误日志时自动发送告警通知。
+
+#### 实现代码
+
+```typescript
+import { logService } from '@/services/logService';
+
+interface AlertRule {
+  level: string[];
+  category: string[];
+  keyword?: string;
+  threshold: number;
+  window: number; // 时间窗口（毫秒）
+}
+
+class LogMonitor {
+  private alertRules: AlertRule[] = [];
+  private logBuffer: any[] = [];
+  private monitoring: boolean = false;
+  private checkInterval: NodeJS.Timeout | null = null;
+
+  addAlertRule(rule: AlertRule): void {
+    this.alertRules.push(rule);
+  }
+
+  startMonitoring(checkInterval: number = 5000): void {
+    if (this.monitoring) {
+      console.warn('日志监控已在运行');
+      return;
+    }
+
+    this.monitoring = true;
+    console.log('开始日志监控');
+
+    this.checkInterval = setInterval(() => {
+      this.checkLogs();
+    }, checkInterval);
+  }
+
+  stopMonitoring(): void {
+    if (!this.monitoring) {
+      return;
+    }
+
+    this.monitoring = false;
+    
+    if (this.checkInterval) {
+      clearInterval(this.checkInterval);
+      this.checkInterval = null;
+    }
+
+    console.log('停止日志监控');
+  }
+
+  private async checkLogs(): Promise<void> {
+    try {
+      const endTime = Date.now();
+      const startTime = endTime - 60000; // 查询最近1分钟的日志
+
+      const logs = logService.getLogs({
+        startTime: new Date(startTime).toISOString(),
+        endTime: new Date(endTime).toISOString()
+      }, 1000);
+
+      for (const rule of this.alertRules) {
+        const matchedLogs = logs.filter(log => 
+          rule.level.includes(log.level) &&
+          rule.category.includes(log.category) &&
+          (!rule.keyword || log.message.includes(rule.keyword))
+        );
+
+        if (matchedLogs.length >= rule.threshold) {
+          await this.sendAlert(rule, matchedLogs);
+        }
+      }
+    } catch (error) {
+      console.error('检查日志失败:', error);
+    }
+  }
+
+  private async sendAlert(rule: AlertRule, logs: any[]): Promise<void> {
+    const alertMessage = `
+日志告警触发！
+
+规则:
+- 级别: ${rule.level.join(', ')}
+- 分类: ${rule.category.join(', ')}
+- 关键词: ${rule.keyword || '无'}
+- 阈值: ${rule.threshold}条/${rule.window}ms
+
+触发日志:
+${logs.map(log => `- [${log.level}] ${log.category}: ${log.message}`).join('\n')}
+    `;
+
+    console.warn(alertMessage);
+
+    // 发送邮件通知
+    try {
+      await fetch('/api/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: 'admin@example.com',
+          subject: '[日志告警] 检测到异常日志',
+          body: alertMessage
+        })
+      });
+    } catch (error) {
+      console.error('发送告警邮件失败:', error);
+    }
+
+    // 发送Webhook通知
+    try {
+      await fetch(process.env.WEBHOOK_URL || '', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: alertMessage })
+      });
+    } catch (error) {
+      console.error('发送Webhook通知失败:', error);
+    }
+  }
+}
+
+// 使用示例
+const logMonitor = new LogMonitor();
+
+// 添加告警规则
+logMonitor.addAlertRule({
+  level: ['ERROR', 'FATAL'],
+  category: ['API', 'DATABASE'],
+  threshold: 5,
+  window: 60000 // 1分钟内5个错误
+});
+
+logMonitor.addAlertRule({
+  level: ['ERROR'],
+  category: ['SYSTEM'],
+  keyword: '磁盘空间不足',
+  threshold: 1,
+  window: 300000 // 5分钟内1个关键错误
+});
+
+// 启动监控
+logMonitor.startMonitoring(10000); // 每10秒检查一次
+
+// 停止监控
+// logMonitor.stopMonitoring();
+```
+
+### 场景2：日志聚合与分析
+
+#### 需求描述
+对日志进行聚合分析，识别常见错误模式和性能瓶颈。
+
+#### 实现代码
+
+```typescript
+import { logService } from '@/services/logService';
+
+interface LogPattern {
+  pattern: string;
+  count: number;
+  firstOccurrence: string;
+  lastOccurrence: string;
+  level: string;
+  category: string;
+}
+
+interface PerformanceMetrics {
+  avgResponseTime: number;
+  maxResponseTime: number;
+  minResponseTime: number;
+  p95ResponseTime: number;
+  p99ResponseTime: number;
+}
+
+class LogAnalyzer {
+  async analyzeErrorPatterns(
+    startTime: Date,
+    endTime: Date
+  ): Promise<LogPattern[]> {
+    const logs = logService.getLogs({
+      level: 'ERROR',
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString()
+    }, 10000);
+
+    const patterns = new Map<string, LogPattern>();
+
+    for (const log of logs) {
+      const pattern = this.extractPattern(log.message);
+      
+      if (!patterns.has(pattern)) {
+        patterns.set(pattern, {
+          pattern,
+          count: 0,
+          firstOccurrence: log.timestamp,
+          lastOccurrence: log.timestamp,
+          level: log.level,
+          category: log.category
+        });
+      }
+
+      const patternData = patterns.get(pattern)!;
+      patternData.count++;
+      
+      if (log.timestamp < patternData.firstOccurrence) {
+        patternData.firstOccurrence = log.timestamp;
+      }
+      
+      if (log.timestamp > patternData.lastOccurrence) {
+        patternData.lastOccurrence = log.timestamp;
+      }
+    }
+
+    return Array.from(patterns.values())
+      .sort((a, b) => b.count - a.count);
+  }
+
+  private extractPattern(message: string): string {
+    return message
+      .replace(/\d+/g, 'N')
+      .replace(/[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}/gi, 'UUID')
+      .replace(/\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b/g, 'EMAIL')
+      .replace(/https?:\/\/[^\s]+/g, 'URL')
+      .trim();
+  }
+
+  async analyzePerformance(
+    startTime: Date,
+    endTime: Date
+  ): Promise<PerformanceMetrics> {
+    const logs = logService.getLogs({
+      category: 'API',
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString()
+    }, 10000);
+
+    const responseTimes = logs
+      .filter(log => log.duration)
+      .map(log => log.duration)
+      .sort((a, b) => a - b);
+
+    if (responseTimes.length === 0) {
+      return {
+        avgResponseTime: 0,
+        maxResponseTime: 0,
+        minResponseTime: 0,
+        p95ResponseTime: 0,
+        p99ResponseTime: 0
+      };
+    }
+
+    const sum = responseTimes.reduce((acc, val) => acc + val, 0);
+    const avg = sum / responseTimes.length;
+
+    const p95Index = Math.floor(responseTimes.length * 0.95);
+    const p99Index = Math.floor(responseTimes.length * 0.99);
+
+    return {
+      avgResponseTime: avg,
+      maxResponseTime: responseTimes[responseTimes.length - 1],
+      minResponseTime: responseTimes[0],
+      p95ResponseTime: responseTimes[p95Index],
+      p99ResponseTime: responseTimes[p99Index]
+    };
+  }
+
+  async generateReport(
+    startTime: Date,
+    endTime: Date
+  ): Promise<string> {
+    const errorPatterns = await this.analyzeErrorPatterns(startTime, endTime);
+    const performance = await this.analyzePerformance(startTime, endTime);
+
+    const report = `
+日志分析报告
+========================================
+
+时间范围: ${startTime.toISOString()} ~ ${endTime.toISOString()}
+
+错误模式分析
+----------------------------------------
+${errorPatterns.slice(0, 10).map((pattern, index) => `
+${index + 1}. ${pattern.pattern}
+   出现次数: ${pattern.count}
+   级别: ${pattern.level}
+   分类: ${pattern.category}
+   首次出现: ${pattern.firstOccurrence}
+   最后出现: ${pattern.lastOccurrence}
+`).join('\n')}
+
+性能指标分析
+----------------------------------------
+平均响应时间: ${performance.avgResponseTime.toFixed(2)}ms
+最大响应时间: ${performance.maxResponseTime.toFixed(2)}ms
+最小响应时间: ${performance.minResponseTime.toFixed(2)}ms
+P95响应时间: ${performance.p95ResponseTime.toFixed(2)}ms
+P99响应时间: ${performance.p99ResponseTime.toFixed(2)}ms
+
+========================================
+    `;
+
+    return report;
+  }
+}
+
+// 使用示例
+const logAnalyzer = new LogAnalyzer();
+
+// 分析最近24小时的错误模式
+const endTime = new Date();
+const startTime = new Date(endTime.getTime() - 24 * 60 * 60 * 1000);
+
+const errorPatterns = await logAnalyzer.analyzeErrorPatterns(startTime, endTime);
+console.log('错误模式:', errorPatterns);
+
+// 分析性能指标
+const performance = await logAnalyzer.analyzePerformance(startTime, endTime);
+console.log('性能指标:', performance);
+
+// 生成完整报告
+const report = await logAnalyzer.generateReport(startTime, endTime);
+console.log(report);
+```
+
+### 场景3：日志导出与归档
+
+#### 需求描述
+定期导出日志到外部存储，实现日志归档和长期保存。
+
+#### 实现代码
+
+```typescript
+import { logService } from '@/services/logService';
+
+interface ArchiveConfig {
+  exportPath: string;
+  exportFormat: 'json' | 'csv' | 'txt';
+  retentionDays: number;
+  compress: boolean;
+}
+
+class LogArchiver {
+  private config: ArchiveConfig;
+
+  constructor(config: ArchiveConfig) {
+    this.config = config;
+  }
+
+  async exportLogs(
+    startTime: Date,
+    endTime: Date
+  ): Promise<string> {
+    const logs = logService.getLogs({
+      startTime: startTime.toISOString(),
+      endTime: endTime.toISOString()
+    }, 100000);
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `logs-${timestamp}.${this.config.exportFormat}`;
+    const filepath = `${this.config.exportPath}/${filename}`;
+
+    let content: string;
+
+    switch (this.config.exportFormat) {
+      case 'json':
+        content = JSON.stringify(logs, null, 2);
+        break;
+      
+      case 'csv':
+        const headers = Object.keys(logs[0] || {}).join(',');
+        const rows = logs.map(log => 
+          Object.values(log).map(val => 
+            typeof val === 'string' ? `"${val}"` : val
+          ).join(',')
+        );
+        content = [headers, ...rows].join('\n');
+        break;
+      
+      case 'txt':
+        content = logs.map(log => 
+          `[${log.timestamp}] [${log.level}] [${log.category}] ${log.message}`
+        ).join('\n');
+        break;
+    }
+
+    // 写入文件
+    await this.writeFile(filepath, content);
+
+    // 压缩文件
+    if (this.config.compress) {
+      await this.compressFile(filepath);
+    }
+
+    return filepath;
+  }
+
+  private async writeFile(filepath: string, content: string): Promise<void> {
+    // 在实际应用中，这里应该调用文件系统API
+    console.log(`写入文件: ${filepath} (${content.length} bytes)`);
+  }
+
+  private async compressFile(filepath: string): Promise<void> {
+    // 在实际应用中，这里应该调用压缩API
+    const compressedPath = `${filepath}.gz`;
+    console.log(`压缩文件: ${filepath} -> ${compressedPath}`);
+  }
+
+  async archiveOldLogs(): Promise<void> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - this.config.retentionDays);
+
+    console.log(`归档 ${this.config.retentionDays} 天前的日志...`);
+
+    const archivedFile = await this.exportLogs(
+      new Date(0),
+      cutoffDate
+    );
+
+    console.log(`日志已归档到: ${archivedFile}`);
+
+    // 删除已归档的日志
+    const deleteCount = logService.deleteLogs({
+      endTime: cutoffDate.toISOString()
+    });
+
+    console.log(`已删除 ${deleteCount} 条旧日志`);
+  }
+
+  async scheduleArchive(intervalHours: number = 24): Promise<void> {
+    const intervalMs = intervalHours * 60 * 60 * 1000;
+    
+    console.log(`设置日志归档任务，每 ${intervalHours} 小时执行一次`);
+
+    setInterval(async () => {
+      try {
+        await this.archiveOldLogs();
+      } catch (error) {
+        console.error('日志归档失败:', error);
+      }
+    }, intervalMs);
+  }
+}
+
+// 使用示例
+const logArchiver = new LogArchiver({
+  exportPath: '/opt/yyc3/archives/logs',
+  exportFormat: 'json',
+  retentionDays: 30,
+  compress: true
+});
+
+// 导出指定时间范围的日志
+const endTime = new Date();
+const startTime = new Date(endTime.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+const exportedFile = await logArchiver.exportLogs(startTime, endTime);
+console.log(`日志已导出到: ${exportedFile}`);
+
+// 归档旧日志
+await logArchiver.archiveOldLogs();
+
+// 设置定时归档
+await logArchiver.scheduleArchive(24); // 每24小时归档一次
+```
+
+### 场景4：日志可视化仪表板
+
+#### 需求描述
+创建日志可视化仪表板，实时展示日志统计和趋势。
+
+#### 实现代码
+
+```typescript
+import { logService } from '@/services/logService';
+import { useState, useEffect } from 'react';
+
+interface LogDashboardData {
+  totalLogs: number;
+  logsByLevel: { [key: string]: number };
+  logsByCategory: { [key: string]: number };
+  errorRate: number;
+  recentErrors: any[];
+  logTrend: { timestamp: string; count: number }[];
+}
+
+export function useLogDashboard(refreshInterval: number = 30000) {
+  const [data, setData] = useState<LogDashboardData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchDashboardData = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const endTime = new Date();
+      const startTime = new Date(endTime.getTime() - 24 * 60 * 60 * 1000);
+
+      const logs = logService.getLogs({
+        startTime: startTime.toISOString(),
+        endTime: endTime.toISOString()
+      }, 10000);
+
+      const totalLogs = logs.length;
+      const errorLogs = logs.filter(log => log.level === 'ERROR' || log.level === 'FATAL');
+      const errorRate = (errorLogs.length / totalLogs) * 100;
+
+      const logsByLevel: { [key: string]: number } = {};
+      const logsByCategory: { [key: string]: number } = {};
+
+      for (const log of logs) {
+        logsByLevel[log.level] = (logsByLevel[log.level] || 0) + 1;
+        logsByCategory[log.category] = (logsByCategory[log.category] || 0) + 1;
+      }
+
+      const recentErrors = errorLogs
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+        .slice(0, 10);
+
+      const logTrend = generateLogTrend(logs, startTime, endTime);
+
+      setData({
+        totalLogs,
+        logsByLevel,
+        logsByCategory,
+        errorRate,
+        recentErrors,
+        logTrend
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : '获取仪表板数据失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDashboardData();
+    const interval = setInterval(fetchDashboardData, refreshInterval);
+    return () => clearInterval(interval);
+  }, [refreshInterval]);
+
+  return { data, loading, error, refetch: fetchDashboardData };
+}
+
+function generateLogTrend(
+  logs: any[],
+  startTime: Date,
+  endTime: Date
+): { timestamp: string; count: number }[] {
+  const trend: { timestamp: string; count: number }[] = [];
+  const interval = 60 * 60 * 1000; // 1小时间隔
+
+  for (let time = startTime.getTime(); time < endTime.getTime(); time += interval) {
+    const intervalStart = new Date(time);
+    const intervalEnd = new Date(time + interval);
+
+    const count = logs.filter(log => {
+      const logTime = new Date(log.timestamp).getTime();
+      return logTime >= intervalStart.getTime() && logTime < intervalEnd.getTime();
+    }).length;
+
+    trend.push({
+      timestamp: intervalStart.toISOString(),
+      count
+    });
+  }
+
+  return trend;
+}
+
+// 使用示例：日志仪表板组件
+function LogDashboard() {
+  const { data, loading, error } = useLogDashboard(30000);
+
+  if (loading) return <div>加载中...</div>;
+  if (error) return <div>错误: {error}</div>;
+  if (!data) return null;
+
+  return (
+    <div className="log-dashboard">
+      <h1>日志仪表板</h1>
+      
+      <div className="dashboard-stats">
+        <div className="stat-card">
+          <h3>总日志数</h3>
+          <p className="stat-value">{data.totalLogs}</p>
+        </div>
+        
+        <div className="stat-card">
+          <h3>错误率</h3>
+          <p className={`stat-value ${data.errorRate > 5 ? 'error' : 'normal'}`}>
+            {data.errorRate.toFixed(2)}%
+          </p>
+        </div>
+      </div>
+
+      <div className="dashboard-charts">
+        <div className="chart-container">
+          <h3>日志级别分布</h3>
+          <LevelChart data={data.logsByLevel} />
+        </div>
+        
+        <div className="chart-container">
+          <h3>日志分类分布</h3>
+          <CategoryChart data={data.logsByCategory} />
+        </div>
+        
+        <div className="chart-container">
+          <h3>日志趋势</h3>
+          <TrendChart data={data.logTrend} />
+        </div>
+      </div>
+
+      <div className="dashboard-errors">
+        <h3>最近错误</h3>
+        <ErrorList errors={data.recentErrors} />
+      </div>
+    </div>
+  );
+}
+```
+
+### 场景5：日志搜索与过滤优化
+
+#### 需求描述
+实现高效的日志搜索和过滤功能，支持复杂查询条件。
+
+#### 实现代码
+
+```typescript
+import { logService } from '@/services/logService';
+
+interface SearchQuery {
+  level?: string[];
+  category?: string[];
+  service?: string[];
+  userId?: string[];
+  keyword?: string;
+  startTime?: string;
+  endTime?: string;
+  minDuration?: number;
+  maxDuration?: number;
+  limit?: number;
+}
+
+class LogSearchEngine {
+  private searchHistory: Map<string, SearchQuery> = new Map();
+
+  async search(query: SearchQuery): Promise<any[]> {
+    const queryKey = this.generateQueryKey(query);
+    
+    if (this.searchHistory.has(queryKey)) {
+      console.log('使用缓存的搜索结果');
+      return this.searchHistory.get(queryKey)!;
+    }
+
+    const logs = logService.getLogs({
+      level: query.level?.join(','),
+      category: query.category?.join(','),
+      service: query.service?.join(','),
+      userId: query.userId?.join(','),
+      startTime: query.startTime,
+      endTime: query.endTime
+    }, query.limit || 1000);
+
+    let filteredLogs = logs;
+
+    if (query.keyword) {
+      const keywords = query.keyword.toLowerCase().split(/\s+/);
+      filteredLogs = filteredLogs.filter(log => 
+        keywords.every(keyword => 
+          log.message.toLowerCase().includes(keyword) ||
+          log.service?.toLowerCase().includes(keyword)
+        )
+      );
+    }
+
+    if (query.minDuration !== undefined) {
+      filteredLogs = filteredLogs.filter(log => 
+        log.duration >= query.minDuration!
+      );
+    }
+
+    if (query.maxDuration !== undefined) {
+      filteredLogs = filteredLogs.filter(log => 
+        log.duration <= query.maxDuration!
+      );
+    }
+
+    this.searchHistory.set(queryKey, query);
+    return filteredLogs;
+  }
+
+  async searchWithHighlight(
+    query: SearchQuery,
+    highlightFields: string[] = ['message']
+  ): Promise<any[]> {
+    const logs = await this.search(query);
+    const keyword = query.keyword?.toLowerCase();
+
+    if (!keyword) {
+      return logs;
+    }
+
+    return logs.map(log => {
+      const highlightedLog = { ...log };
+
+      for (const field of highlightFields) {
+        if (log[field]) {
+          highlightedLog[field] = this.highlightText(
+            log[field],
+            keyword
+          );
+        }
+      }
+
+      return highlightedLog;
+    });
+  }
+
+  private highlightText(text: string, keyword: string): string {
+    const regex = new RegExp(`(${keyword})`, 'gi');
+    return text.replace(regex, '<mark>$1</mark>');
+  }
+
+  private generateQueryKey(query: SearchQuery): string {
+    return JSON.stringify(query);
+  }
+
+  clearSearchHistory(): void {
+    this.searchHistory.clear();
+  }
+
+  async getSearchSuggestions(
+    field: string,
+    prefix: string
+  ): Promise<string[]> {
+    const logs = logService.getLogs({}, 10000);
+    const values = new Set<string>();
+
+    for (const log of logs) {
+      if (log[field] && typeof log[field] === 'string') {
+        const value = log[field] as string;
+        if (value.toLowerCase().startsWith(prefix.toLowerCase())) {
+          values.add(value);
+        }
+      }
+    }
+
+    return Array.from(values).slice(0, 20);
+  }
+}
+
+// 使用示例
+const logSearchEngine = new LogSearchEngine();
+
+// 基础搜索
+const searchResults = await logSearchEngine.search({
+  level: ['ERROR', 'WARN'],
+  category: ['API', 'DATABASE'],
+  keyword: '连接失败',
+  limit: 100
+});
+
+console.log('搜索结果:', searchResults);
+
+// 带高亮的搜索
+const highlightedResults = await logSearchEngine.searchWithHighlight({
+  keyword: '用户登录',
+  limit: 50
+});
+
+console.log('高亮结果:', highlightedResults);
+
+// 获取搜索建议
+const suggestions = await logSearchEngine.getSearchSuggestions('service', 'User');
+console.log('搜索建议:', suggestions);
+
+// 清除搜索历史
+logSearchEngine.clearSearchHistory();
+```
+
+---
+
 ## 最佳实践
 
 ### 日志级别使用
