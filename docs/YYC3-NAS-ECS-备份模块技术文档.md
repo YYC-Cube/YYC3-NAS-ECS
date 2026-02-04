@@ -25,6 +25,7 @@
 - [API接口](#api接口)
 - [功能特性](#功能特性)
 - [使用指南](#使用指南)
+- [高级使用示例](#高级使用示例)
 - [性能优化](#性能优化)
 - [安全考虑](#安全考虑)
 - [最佳实践](#最佳实践)
@@ -769,6 +770,703 @@ export const BackupManager: React.FC = () => {
     </div>
   );
 };
+```
+
+---
+
+### 高级使用示例
+
+#### 1. 智能备份策略
+
+根据文件变化率和重要性自动选择备份类型。
+
+```typescript
+import { backupService, BackupType, BackupStorage } from '@/services/backupService';
+
+interface FileChangeInfo {
+  path: string;
+  lastModified: Date;
+  size: number;
+  changeRate: number;
+  importance: 'critical' | 'high' | 'medium' | 'low';
+}
+
+class SmartBackupStrategy {
+  private changeHistory: Map<string, FileChangeInfo[]> = new Map();
+
+  analyzeFileChanges(filePath: string): FileChangeInfo {
+    const history = this.changeHistory.get(filePath) || [];
+    const now = new Date();
+    
+    // 计算变化率
+    const recentChanges = history.filter(h => 
+      (now.getTime() - h.lastModified.getTime()) < 7 * 24 * 60 * 60 * 1000
+    );
+    const changeRate = recentChanges.length / 7;
+
+    // 根据文件路径确定重要性
+    let importance: FileChangeInfo['importance'] = 'medium';
+    if (filePath.includes('/config/')) {
+      importance = 'critical';
+    } else if (filePath.includes('/data/')) {
+      importance = 'high';
+    } else if (filePath.includes('/logs/')) {
+      importance = 'low';
+    }
+
+    const info: FileChangeInfo = {
+      path: filePath,
+      lastModified: now,
+      size: this.getFileSize(filePath),
+      changeRate,
+      importance
+    };
+
+    history.push(info);
+    this.changeHistory.set(filePath, history.slice(-30)); // 保留最近30条记录
+
+    return info;
+  }
+
+  recommendBackupType(filePath: string): BackupType {
+    const info = this.analyzeFileChanges(filePath);
+
+    // 关键文件总是完整备份
+    if (info.importance === 'critical') {
+      return BackupType.FULL;
+    }
+
+    // 高变化率文件使用增量备份
+    if (info.changeRate > 3) {
+      return BackupType.INCREMENTAL;
+    }
+
+    // 中等变化率文件使用差异备份
+    if (info.changeRate > 1) {
+      return BackupType.DIFFERENTIAL;
+    }
+
+    // 低变化率文件使用完整备份
+    return BackupType.FULL;
+  }
+
+  private getFileSize(filePath: string): number {
+    // 实现获取文件大小的逻辑
+    return 0;
+  }
+}
+
+const smartStrategy = new SmartBackupStrategy();
+
+// 使用示例 - 创建智能备份配置
+const recommendedType = smartStrategy.recommendBackupType('/data/user.db');
+
+const smartConfig = backupService.createConfig({
+  name: '智能数据备份',
+  type: recommendedType,
+  storage: BackupStorage.LOCAL,
+  schedule: '0 */6 * * *',
+  retentionDays: 30,
+  compression: true,
+  encryption: true,
+  storageConfig: {
+    localPath: '/backups/smart'
+  },
+  includedPaths: ['/data', '/config'],
+  excludedPaths: ['/tmp', '/cache'],
+  isActive: true
+});
+```
+
+#### 2. 多存储备份策略
+
+同时将备份存储到多个位置，提高数据安全性。
+
+```typescript
+import { backupService, BackupType, BackupStorage } from '@/services/backupService';
+
+interface MultiStorageBackup {
+  primary: BackupConfig;
+  secondary: BackupConfig;
+  tertiary?: BackupConfig;
+}
+
+class MultiStorageBackupManager {
+  async createMultiStorageBackup(
+    name: string,
+    paths: string[],
+    createdBy: string
+  ): Promise<BackupRecord[]> {
+    const results: BackupRecord[] = [];
+
+    // 创建本地备份（主存储）
+    const localConfig = backupService.createConfig({
+      name: `${name}-本地`,
+      type: BackupType.FULL,
+      storage: BackupStorage.LOCAL,
+      schedule: '0 2 * * *',
+      retentionDays: 7,
+      compression: true,
+      encryption: false,
+      storageConfig: {
+        localPath: '/backups/local'
+      },
+      includedPaths: paths,
+      excludedPaths: ['/tmp'],
+      isActive: true
+    });
+
+    const localBackup = await backupService.createBackup(
+      localConfig.id,
+      createdBy
+    );
+    results.push(localBackup);
+
+    // 创建云备份（次存储）
+    const cloudConfig = backupService.createConfig({
+      name: `${name}-云存储`,
+      type: BackupType.INCREMENTAL,
+      storage: BackupStorage.ALIYUN_OSS,
+      schedule: '0 3 * * *',
+      retentionDays: 30,
+      compression: true,
+      encryption: true,
+      storageConfig: {
+        ossConfig: {
+          bucket: 'my-backup-bucket',
+          region: 'oss-cn-hangzhou',
+          accessKey: 'your-access-key',
+          secretKey: 'your-secret-key'
+        }
+      },
+      includedPaths: paths,
+      excludedPaths: ['/tmp', '/cache'],
+      isActive: true
+    });
+
+    const cloudBackup = await backupService.createBackup(
+      cloudConfig.id,
+      createdBy
+    );
+    results.push(cloudBackup);
+
+    // 创建远程备份（第三存储 - 可选）
+    const remoteConfig = backupService.createConfig({
+      name: `${name}-远程`,
+      type: BackupType.DIFFERENTIAL,
+      storage: BackupStorage.SFTP,
+      schedule: '0 4 * * 0',
+      retentionDays: 90,
+      compression: true,
+      encryption: true,
+      storageConfig: {
+        sftpConfig: {
+          host: 'remote-backup.example.com',
+          port: 22,
+          username: 'backup',
+          password: 'secure-password',
+          privateKey: 'path-to-private-key'
+        }
+      },
+      includedPaths: paths,
+      excludedPaths: ['/tmp', '/cache', '/logs'],
+      isActive: true
+    });
+
+    const remoteBackup = await backupService.createBackup(
+      remoteConfig.id,
+      createdBy
+    );
+    results.push(remoteBackup);
+
+    return results;
+  }
+
+  async restoreFromBestSource(
+    backupName: string,
+    restorePath: string,
+    createdBy: string
+  ): Promise<RestoreRecord> {
+    // 获取所有备份记录
+    const records = backupService.getRecords();
+    
+    // 筛选指定名称的备份
+    const matchingBackups = records.filter(r => 
+      r.configName.includes(backupName)
+    );
+
+    // 按优先级排序：本地 > 云存储 > 远程
+    const priorityOrder = [BackupStorage.LOCAL, BackupStorage.ALIYUN_OSS, BackupStorage.SFTP];
+    matchingBackups.sort((a, b) => {
+      const priorityA = priorityOrder.indexOf(a.storage);
+      const priorityB = priorityOrder.indexOf(b.storage);
+      return priorityA - priorityB;
+    });
+
+    // 尝试从最佳源恢复
+    for (const backup of matchingBackups) {
+      try {
+        const restore = await backupService.restoreBackup(
+          backup.id,
+          restorePath,
+          createdBy
+        );
+        console.log(`成功从 ${backup.storage} 恢复备份`);
+        return restore;
+      } catch (error) {
+        console.error(`从 ${backup.storage} 恢复失败:`, error);
+        continue;
+      }
+    }
+
+    throw new Error('所有备份源均恢复失败');
+  }
+}
+
+const multiStorageManager = new MultiStorageBackupManager();
+
+// 使用示例 - 创建多存储备份
+const backups = await multiStorageManager.createMultiStorageBackup(
+  '系统数据',
+  ['/data', '/config'],
+  'admin'
+);
+
+console.log(`已创建 ${backups.length} 个备份`);
+
+// 使用示例 - 从最佳源恢复
+const restore = await multiStorageManager.restoreFromBestSource(
+  '系统数据',
+  '/restore',
+  'admin'
+);
+```
+
+#### 3. 备份性能监控
+
+实时监控备份性能，及时发现和解决问题。
+
+```typescript
+import { backupService } from '@/services/backupService';
+
+interface BackupPerformanceMetrics {
+  backupId: string;
+  configName: string;
+  startTime: Date;
+  endTime?: Date;
+  duration?: number;
+  throughput?: number;
+  compressionRatio?: number;
+  fileSize: number;
+  compressedSize?: number;
+  status: string;
+  errors?: string[];
+}
+
+class BackupPerformanceMonitor {
+  private metrics: BackupPerformanceMetrics[] = [];
+  private monitoring: boolean = false;
+
+  startMonitoring(configId: string, createdBy: string): void {
+    const config = backupService.getConfigById(configId);
+    if (!config) {
+      throw new Error('备份配置不存在');
+    }
+
+    const metrics: BackupPerformanceMetrics = {
+      backupId: '',
+      configName: config.name,
+      startTime: new Date(),
+      fileSize: 0,
+      status: 'in_progress'
+    };
+
+    this.metrics.push(metrics);
+
+    // 开始备份并监控
+    backupService.createBackup(configId, createdBy)
+      .then(backup => {
+        const metric = this.findMetric(backup.id);
+        if (metric) {
+          metric.endTime = new Date();
+          metric.duration = metric.endTime.getTime() - metric.startTime.getTime();
+          metric.throughput = metric.fileSize / (metric.duration / 1000);
+          metric.compressedSize = backup.compressedSize;
+          metric.compressionRatio = metric.compressedSize 
+            ? metric.fileSize / metric.compressedSize 
+            : 0;
+          metric.status = backup.status;
+        }
+      })
+      .catch(error => {
+        const metric = this.findMetric('');
+        if (metric) {
+          metric.status = 'failed';
+          metric.errors = [error.message];
+        }
+      });
+  }
+
+  private findMetric(backupId: string): BackupPerformanceMetrics | undefined {
+    return this.metrics.find(m => m.backupId === backupId || m.backupId === '');
+  }
+
+  getPerformanceReport(days: number = 7): any {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+
+    const recentMetrics = this.metrics.filter(m => 
+      m.startTime > cutoffDate
+    );
+
+    const totalBackups = recentMetrics.length;
+    const successfulBackups = recentMetrics.filter(m => m.status === 'completed').length;
+    const failedBackups = recentMetrics.filter(m => m.status === 'failed').length;
+
+    const avgDuration = recentMetrics
+      .filter(m => m.duration)
+      .reduce((sum, m) => sum + (m.duration || 0), 0) / totalBackups;
+
+    const avgThroughput = recentMetrics
+      .filter(m => m.throughput)
+      .reduce((sum, m) => sum + (m.throughput || 0), 0) / totalBackups;
+
+    const avgCompressionRatio = recentMetrics
+      .filter(m => m.compressionRatio)
+      .reduce((sum, m) => sum + (m.compressionRatio || 0), 0) / totalBackups;
+
+    return {
+      period: `${days}天`,
+      totalBackups,
+      successfulBackups,
+      failedBackups,
+      successRate: (successfulBackups / totalBackups * 100).toFixed(2) + '%',
+      avgDuration: (avgDuration / 1000).toFixed(2) + '秒',
+      avgThroughput: (avgThroughput / 1024 / 1024).toFixed(2) + 'MB/s',
+      avgCompressionRatio: avgCompressionRatio.toFixed(2) + 'x'
+    };
+  }
+
+  identifySlowBackups(thresholdMs: number = 300000): BackupPerformanceMetrics[] {
+    return this.metrics.filter(m => 
+      m.duration && m.duration > thresholdMs && m.status === 'completed'
+    );
+  }
+
+  identifyFailedBackups(): BackupPerformanceMetrics[] {
+    return this.metrics.filter(m => m.status === 'failed');
+  }
+}
+
+const performanceMonitor = new BackupPerformanceMonitor();
+
+// 使用示例 - 监控备份性能
+performanceMonitor.startMonitoring('config-001', 'admin');
+
+// 获取性能报告
+const report = performanceMonitor.getPerformanceReport(7);
+console.log('备份性能报告:', report);
+
+// 识别慢备份
+const slowBackups = performanceMonitor.identifySlowBackups(300000);
+console.log(`发现 ${slowBackups.length} 个慢备份`);
+
+// 识别失败备份
+const failedBackups = performanceMonitor.identifyFailedBackups();
+console.log(`发现 ${failedBackups.length} 个失败备份`);
+```
+
+#### 4. 备份完整性验证
+
+定期验证备份文件的完整性，确保数据可恢复。
+
+```typescript
+import { backupService } from '@/services/backupService';
+
+interface VerificationResult {
+  backupId: string;
+  backupName: string;
+  isValid: boolean;
+  checksumMatch: boolean;
+  fileCount: number;
+  corruptedFiles: string[];
+  verificationTime: Date;
+  duration: number;
+}
+
+class BackupIntegrityVerifier {
+  async verifyBackup(backupId: string): Promise<VerificationResult> {
+    const backup = backupService.getRecordById(backupId);
+    if (!backup) {
+      throw new Error('备份不存在');
+    }
+
+    const startTime = Date.now();
+    const result: VerificationResult = {
+      backupId: backup.id,
+      backupName: backup.configName,
+      isValid: false,
+      checksumMatch: false,
+      fileCount: 0,
+      corruptedFiles: [],
+      verificationTime: new Date(),
+      duration: 0
+    };
+
+    try {
+      // 验证校验和
+      const actualChecksum = await this.calculateChecksum(backup.storagePath);
+      result.checksumMatch = actualChecksum === backup.checksum;
+
+      if (!result.checksumMatch) {
+        result.corruptedFiles.push('校验和不匹配');
+      }
+
+      // 验证文件完整性
+      const files = await this.listFiles(backup.storagePath);
+      result.fileCount = files.length;
+
+      for (const file of files) {
+        const fileChecksum = await this.calculateFileChecksum(file);
+        const expectedChecksum = await this.getExpectedChecksum(file);
+
+        if (fileChecksum !== expectedChecksum) {
+          result.corruptedFiles.push(file);
+        }
+      }
+
+      // 判断备份是否有效
+      result.isValid = result.checksumMatch && result.corruptedFiles.length === 0;
+
+    } catch (error) {
+      result.corruptedFiles.push(`验证失败: ${error.message}`);
+    }
+
+    result.duration = Date.now() - startTime;
+    return result;
+  }
+
+  async verifyAllBackups(days: number = 30): Promise<VerificationResult[]> {
+    const records = backupService.getRecords();
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+
+    const recentBackups = records.filter(r => 
+      new Date(r.startTime) > cutoffDate && r.status === 'completed'
+    );
+
+    const results: VerificationResult[] = [];
+
+    for (const backup of recentBackups) {
+      try {
+        const result = await this.verifyBackup(backup.id);
+        results.push(result);
+      } catch (error) {
+        console.error(`验证备份 ${backup.id} 失败:`, error);
+      }
+    }
+
+    return results;
+  }
+
+  private async calculateChecksum(filePath: string): Promise<string> {
+    // 实现计算文件校验和的逻辑
+    return 'calculated-checksum';
+  }
+
+  private async calculateFileChecksum(filePath: string): Promise<string> {
+    // 实现计算单个文件校验和的逻辑
+    return 'file-checksum';
+  }
+
+  private async getExpectedChecksum(filePath: string): Promise<string> {
+    // 实现获取预期校验和的逻辑
+    return 'expected-checksum';
+  }
+
+  private async listFiles(backupPath: string): Promise<string[]> {
+    // 实现列出备份文件逻辑
+    return [];
+  }
+}
+
+const integrityVerifier = new BackupIntegrityVerifier();
+
+// 使用示例 - 验证单个备份
+const result = await integrityVerifier.verifyBackup('backup-001');
+console.log(`备份 ${result.backupName} 验证结果:`, result.isValid ? '有效' : '无效');
+if (!result.isValid) {
+  console.log('问题文件:', result.corruptedFiles);
+}
+
+// 使用示例 - 验证所有备份
+const allResults = await integrityVerifier.verifyAllBackups(30);
+const validBackups = allResults.filter(r => r.isValid).length;
+const invalidBackups = allResults.filter(r => !r.isValid).length;
+
+console.log(`验证完成: ${validBackups} 个有效, ${invalidBackups} 个无效`);
+```
+
+#### 5. 自动化备份恢复测试
+
+定期测试备份恢复流程，确保备份数据可用。
+
+```typescript
+import { backupService } from '@/services/backupService';
+
+interface RestoreTestResult {
+  backupId: string;
+  backupName: string;
+  testDate: Date;
+  restorePath: string;
+  success: boolean;
+  duration: number;
+  filesRestored: number;
+  errors: string[];
+  dataIntegrity: boolean;
+}
+
+class AutomatedRestoreTester {
+  private testResults: RestoreTestResult[] = [];
+
+  async testRestore(
+    backupId: string,
+    testPath: string = '/tmp/restore-test'
+  ): Promise<RestoreTestResult> {
+    const backup = backupService.getRecordById(backupId);
+    if (!backup) {
+      throw new Error('备份不存在');
+    }
+
+    const result: RestoreTestResult = {
+      backupId: backup.id,
+      backupName: backup.configName,
+      testDate: new Date(),
+      restorePath: testPath,
+      success: false,
+      duration: 0,
+      filesRestored: 0,
+      errors: [],
+      dataIntegrity: false
+    };
+
+    const startTime = Date.now();
+
+    try {
+      // 执行恢复
+      const restore = await backupService.restoreBackup(
+        backupId,
+        testPath,
+        'automated-test'
+      );
+
+      result.filesRestored = restore.filesRestored;
+      result.success = restore.status === 'completed';
+
+      // 验证数据完整性
+      result.dataIntegrity = await this.verifyDataIntegrity(
+        backup.storagePath,
+        testPath
+      );
+
+      // 清理测试数据
+      await this.cleanupTestData(testPath);
+
+    } catch (error) {
+      result.errors.push(error.message);
+      result.success = false;
+    }
+
+    result.duration = Date.now() - startTime;
+    this.testResults.push(result);
+
+    return result;
+  }
+
+  async runScheduledTests(configIds: string[]): Promise<RestoreTestResult[]> {
+    const results: RestoreTestResult[] = [];
+
+    for (const configId of configIds) {
+      // 获取最新的成功备份
+      const records = backupService.getRecords(configId);
+      const latestBackup = records
+        .filter(r => r.status === 'completed')
+        .sort((a, b) => 
+          new Date(b.startTime).getTime() - new Date(a.startTime).getTime()
+        )[0];
+
+      if (!latestBackup) {
+        console.warn(`配置 ${configId} 没有可用的备份`);
+        continue;
+      }
+
+      const testPath = `/tmp/restore-test-${Date.now()}`;
+      const result = await this.testRestore(latestBackup.id, testPath);
+      results.push(result);
+    }
+
+    return results;
+  }
+
+  getTestReport(days: number = 7): any {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - days);
+
+    const recentTests = this.testResults.filter(t => 
+      t.testDate > cutoffDate
+    );
+
+    const totalTests = recentTests.length;
+    const successfulTests = recentTests.filter(t => t.success).length;
+    const failedTests = recentTests.filter(t => !t.success).length;
+
+    const avgDuration = recentTests
+      .reduce((sum, t) => sum + t.duration, 0) / totalTests;
+
+    const integrityPassed = recentTests.filter(t => t.dataIntegrity).length;
+
+    return {
+      period: `${days}天`,
+      totalTests,
+      successfulTests,
+      failedTests,
+      successRate: (successfulTests / totalTests * 100).toFixed(2) + '%',
+      avgDuration: (avgDuration / 1000).toFixed(2) + '秒',
+      integrityPassRate: (integrityPassed / totalTests * 100).toFixed(2) + '%'
+    };
+  }
+
+  private async verifyDataIntegrity(
+    sourcePath: string,
+    restorePath: string
+  ): Promise<boolean> {
+    // 实现数据完整性验证逻辑
+    // 比较源文件和恢复文件的校验和
+    return true;
+  }
+
+  private async cleanupTestData(path: string): Promise<void> {
+    // 实现清理测试数据逻辑
+  }
+}
+
+const restoreTester = new AutomatedRestoreTester();
+
+// 使用示例 - 测试单个备份恢复
+const testResult = await restoreTester.testRestore('backup-001');
+console.log(`恢复测试结果: ${testResult.success ? '成功' : '失败'}`);
+console.log(`文件数: ${testResult.filesRestored}`);
+console.log(`数据完整性: ${testResult.dataIntegrity ? '通过' : '失败'}`);
+
+// 使用示例 - 运行定期测试
+const configIds = ['config-001', 'config-002', 'config-003'];
+const testResults = await restoreTester.runScheduledTests(configIds);
+
+console.log(`完成 ${testResults.length} 个恢复测试`);
+
+// 获取测试报告
+const report = restoreTester.getTestReport(7);
+console.log('恢复测试报告:', report);
 ```
 
 ---
