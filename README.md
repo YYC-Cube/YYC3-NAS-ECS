@@ -378,200 +378,204 @@ docker-compose logs -f
 
 ```
 YYC3-NAS-ECS/
-├── api/                          # 后端API服务
-│   ├── app/                      # Flask应用
+├── api/                           # 后端API服务
+│   ├── app/                       # Flask应用
 │   │   ├── api/                   # API路由
-│   │   │   └── v2/               # API v2版本
+│   │   │   └── v2/                # API v2版本
 │   │   │       ├── alerts.py      # 告警API
 │   │   │       ├── analytics.py   # 分析API
 │   │   │       ├── config.py      # 配置API
-│   │   │       ├── ddns.py       # DDNS API
-│   │   │       ├── ddns_api.py   # DDNS API扩展
-│   │   │       ├── domains.py    # 域名管理API
-│   │   │       ├── frp_api.py    # FRP穿透API
-│   │   │       ├── ha.py         # 高可用API
+│   │   │       ├── ddns.py        # DDNS API
+│   │   │       ├── ddns_api.py    # DDNS API扩展
+│   │   │       ├── domains.py     # 域名管理API
+│   │   │       ├── frp_api.py     # FRP穿透API
+│   │   │       ├── ha.py          # 高可用API
 │   │   │       ├── monitoring.py  # 监控API
 │   │   │       ├── monitoring_api.py # 监控API扩展
-│   │   │       ├── nas_api.py    # NAS管理API
-│   │   │       ├── dev.py        # 开发环境API
+│   │   │       ├── nas_api.py     # NAS管理API
+│   │   │       ├── dev.py         # 开发环境API
 │   │   │       ├── integrations.py # 集成API
-│   │   │       └── production/   # 生产环境API
-│   │   ├── auth/                 # 认证模块
-│   │   │   ├── api_keys.py    # API密钥管理
-│   │   │   └── jwt_manager.py # JWT令牌管理
-│   │   ├── middleware/           # 中间件
-│   │   │   └── rate_limit.py  # 速率限制
-│   │   ├── services/             # 业务逻辑
-│   │   ├── utils/                # 工具函数
-│   │   ├── models.py             # 数据模型
-│   │   ├── tasks.py              # 异步任务
-│   │   ├── celery.py             # Celery配置
-│   │   ├── websocket.py           # WebSocket支持
-│   │   └── wsgi.py               # WSGI入口
-│   ├── config/                   # 配置文件
-│   ├── docker/                   # Docker配置
-│   │   ├── nginx/               # Nginx配置
-│   │   ├── postgres/            # PostgreSQL配置
-│   │   └── prometheus/          # Prometheus配置
-│   ├── docs/                    # API文档
-│   ├── scripts/                 # 后端脚本
-│   ├── docker-compose.yml       # Docker编排
-│   ├── Dockerfile              # Docker镜像
-│   └── requirements.txt        # Python依赖
-├── services/                    # 独立服务（统一管理）
-│   ├── ddns/                   # DDNS服务
-│   ├── frp/                    # FRP内网穿透服务
-│   ├── llm/                    # LLM大语言模型服务
-│   ├── mail/                   # 邮箱服务
-│   ├── redis/                  # Redis缓存服务
-│   └── ai/                     # AI智能系统
-│       ├── core/                # 核心AI模块
-│       │   ├── services/        # AI服务
-│       │   ├── adapters/        # AI模型适配器
-│       │   ├── ai/             # 智能体系统
-│       │   ├── adaptive/        # 自适应系统
-│       │   ├── analytics/       # 分析引擎
-│       │   ├── architecture/    # 架构设计
+│   │   │       └── production/     # 生产环境API
+│   │   ├── auth/                   # 认证模块
+│   │   │   ├── api_keys.py         # API密钥管理
+│   │   │   └── jwt_manager.py      # JWT令牌管理
+│   │   ├── middleware/             # 中间件
+│   │   │   └── rate_limit.py       # 速率限制
+│   │   ├── services/               # 业务逻辑
+│   │   ├── utils/                  # 工具函数
+│   │   ├── models.py               # 数据模型
+│   │   ├── tasks.py                # 异步任务
+│   │   ├── celery.py               # Celery配置
+│   │   ├── websocket.py            # WebSocket支持
+│   │   └── wsgi.py                 # WSGI入口
+│   ├── config/                     # 配置文件
+│   ├── docker/                     # Docker配置
+│   │   ├── nginx/                  # Nginx配置
+│   │   ├── postgres/               # PostgreSQL配置
+│   │   └── prometheus/             # Prometheus配置
+│   ├── docs/                       # API文档
+│   ├── scripts/                    # 后端脚本
+│   ├── docker-compose.yml          # Docker编排
+│   ├── Dockerfile                  # Docker镜像
+│   └── requirements.txt            # Python依赖
+├── services/                       # 独立服务（统一管理）
+│   ├── ddns/                       # DDNS服务
+│   ├── frp/                        # FRP内网穿透服务
+│   ├── llm/                        # LLM大语言模型服务
+│   ├── mail/                       # 邮箱服务
+│   ├── redis/                      # Redis缓存服务
+│   └── ai/                         # AI智能系统服务
+│       ├── core/                   # 核心AI模块
+│       │   ├── services/           # AI服务
+│       │   ├── adapters/           # AI模型适配器
+│       │   ├── ai/                 # 智能体系统
+│       │   ├── adaptive/           # 自适应系统
+│       │   ├── analytics/          # 分析引擎
+│       │   ├── architecture/       # 架构设计
 │       │   ├── autonomous-ai-widget/ # 自主AI浮窗
-│       │   ├── bci/            # 脑机接口
-│       │   ├── cache/          # 缓存层
-│       │   ├── calling/        # 调用系统
-│       │   ├── causal/         # 因果推理
-│       │   ├── closed-loop/    # 闭环系统
-│       │   ├── cognitive/       # 认知建模
-│       │   ├── compute/        # 计算接口
-│       │   ├── context/        # 上下文管理
-│       │   ├── crm/            # 客户关系管理
-│       │   ├── dataflow/       # 数据流架构
-│       │   ├── deployment/      # 部署管理
-│       │   ├── edge/           # 边缘智能
-│       │   ├── edge-intelligence/ # 边缘推理
-│       │   ├── education/      # 教育系统
-│       │   ├── emotion/        # 情感引擎
-│       │   ├── emotional/       # 情感智能
-│       │   ├── error-handler/   # 错误处理
-│       │   ├── event-dispatcher/ # 事件分发
-│       │   ├── evolution/       # 自我进化
-│       │   ├── extension/       # 扩展函数
+│       │   ├── bci/                # 脑机接口
+│       │   ├── cache/              # 缓存层
+│       │   ├── calling/            # 调用系统
+│       │   ├── causal/             # 因果推理
+│       │   ├── closed-loop/        # 闭环系统
+│       │   ├── cognitive/          # 认知建模
+│       │   ├── compute/            # 计算接口
+│       │   ├── context/            # 上下文管理
+│       │   ├── crm/                # 客户关系管理
+│       │   ├── dataflow/           # 数据流架构
+│       │   ├── deployment/         # 部署管理
+│       │   ├── edge/               # 边缘智能
+│       │   ├── edge-intelligence/  # 边缘推理
+│       │   ├── education/          # 教育系统
+│       │   ├── emotion/            # 情感引擎
+│       │   ├── emotional/          # 情感智能
+│       │   ├── error-handler/      # 错误处理
+│       │   ├── event-dispatcher/   # 事件分发
+│       │   ├── evolution/          # 自我进化
+│       │   ├── extension/          # 扩展函数
 │       │   ├── federated-learning/ # 联邦学习
-│       │   ├── industries/      # 行业适配
-│       │   ├── integration/     # 集成系统
+│       │   ├── industries/         # 行业适配
+│       │   ├── integration/        # 集成系统
 │       │   └── index.ts
-│       ├── src/                 # AI源代码
-│       ├── examples/             # 使用示例
-│       ├── docs/                # AI文档
-│       ├── tests/               # AI测试
+│       ├── src/                    # AI源代码
+│       ├── examples/               # 使用示例
+│       ├── docs/                   # AI文档
+│       ├── tests/                  # AI测试
 │       └── README.md
-├── config/                      # 配置文件（统一管理）
-│   ├── services/               # 各服务配置
-│   │   └── .env.example       # 服务环境变量模板
-│   ├── .env.base              # 基础环境变量
-│   ├── .env.development       # 开发环境变量
-│   ├── .env.staging          # 预发布环境变量
-│   └── .env.production       # 生产环境变量
-├── scripts/                     # 脚本目录（统一管理）
-│   ├── services/               # 服务脚本
-│   │   ├── backup-restore.sh     # 备份恢复
-│   │   ├── backup.sh            # 备份脚本
-│   │   ├── check-ddns.sh        # DDNS检查
-│   │   ├── check-redis-prod.sh  # Redis检查
-│   │   ├── daily-report.sh       # 日报生成
-│   │   ├── ddns-simple.sh       # DDNS简单模式
-│   │   ├── ddns-updata.sh      # DDNS数据更新
-│   │   ├── env.sh               # 环境管理
-│   │   ├── health-keys.sh       # 健康检查
-│   │   ├── init-system.sh       # 系统初始化
-│   │   ├── monitor-nas.sh       # NAS监控
-│   │   ├── nas-manager.sh       # NAS管理
-│   │   ├── nas-tunnel.sh        # NAS隧道
-│   │   ├── redis-manager.sh      # Redis管理
-│   │   ├── restart-ddns.sh      # DDNS重启
-│   │   ├── start-ddns-api.sh    # DDNS API启动
-│   │   ├── start-redis-dev.sh   # Redis开发启动
-│   │   ├── start-redis-docker.sh # Redis Docker启动
-│   │   ├── start.sh            # 服务启动
-│   │   ├── sync-redis-config.sh # Redis配置同步
-│   │   ├── system-info.sh       # 系统信息
-│   │   ├── test-all.sh          # 全面测试
-│   │   └── test-p0.sh          # P0测试
-│   ├── health-check.sh        # 健康检查
-│   ├── quick-restart.sh       # 快速重启
-│   ├── quick-start.sh         # 快速启动
-│   ├── quick-stop.sh          # 快速停止
-│   └── stack-manager.sh      # 服务管理
-├── docs/                        # 文档目录（统一管理）
-│   ├── YYC3-NAS-ECS-测试覆盖率报告.md     # 测试覆盖率报告
-│   ├── YYC3-NAS-ECS-文档架构优化方案.md   # 文档架构优化方案
-│   ├── YYC3-NAS-ECS-文档映射目录.md       # 文档映射目录
-│   ├── YYC3-NAS-ECS-审核报告/     # 审核报告
-│   ├── YYC3-NAS-ECS-开发指导/     # 开发指导
-│   ├── YYC3-NAS-ECS-快速启动/     # 快速启动指南
-│   ├── YYC3-NAS-ECS-部署操作指导/   # 部署操作指导
-│   ├── YYC3-NAS-ECS-部署流程指导/   # 部署流程指导
-│   ├── YYC3-NAS-ECS-项目信息/       # 项目信息
-│   ├── YYC3-NAS-ECS-项目说明/       # 项目说明
-│   ├── YYC3-NAS-ECS-文档闭环实施流程/ # 文档闭环实施流程
-│   ├── YYC3-NAS-ECS-邮箱系统/       # 邮箱系统文档
-│   ├── YYC3-NAS-ECS-文档规范.md     # 文档规范
-│   ├── guidelines/               # 指南文档
-│   └── services/               # 服务文档
-│       ├── ddns/             # DDNS服务文档
-│       ├── frp/              # FRP服务文档
-│       ├── llm/              # LLM服务文档
-│       ├── mail/             # 邮箱服务文档
-│       ├── redis/            # Redis服务文档
-│       └── ai/               # AI服务文档
-├── public/                      # 静态资源
-│   ├── git_1800_400-1.png      # Git顶图
+├── config/                         # 配置文件（统一管理）
+│   ├── services/                   # 各服务配置
+│   │   └── .env.example            # 服务环境变量模板
+│   ├── .env.base                   # 基础环境变量
+│   ├── .env.development            # 开发环境变量
+│   ├── .env.staging                # 预发布环境变量
+│   └── .env.production             # 生产环境变量 
+├── scripts/                        # 脚本目录（统一管理）
+│   ├── services/                   # 服务脚本
+│   │   ├── backup-restore.sh       # 备份恢复
+│   │   ├── backup.sh               # 备份脚本
+│   │   ├── check-ddns.sh           # DDNS检查
+│   │   ├── check-redis-prod.sh     # Redis检查
+│   │   ├── daily-report.sh         # 日报生成
+│   │   ├── ddns-simple.sh          # DDNS简单模式
+│   │   ├── ddns-updata.sh          # DDNS数据更新
+│   │   ├── env.sh                  # 环境管理
+│   │   ├── health-keys.sh          # 健康检查
+│   │   ├── init-system.sh          # 系统初始化
+│   │   ├── monitor-nas.sh          # NAS监控
+│   │   ├── nas-manager.sh          # NAS管理
+│   │   ├── nas-tunnel.sh           # NAS隧道
+│   │   ├── redis-manager.sh        # Redis管理
+│   │   ├── restart-ddns.sh         # DDNS重启
+│   │   ├── start-ddns-api.sh       # DDNS API启动
+│   │   ├── nas-tunnel.sh           # NAS隧道
+│   │   ├── redis-manager.sh        # Redis管理
+│   │   ├── restart-ddns.sh         # DDNS重启
+│   │   ├── start-ddns-api.sh       # DDNS API启动
+│   │   ├── start-redis-dev.sh      # Redis开发启动
+│   │   ├── start-redis-docker.sh   # Redis Docker启动
+│   │   ├── start.sh                # 服务启动
+│   │   ├── sync-redis-config.sh    # Redis配置同步
+│   │   ├── system-info.sh          # 系统信息
+│   │   ├── test-all.sh             # 全面测试
+│   │   └── test-p0.sh              # P0测试
+│   ├── health-check.sh             # 健康检查
+│   ├── quick-restart.sh            # 快速重启
+│   ├── quick-start.sh              # 快速启动
+│   ├── quick-stop.sh               # 快速停止
+│   └── stack-manager.sh            # 服务管理
+├── docs/                           # 文档目录（统一管理）
+│   ├── YYC3-NAS-ECS-测试覆盖率报告.md       # 测试覆盖率报告
+│   ├── YYC3-NAS-ECS-文档架构优化方案.md     # 文档架构优化方案
+│   ├── YYC3-NAS-ECS-文档映射目录.md        # 文档映射目录
+│   ├── YYC3-NAS-ECS-审核报告/              # 审核报告
+│   ├── YYC3-NAS-ECS-开发指导/              # 开发指导
+│   ├── YYC3-NAS-ECS-快速启动/              # 快速启动指南
+│   ├── YYC3-NAS-ECS-部署操作指导/           # 部署操作指导
+│   ├── YYC3-NAS-ECS-部署流程指导/           # 部署流程指导 
+│   ├── YYC3-NAS-ECS-项目信息/              # 项目信息
+│   ├── YYC3-NAS-ECS-项目说明/              # 项目说明
+│   ├── YYC3-NAS-ECS-文档闭环实施流程/       # 文档闭环实施流程
+│   ├── YYC3-NAS-ECS-邮箱系统/              # 邮箱系统文档
+│   ├── YYC3-NAS-ECS-文档规范.md            # 文档规范 
+│   ├── guidelines/                        # 指南文档
+│   └── services/                          # 服务文档
+│       ├── ddns/                          # DDNS服务文档
+│       ├── frp/                           # FRP服务文档
+│       ├── llm/                           # LLM服务文档
+│       ├── mail/                          # 邮箱服务文档
+│       ├── redis/                         # Redis服务文档
+│       └── ai/                            # AI服务文档
+├── public/                                # 静态资源
+│   ├── git_1800_400-1.png                 # Git顶图
 │   ├── git_1800_400-5.png
 │   ├── git_1800_450-6.png
 │   ├── git_1800_450-7.png
-│   ├── yyc3-pwa-icon.png      # PWA图标
-│   ├── yyc3-logo.png           # YYC³ Logo
-│   └── ...                     # 其他静态资源
-├── src/                         # 前端源码
-│   ├── app/                    # 应用目录
-│   │   ├── components/         # 组件目录
-│   │   │   ├── dashboard/      # 监控面板
-│   │   │   ├── email/         # 邮箱服务
-│   │   │   ├── frp/           # FRP配置
-│   │   │   ├── llm/           # LLM服务
-│   │   │   ├── ddns/          # DDNS服务
-│   │   │   ├── nas/           # NAS管理
-│   │   │   ├── api/           # API服务
-│   │   │   ├── logs/          # 日志管理
-│   │   │   ├── rbac/          # 权限管理
-│   │   │   ├── backup/        # 备份恢复
-│   │   │   ├── settings/      # 设置
-│   │   │   ├── help/          # 帮助中心
-│   │   │   └── ui/            # UI组件
-│   │   ├── lib/              # 库目录
-│   │   │   └── ai-integration/ # AI集成层
-│   │   │       ├── providers/    # AI提供者
-│   │   │       └── wrappers/     # AI包装器
-│   │   ├── hooks/              # React Hooks
-│   │   ├── services/          # API服务
-│   │   ├── types/             # 类型定义
-│   │   ├── utils/             # 工具函数
-│   │   ├── App.tsx            # 应用入口
-│   │   └── ThemeContext.tsx    # 主题上下文
-│   ├── components/         # 全局组件
-│   │   ├── ai-floating-widget/ # AI浮窗组件
-│   │   └── lib/               # 组件库
-│   │       └── ai-components/ # AI组件
-│   ├── styles/                # 样式文件
-│   └── main.tsx               # 主入口
-├── .env.development            # 开发环境变量
-├── .env.ports                # 端口配置
-├── .env.production            # 生产环境变量
-├── .env.staging              # 预发布环境变量
-├── .gitignore                # Git忽略文件
-├── index.html                # HTML入口
-├── package.json              # 前端依赖
-├── postcss.config.mjs        # PostCSS配置
-├── tsconfig.json            # TypeScript配置
-├── vite.config.ts           # Vite配置
-└── README.md                 # 项目文档
+│   ├── yyc3-pwa-icon.png                 # PWA图标
+│   ├── yyc3-logo.png                     # YYC³ Logo
+│   └── ...                               # 其他静态资源
+├── src/                                  # 前端源码
+│   ├── app/                              # 应用目录
+│   │   ├── components/                   # 组件目录
+│   │   │   ├── dashboard/                # 监控面板
+│   │   │   ├── email/                    # 邮箱服务
+│   │   │   ├── frp/                      # FRP配置
+│   │   │   ├── llm/                      # LLM服务
+│   │   │   ├── ddns/                     # DDNS服务
+│   │   │   ├── nas/                      # NAS管理
+│   │   │   ├── api/                      # API服务
+│   │   │   ├── logs/                     # 日志管理
+│   │   │   ├── rbac/                     # 权限管理
+│   │   │   ├── backup/                   # 备份恢复
+│   │   │   ├── settings/                 # 设置
+│   │   │   ├── help/                     # 帮助中心
+│   │   │   └── ui/                       # UI组件
+│   │   ├── lib/                          # 库目录
+│   │   │   └── ai-integration/           # AI集成层
+│   │   │       ├── providers/            # AI提供者
+│   │   │       └── wrappers/             # AI包装器
+│   │   ├── hooks/                        # React Hooks
+│   │   ├── services/                     # API服务
+│   │   ├── types/                        # 类型定义
+│   │   ├── utils/                        # 工具函数
+│   │   ├── App.tsx                       # 应用入口
+│   │   └── ThemeContext.tsx              # 主题上下文
+│   ├── components/                       # 全局组件目录
+│   │   ├── ai-floating-widget/           # AI浮窗组件
+│   │   └── lib/                          # 组件库
+│   │       └── ai-components/            # AI组件
+│   ├── styles/                           # 样式文件目录
+│   └── main.tsx                          # 主入口
+├── .env.development                      # 开发环境变量
+├── .env.ports                            # 端口配置
+├── .env.production                       # 生产环境变量
+├── .env.staging                          # 预发布环境变量
+├── .gitignore                            # Git忽略文件
+├── index.html                            # HTML入口
+├── package.json                          # 前端依赖
+├── postcss.config.mjs                    # PostCSS配置
+├── tsconfig.json                         # TypeScript配置
+├── vite.config.ts                        # Vite配置
+└── README.md                             # 项目文档  
 ```
 
 ---

@@ -29,8 +29,9 @@
 10. [日志服务接口](#日志服务接口)
 11. [API使用示例](#api使用示例)
 12. [代码示例](#代码示例)
-13. [故障排除](#故障排除)
-14. [最佳实践](#最佳实践)
+13. [高级使用示例](#高级使用示例)
+14. [故障排除](#故障排除)
+15. [最佳实践](#最佳实践)
 
 ---
 
@@ -1386,6 +1387,587 @@ function SystemStatsComponent() {
       <button onClick={refetch}>刷新</button>
     </div>
   );
+}
+```
+
+---
+
+## 🎯 高级使用示例
+
+### 场景1：批量API请求与并发控制
+
+#### 需求描述
+同时发起多个API请求，并控制并发数量，避免服务器过载。
+
+#### 实现代码
+
+```typescript
+import { apiV2 } from '@/services/api';
+
+interface BatchRequest<T> {
+  request: () => Promise<T>;
+  id: string;
+}
+
+interface BatchResult<T> {
+  id: string;
+  data?: T;
+  error?: Error;
+}
+
+async function executeBatch<T>(
+  requests: BatchRequest<T>[],
+  concurrency: number = 5
+): Promise<BatchResult<T>[]> {
+  const results: BatchResult<T>[] = [];
+  const executing: Promise<void>[] = [];
+
+  for (const { request, id } of requests) {
+    const p = (async () => {
+      try {
+        const data = await request();
+        results.push({ id, data });
+      } catch (error) {
+        results.push({ 
+          id, 
+          error: error instanceof Error ? error : new Error(String(error)) 
+        });
+      }
+    })();
+
+    executing.push(p);
+
+    if (executing.length >= concurrency) {
+      await Promise.race(executing);
+      const index = executing.findIndex(p => 
+        p === Promise.race(executing)
+      );
+      if (index !== -1) {
+        executing.splice(index, 1);
+      }
+    }
+  }
+
+  await Promise.all(executing);
+  return results;
+}
+
+// 使用示例：批量获取系统状态
+async function batchGetSystemStats() {
+  const requests: BatchRequest<any>[] = [
+    {
+      id: 'system',
+      request: () => apiV2.system.getStats()
+    },
+    {
+      id: 'frp',
+      request: () => apiV2.frp.getConfigs()
+    },
+    {
+      id: 'ddns',
+      request: () => apiV2.ddns.getDomains()
+    },
+    {
+      id: 'nas',
+      request: () => apiV2.nas.getVolumes()
+    },
+    {
+      id: 'logs',
+      request: () => apiV2.logs.getLogs()
+    }
+  ];
+
+  const results = await executeBatch(requests, 3);
+
+  results.forEach(({ id, data, error }) => {
+    if (error) {
+      console.error(`${id} 请求失败:`, error.message);
+    } else {
+      console.log(`${id} 数据:`, data);
+    }
+  });
+}
+```
+
+### 场景2：API请求重试机制
+
+#### 需求描述
+实现自动重试机制，当API请求失败时自动重试，提高请求成功率。
+
+#### 实现代码
+
+```typescript
+import { apiV2 } from '@/services/api';
+
+interface RetryOptions {
+  maxRetries?: number;
+  retryDelay?: number;
+  backoffMultiplier?: number;
+  shouldRetry?: (error: Error) => boolean;
+}
+
+async function retryRequest<T>(
+  request: () => Promise<T>,
+  options: RetryOptions = {}
+): Promise<T> {
+  const {
+    maxRetries = 3,
+    retryDelay = 1000,
+    backoffMultiplier = 2,
+    shouldRetry = (error) => true
+  } = options;
+
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await request();
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+
+      if (attempt === maxRetries || !shouldRetry(lastError)) {
+        throw lastError;
+      }
+
+      const delay = retryDelay * Math.pow(backoffMultiplier, attempt);
+      console.warn(`请求失败，${delay}ms后重试 (尝试 ${attempt + 1}/${maxRetries}):`, lastError.message);
+      
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+
+  throw lastError;
+}
+
+// 使用示例：带重试的API请求
+async function getSystemStatsWithRetry() {
+  try {
+    const stats = await retryRequest(
+      () => apiV2.system.getStats(),
+      {
+        maxRetries: 5,
+        retryDelay: 1000,
+        backoffMultiplier: 2,
+        shouldRetry: (error) => {
+          // 只对网络错误和5xx错误重试
+          return error.message.includes('Failed to fetch') ||
+                 error.message.includes('500') ||
+                 error.message.includes('502') ||
+                 error.message.includes('503');
+        }
+      }
+    );
+    
+    console.log('系统状态:', stats);
+    return stats;
+  } catch (error) {
+    console.error('获取系统状态失败:', error);
+    throw error;
+  }
+}
+```
+
+### 场景3：API请求缓存
+
+#### 需求描述
+实现API请求缓存，减少重复请求，提高性能。
+
+#### 实现代码
+
+```typescript
+import { apiV2 } from '@/services/api';
+
+interface CacheEntry<T> {
+  data: T;
+  timestamp: number;
+  ttl: number;
+}
+
+class APICache {
+  private cache: Map<string, CacheEntry<any>> = new Map();
+
+  set<T>(key: string, data: T, ttl: number = 60000): void {
+    this.cache.set(key, {
+      data,
+      timestamp: Date.now(),
+      ttl
+    });
+  }
+
+  get<T>(key: string): T | null {
+    const entry = this.cache.get(key);
+    
+    if (!entry) {
+      return null;
+    }
+    
+    const now = Date.now();
+    if (now - entry.timestamp > entry.ttl) {
+      this.cache.delete(key);
+      return null;
+    }
+    
+    return entry.data as T;
+  }
+
+  clear(): void {
+    this.cache.clear();
+  }
+
+  delete(key: string): void {
+    this.cache.delete(key);
+  }
+}
+
+const apiCache = new APICache();
+
+async function cachedRequest<T>(
+  key: string,
+  request: () => Promise<T>,
+  ttl: number = 60000
+): Promise<T> {
+  const cached = apiCache.get<T>(key);
+  
+  if (cached !== null) {
+    console.log(`缓存命中: ${key}`);
+    return cached;
+  }
+  
+  console.log(`缓存未命中: ${key}`);
+  const data = await request();
+  apiCache.set(key, data, ttl);
+  
+  return data;
+}
+
+// 使用示例：带缓存的API请求
+async function getSystemStatsWithCache() {
+  const stats = await cachedRequest(
+    'system:stats',
+    () => apiV2.system.getStats(),
+    30000 // 缓存30秒
+  );
+  
+  console.log('系统状态:', stats);
+  return stats;
+}
+
+// 使用示例：批量缓存请求
+async function batchGetWithCache() {
+  const [stats, configs, domains] = await Promise.all([
+    cachedRequest('system:stats', () => apiV2.system.getStats(), 30000),
+    cachedRequest('frp:configs', () => apiV2.frp.getConfigs(), 60000),
+    cachedRequest('ddns:domains', () => apiV2.ddns.getDomains(), 60000)
+  ]);
+  
+  return { stats, configs, domains };
+}
+```
+
+### 场景4：API请求取消
+
+#### 需求描述
+实现API请求取消功能，避免不必要的请求浪费资源。
+
+#### 实现代码
+
+```typescript
+import { apiV2 } from '@/services/api';
+
+class CancellableRequest {
+  private controller: AbortController | null = null;
+  private requestId: number = 0;
+
+  async execute<T>(request: (signal: AbortSignal) => Promise<T>): Promise<T> {
+    const currentRequestId = ++this.requestId;
+    
+    if (this.controller) {
+      this.controller.abort();
+    }
+    
+    this.controller = new AbortController();
+    
+    try {
+      const result = await request(this.controller.signal);
+      
+      if (this.requestId === currentRequestId) {
+        return result;
+      } else {
+        throw new Error('Request cancelled');
+      }
+    } catch (error) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('请求已取消');
+        throw new Error('Request cancelled');
+      }
+      throw error;
+    }
+  }
+
+  cancel(): void {
+    if (this.controller) {
+      this.controller.abort();
+      this.controller = null;
+    }
+  }
+}
+
+// 使用示例：可取消的API请求
+const cancellableRequest = new CancellableRequest();
+
+async function getSystemStatsWithCancel() {
+  try {
+    const stats = await cancellableRequest.execute((signal) =>
+      apiV2.system.getStats({ signal } as any)
+    );
+    
+    console.log('系统状态:', stats);
+    return stats;
+  } catch (error) {
+    if (error instanceof Error && error.message === 'Request cancelled') {
+      console.log('请求已取消');
+    } else {
+      console.error('获取系统状态失败:', error);
+      throw error;
+    }
+  }
+}
+
+// 取消请求
+function cancelGetSystemStats() {
+  cancellableRequest.cancel();
+}
+```
+
+### 场景5：API请求队列
+
+#### 需求描述
+实现API请求队列，确保请求按顺序执行，避免并发冲突。
+
+#### 实现代码
+
+```typescript
+import { apiV2 } from '@/services/api';
+
+interface QueueItem<T> {
+  request: () => Promise<T>;
+  resolve: (value: T) => void;
+  reject: (error: Error) => void;
+}
+
+class APIRequestQueue {
+  private queue: QueueItem<any>[] = [];
+  private processing: boolean = false;
+
+  async enqueue<T>(request: () => Promise<T>): Promise<T> {
+    return new Promise((resolve, reject) => {
+      this.queue.push({ request, resolve, reject });
+      this.process();
+    });
+  }
+
+  private async process(): Promise<void> {
+    if (this.processing || this.queue.length === 0) {
+      return;
+    }
+
+    this.processing = true;
+
+    while (this.queue.length > 0) {
+      const item = this.queue.shift();
+      
+      if (item) {
+        try {
+          const result = await item.request();
+          item.resolve(result);
+        } catch (error) {
+          item.reject(error instanceof Error ? error : new Error(String(error)));
+        }
+      }
+    }
+
+    this.processing = false;
+  }
+
+  clear(): void {
+    this.queue.forEach(item => {
+      item.reject(new Error('Queue cleared'));
+    });
+    this.queue = [];
+  }
+
+  size(): number {
+    return this.queue.length;
+  }
+}
+
+const apiQueue = new APIRequestQueue();
+
+// 使用示例：队列化的API请求
+async function getSystemStatsWithQueue() {
+  try {
+    const stats = await apiQueue.enqueue(() => apiV2.system.getStats());
+    console.log('系统状态:', stats);
+    return stats;
+  } catch (error) {
+    console.error('获取系统状态失败:', error);
+    throw error;
+  }
+}
+
+// 使用示例：批量队列请求
+async function batchGetWithQueue() {
+  const promises = [
+    apiQueue.enqueue(() => apiV2.system.getStats()),
+    apiQueue.enqueue(() => apiV2.frp.getConfigs()),
+    apiQueue.enqueue(() => apiV2.ddns.getDomains()),
+    apiQueue.enqueue(() => apiV2.nas.getVolumes()),
+    apiQueue.enqueue(() => apiV2.logs.getLogs())
+  ];
+
+  const results = await Promise.all(promises);
+  console.log('批量请求结果:', results);
+  return results;
+}
+```
+
+### 场景6：API请求监控与日志
+
+#### 需求描述
+实现API请求监控和日志记录，便于调试和性能分析。
+
+#### 实现代码
+
+```typescript
+import { apiV2 } from '@/services/api';
+
+interface APIMetrics {
+  url: string;
+  method: string;
+  duration: number;
+  status: number;
+  success: boolean;
+  timestamp: number;
+}
+
+class APIMonitor {
+  private metrics: APIMetrics[] = [];
+  private maxMetrics: number = 1000;
+
+  record(metrics: APIMetrics): void {
+    this.metrics.push(metrics);
+    
+    if (this.metrics.length > this.maxMetrics) {
+      this.metrics.shift();
+    }
+  }
+
+  getMetrics(): APIMetrics[] {
+    return [...this.metrics];
+  }
+
+  getMetricsByUrl(url: string): APIMetrics[] {
+    return this.metrics.filter(m => m.url === url);
+  }
+
+  getAverageDuration(url?: string): number {
+    const filtered = url 
+      ? this.getMetricsByUrl(url)
+      : this.metrics;
+    
+    if (filtered.length === 0) return 0;
+    
+    const total = filtered.reduce((sum, m) => sum + m.duration, 0);
+    return total / filtered.length;
+  }
+
+  getSuccessRate(url?: string): number {
+    const filtered = url 
+      ? this.getMetricsByUrl(url)
+      : this.metrics;
+    
+    if (filtered.length === 0) return 0;
+    
+    const success = filtered.filter(m => m.success).length;
+    return (success / filtered.length) * 100;
+  }
+
+  clear(): void {
+    this.metrics = [];
+  }
+}
+
+const apiMonitor = new APIMonitor();
+
+function monitorRequest<T>(
+  url: string,
+  method: string,
+  request: () => Promise<T>
+): Promise<T> {
+  const startTime = performance.now();
+  
+  return request()
+    .then(data => {
+      const duration = performance.now() - startTime;
+      
+      apiMonitor.record({
+        url,
+        method,
+        duration,
+        status: 200,
+        success: true,
+        timestamp: Date.now()
+      });
+      
+      console.log(`[API] ${method} ${url} - ${duration.toFixed(2)}ms - SUCCESS`);
+      
+      return data;
+    })
+    .catch(error => {
+      const duration = performance.now() - startTime;
+      
+      apiMonitor.record({
+        url,
+        method,
+        duration,
+        status: error instanceof Error && 'status' in error 
+          ? (error as any).status 
+          : 0,
+        success: false,
+        timestamp: Date.now()
+      });
+      
+      console.error(`[API] ${method} ${url} - ${duration.toFixed(2)}ms - FAILED:`, error.message);
+      
+      throw error;
+    });
+}
+
+// 使用示例：监控API请求
+async function getSystemStatsWithMonitor() {
+  return monitorRequest(
+    '/api/v2/system/stats',
+    'GET',
+    () => apiV2.system.getStats()
+  );
+}
+
+// 使用示例：获取API性能报告
+function getAPIPerformanceReport() {
+  const metrics = apiMonitor.getMetrics();
+  const avgDuration = apiMonitor.getAverageDuration();
+  const successRate = apiMonitor.getSuccessRate();
+  
+  console.log('API性能报告:');
+  console.log(`总请求数: ${metrics.length}`);
+  console.log(`平均响应时间: ${avgDuration.toFixed(2)}ms`);
+  console.log(`成功率: ${successRate.toFixed(2)}%`);
+  
+  return {
+    totalRequests: metrics.length,
+    averageDuration: avgDuration,
+    successRate
+  };
 }
 ```
 

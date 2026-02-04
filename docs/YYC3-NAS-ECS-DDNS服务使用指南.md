@@ -25,8 +25,9 @@
 6. [监控和告警](#监控和告警)
 7. [API使用示例](#api使用示例)
 8. [代码示例](#代码示例)
-9. [故障排除](#故障排除)
-10. [最佳实践](#最佳实践)
+9. [高级使用示例](#高级使用示例)
+10. [故障排除](#故障排除)
+11. [最佳实践](#最佳实践)
 
 ---
 
@@ -1016,6 +1017,946 @@ export function useDDNSUpdate() {
 
   return { updateIP, loading, error };
 }
+```
+
+---
+
+## 🎯 高级使用示例
+
+### 场景1：多域名DDNS配置
+
+#### 需求描述
+同时管理多个子域名，将它们都指向同一个公网IP地址。
+
+#### 配置步骤
+
+**步骤1：编辑配置文件**
+
+```bash
+nano /opt/yyc3/config/ddns.conf
+```
+
+**步骤2：添加多域名配置**
+
+```bash
+# ======================
+# 域名配置 - 多域名模式
+# ======================
+
+# 主域名1
+DOMAIN_1="0379.email"
+SUB_DOMAIN_1="ddns"
+RECORD_TYPE_1="A"
+TTL_1="600"
+
+# 主域名2
+DOMAIN_2="0379.email"
+SUB_DOMAIN_2="home"
+RECORD_TYPE_2="A"
+TTL_2="600"
+
+# 主域名3
+DOMAIN_3="0379.email"
+SUB_DOMAIN_3="nas"
+RECORD_TYPE_3="A"
+TTL_3="600"
+
+# 主域名4
+DOMAIN_4="0379.email"
+SUB_DOMAIN_4="api"
+RECORD_TYPE_4="A"
+TTL_4="300"
+```
+
+**步骤3：通过API批量添加域名**
+
+```bash
+# 添加第一个域名
+curl -X POST http://127.0.0.1:8080/api/ddns/domains \
+  -H "Content-Type: application/json" \
+  -d '{
+    "domain": "0379.email",
+    "sub_domain": "ddns",
+    "record_type": "A",
+    "ttl": 600
+  }'
+
+# 添加第二个域名
+curl -X POST http://127.0.0.1:8080/api/ddns/domains \
+  -H "Content-Type: application/json" \
+  -d '{
+    "domain": "0379.email",
+    "sub_domain": "home",
+    "record_type": "A",
+    "ttl": 600
+  }'
+
+# 添加第三个域名
+curl -X POST http://127.0.0.1:8080/api/ddns/domains \
+  -H "Content-Type: application/json" \
+  -d '{
+    "domain": "0379.email",
+    "sub_domain": "nas",
+    "record_type": "A",
+    "ttl": 600
+  }'
+
+# 添加第四个域名（API专用，TTL更短）
+curl -X POST http://127.0.0.1:8080/api/ddns/domains \
+  -H "Content-Type: application/json" \
+  -d '{
+    "domain": "0379.email",
+    "sub_domain": "api",
+    "record_type": "A",
+    "ttl": 300
+  }'
+```
+
+**步骤4：验证配置**
+
+```bash
+# 查看所有域名
+curl -X GET http://127.0.0.1:8080/api/ddns/domains
+
+# 测试域名解析
+nslookup ddns.0379.email
+nslookup home.0379.email
+nslookup nas.0379.email
+nslookup api.0379.email
+
+# 检查DDNS日志
+tail -f /opt/yyc3/logs/ddns.log
+```
+
+#### Python批量管理脚本
+
+```python
+import requests
+
+API_BASE_URL = "http://127.0.0.1:8080/api/ddns"
+
+def add_multiple_domains(domains):
+    """批量添加域名"""
+    results = []
+    for domain_config in domains:
+        try:
+            response = requests.post(
+                f"{API_BASE_URL}/domains",
+                json=domain_config
+            )
+            response.raise_for_status()
+            data = response.json()
+            
+            if data['success']:
+                results.append({
+                    'domain': domain_config['sub_domain'],
+                    'status': 'success',
+                    'id': data['data']['id']
+                })
+                print(f"✓ {domain_config['sub_domain']}.{domain_config['domain']} 添加成功")
+            else:
+                results.append({
+                    'domain': domain_config['sub_domain'],
+                    'status': 'failed',
+                    'error': data.get('message', 'Unknown error')
+                })
+                print(f"✗ {domain_config['sub_domain']}.{domain_config['domain']} 添加失败")
+        except Exception as e:
+            results.append({
+                'domain': domain_config['sub_domain'],
+                'status': 'error',
+                'error': str(e)
+            })
+            print(f"✗ {domain_config['sub_domain']}.{domain_config['domain']} 发生错误: {e}")
+    
+    return results
+
+if __name__ == "__main__":
+    domains = [
+        {
+            "domain": "0379.email",
+            "sub_domain": "ddns",
+            "record_type": "A",
+            "ttl": 600
+        },
+        {
+            "domain": "0379.email",
+            "sub_domain": "home",
+            "record_type": "A",
+            "ttl": 600
+        },
+        {
+            "domain": "0379.email",
+            "sub_domain": "nas",
+            "record_type": "A",
+            "ttl": 600
+        },
+        {
+            "domain": "0379.email",
+            "sub_domain": "api",
+            "record_type": "A",
+            "ttl": 300
+        }
+    ]
+    
+    results = add_multiple_domains(domains)
+    
+    print("\n批量添加结果:")
+    for result in results:
+        print(f"  {result['domain']}: {result['status']}")
+```
+
+### 场景2：IP变化实时监控与通知
+
+#### 需求描述
+实时监控IP地址变化，并通过多种方式发送通知（邮件、Webhook、Telegram）。
+
+#### 配置步骤
+
+**步骤1：启用通知功能**
+
+```bash
+nano /opt/yyc3/config/ddns.conf
+```
+
+```bash
+# ======================
+# 通知配置
+# ======================
+ENABLE_NOTIFICATION="1"
+
+# 邮件通知
+MAIL_ENABLED="1"
+MAIL_SERVER="smtp.example.com"
+MAIL_PORT="587"
+MAIL_USER="your-email@example.com"
+MAIL_PASSWORD="your-password"
+MAIL_TO="admin@example.com"
+MAIL_FROM="ddns@0379.email"
+
+# Webhook通知
+WEBHOOK_ENABLED="1"
+WEBHOOK_URL="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+WEBHOOK_METHOD="POST"
+WEBHOOK_HEADERS='{"Content-Type": "application/json"}'
+
+# Telegram通知
+TELEGRAM_ENABLED="1"
+TELEGRAM_BOT_TOKEN="your-bot-token"
+TELEGRAM_CHAT_ID="your-chat-id"
+```
+
+**步骤2：创建通知脚本**
+
+```bash
+nano /opt/yyc3/scripts/ddns-notify.sh
+```
+
+```bash
+#!/bin/bash
+
+DDNS_CONFIG="/opt/yyc3/config/ddns.conf"
+LOG_FILE="/opt/yyc3/logs/ddns.log"
+
+source "$DDNS_CONFIG"
+
+send_email_notification() {
+    local subject="$1"
+    local message="$2"
+    
+    if [ "$MAIL_ENABLED" = "1" ]; then
+        echo "$message" | mail -s "$subject" -r "$MAIL_FROM" "$MAIL_TO"
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [NOTIFICATION] 邮件通知已发送: $subject" >> "$LOG_FILE"
+    fi
+}
+
+send_webhook_notification() {
+    local message="$1"
+    
+    if [ "$WEBHOOK_ENABLED" = "1" ]; then
+        curl -X POST "$WEBHOOK_URL" \
+            -H "Content-Type: application/json" \
+            -d "{\"text\": \"$message\"}" \
+            --silent --show-error
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [NOTIFICATION] Webhook通知已发送" >> "$LOG_FILE"
+    fi
+}
+
+send_telegram_notification() {
+    local message="$1"
+    
+    if [ "$TELEGRAM_ENABLED" = "1" ]; then
+        curl -X POST "https://api.telegram.org/bot$TELEGRAM_BOT_TOKEN/sendMessage" \
+            -d "chat_id=$TELEGRAM_CHAT_ID" \
+            -d "text=$message" \
+            --silent --show-error
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [NOTIFICATION] Telegram通知已发送" >> "$LOG_FILE"
+    fi
+}
+
+case "$1" in
+    ip_changed)
+        local old_ip="$2"
+        local new_ip="$3"
+        local domain="$4"
+        
+        local subject="[DDNS] IP地址已变化 - $domain"
+        local message="DDNS IP地址已变化
+
+域名: $domain
+旧IP: $old_ip
+新IP: $new_ip
+时间: $(date '+%Y-%m-%d %H:%M:%S')
+
+请确认此IP变化是否正常。"
+        
+        send_email_notification "$subject" "$message"
+        send_webhook_notification "$message"
+        send_telegram_notification "$message"
+        ;;
+    dns_update_failed)
+        local domain="$2"
+        local error="$3"
+        
+        local subject="[DDNS] DNS更新失败 - $domain"
+        local message="DDNS DNS更新失败
+
+域名: $domain
+错误: $error
+时间: $(date '+%Y-%m-%d %H:%M:%S')
+
+请检查配置和网络连接。"
+        
+        send_email_notification "$subject" "$message"
+        send_webhook_notification "$message"
+        send_telegram_notification "$message"
+        ;;
+    *)
+        echo "Usage: $0 {ip_changed|dns_update_failed} ..."
+        exit 1
+        ;;
+esac
+```
+
+**步骤3：修改DDNS脚本以集成通知**
+
+```bash
+nano /opt/yyc3/scripts/ddns.sh
+```
+
+在IP更新成功后添加通知调用：
+
+```bash
+# IP已变化，更新DNS记录
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [DDNS] IP地址已变化，开始更新DNS记录" >> "$LOG_FILE"
+
+# 更新DNS记录
+update_result=$(update_dns_record "$domain" "$sub_domain" "$record_type" "$current_ip" "$ttl")
+
+if [ "$update_result" = "success" ]; then
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [DDNS] DNS记录更新成功: $sub_domain.$domain -> $current_ip" >> "$LOG_FILE"
+    
+    # 发送IP变化通知
+    /opt/yyc3/scripts/ddns-notify.sh ip_changed "$old_ip" "$current_ip" "$sub_domain.$domain"
+else
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR [DDNS] DNS记录更新失败: $update_result" >> "$LOG_FILE"
+    
+    # 发送DNS更新失败通知
+    /opt/yyc3/scripts/ddns-notify.sh dns_update_failed "$sub_domain.$domain" "$update_result"
+fi
+```
+
+**步骤4：测试通知功能**
+
+```bash
+# 测试IP变化通知
+/opt/yyc3/scripts/ddns-notify.sh ip_changed "8.152.195.33" "8.152.195.34" "ddns.0379.email"
+
+# 测试DNS更新失败通知
+/opt/yyc3/scripts/ddns-notify.sh dns_update_failed "ddns.0379.email" "阿里云API调用失败"
+
+# 检查通知日志
+tail -f /opt/yyc3/logs/ddns.log
+```
+
+### 场景3：故障自动恢复
+
+#### 需求描述
+当DDNS服务出现故障时，自动尝试恢复并记录故障信息。
+
+#### 配置步骤
+
+**步骤1：创建故障检测脚本**
+
+```bash
+nano /opt/yyc3/scripts/ddns-health-check.sh
+```
+
+```bash
+#!/bin/bash
+
+LOG_FILE="/opt/yyc3/logs/ddns.log"
+MAX_RETRIES=3
+RETRY_DELAY=60
+
+check_service_status() {
+    local service="$1"
+    systemctl is-active --quiet "$service"
+    return $?
+}
+
+check_api_health() {
+    local response=$(curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8080/api/ddns/health)
+    if [ "$response" = "200" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+restart_service() {
+    local service="$1"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] WARN [HEALTH] 尝试重启服务: $service" >> "$LOG_FILE"
+    systemctl restart "$service"
+    sleep 5
+    check_service_status "$service"
+}
+
+check_dns_resolution() {
+    local domain="$1"
+    local expected_ip="$2"
+    local resolved_ip=$(nslookup "$domain" | grep -A 1 "Name:" | tail -1 | awk '{print $2}')
+    
+    if [ "$resolved_ip" = "$expected_ip" ]; then
+        return 0
+    else
+        return 1
+    fi
+}
+
+main() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [HEALTH] 开始健康检查" >> "$LOG_FILE"
+    
+    local health_status="healthy"
+    local issues=()
+    
+    # 检查DDNS服务状态
+    if ! check_service_status "yyc3-ddns.timer"; then
+        issues+=("DDNS定时器未运行")
+        health_status="unhealthy"
+        
+        # 尝试重启DDNS定时器
+        for i in $(seq 1 $MAX_RETRIES); do
+            if restart_service "yyc3-ddns.timer"; then
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [HEALTH] DDNS定时器重启成功" >> "$LOG_FILE"
+                break
+            else
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR [HEALTH] DDNS定时器重启失败 (尝试 $i/$MAX_RETRIES)" >> "$LOG_FILE"
+                if [ $i -lt $MAX_RETRIES ]; then
+                    sleep $RETRY_DELAY
+                fi
+            fi
+        done
+    fi
+    
+    # 检查API服务状态
+    if ! check_service_status "ddns-api.service"; then
+        issues+=("API服务未运行")
+        health_status="unhealthy"
+        
+        # 尝试重启API服务
+        for i in $(seq 1 $MAX_RETRIES); do
+            if restart_service "ddns-api.service"; then
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [HEALTH] API服务重启成功" >> "$LOG_FILE"
+                break
+            else
+                echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR [HEALTH] API服务重启失败 (尝试 $i/$MAX_RETRIES)" >> "$LOG_FILE"
+                if [ $i -lt $MAX_RETRIES ]; then
+                    sleep $RETRY_DELAY
+                fi
+            fi
+        done
+    fi
+    
+    # 检查API健康端点
+    if ! check_api_health; then
+        issues+=("API健康检查失败")
+        health_status="unhealthy"
+    fi
+    
+    # 检查DNS解析
+    local current_ip=$(curl -s ifconfig.me)
+    if ! check_dns_resolution "ddns.0379.email" "$current_ip"; then
+        issues+=("DNS解析不匹配")
+        health_status="unhealthy"
+        
+        # 手动触发IP更新
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] WARN [HEALTH] DNS解析不匹配，手动触发IP更新" >> "$LOG_FILE"
+        /opt/yyc3/scripts/ddns.sh force
+    fi
+    
+    # 输出健康检查结果
+    if [ "$health_status" = "healthy" ]; then
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [HEALTH] 健康检查通过" >> "$LOG_FILE"
+    else
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR [HEALTH] 健康检查失败，发现问题: ${issues[*]}" >> "$LOG_FILE"
+    fi
+    
+    return 0
+}
+
+main
+```
+
+**步骤2：创建Systemd定时器用于健康检查**
+
+```bash
+nano /etc/systemd/system/yyc3-ddns-health-check.service
+```
+
+```ini
+[Unit]
+Description=YYC³ DDNS Health Check Service
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/yyc3/scripts/ddns-health-check.sh
+User=root
+Group=root
+```
+
+```bash
+nano /etc/systemd/system/yyc3-ddns-health-check.timer
+```
+
+```ini
+[Unit]
+Description=YYC³ DDNS Health Check Timer
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=10min
+Unit=yyc3-ddns-health-check.service
+
+[Install]
+WantedBy=timers.target
+```
+
+**步骤3：启用健康检查定时器**
+
+```bash
+# 重新加载Systemd配置
+systemctl daemon-reload
+
+# 启用健康检查定时器
+systemctl enable yyc3-ddns-health-check.timer
+
+# 启动健康检查定时器
+systemctl start yyc3-ddns-health-check.timer
+
+# 查看定时器状态
+systemctl status yyc3-ddns-health-check.timer
+
+# 查看下次运行时间
+systemctl list-timers yyc3-ddns-health-check.timer
+```
+
+**步骤4：手动测试健康检查**
+
+```bash
+# 手动运行健康检查
+/opt/yyc3/scripts/ddns-health-check.sh
+
+# 查看健康检查日志
+tail -f /opt/yyc3/logs/ddns.log | grep HEALTH
+```
+
+### 场景4：性能监控与优化
+
+#### 需求描述
+监控DDNS服务的性能指标，包括响应时间、成功率、更新频率等，并根据监控结果进行优化。
+
+#### 配置步骤
+
+**步骤1：创建性能监控脚本**
+
+```bash
+nano /opt/yyc3/scripts/ddns-performance-monitor.sh
+```
+
+```bash
+#!/bin/bash
+
+LOG_FILE="/opt/yyc3/logs/ddns.log"
+METRICS_FILE="/opt/yyc3/metrics/ddns-performance.json"
+
+measure_api_response_time() {
+    local endpoint="$1"
+    local start_time=$(date +%s%N)
+    curl -s "$endpoint" > /dev/null
+    local end_time=$(date +%s%N)
+    local duration=$(( (end_time - start_time) / 1000000 ))
+    echo "$duration"
+}
+
+measure_dns_resolution_time() {
+    local domain="$1"
+    local start_time=$(date +%s%N)
+    nslookup "$domain" > /dev/null
+    local end_time=$(date +%s%N)
+    local duration=$(( (end_time - start_time) / 1000000 ))
+    echo "$duration"
+}
+
+calculate_update_frequency() {
+    local log_file="$1"
+    local updates=$(grep "DNS记录更新成功" "$log_file" | wc -l)
+    local time_range=$(tail -1 "$log_file" | grep -oP '\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}')
+    local end_time=$(date -d "$time_range" +%s)
+    local start_time=$(head -1 "$log_file" | grep -oP '\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}' | head -1)
+    start_time=$(date -d "$start_time" +%s)
+    local duration=$(( (end_time - start_time) / 60 ))
+    local frequency=$(echo "scale=2; $updates / $duration" | bc)
+    echo "$frequency"
+}
+
+calculate_success_rate() {
+    local log_file="$1"
+    local total=$(grep "DNS记录" "$log_file" | wc -l)
+    local success=$(grep "DNS记录更新成功" "$log_file" | wc -l)
+    local rate=$(echo "scale=2; $success * 100 / $total" | bc)
+    echo "$rate"
+}
+
+main() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [PERFORMANCE] 开始性能监控" >> "$LOG_FILE"
+    
+    # 测量API响应时间
+    local status_time=$(measure_api_response_time "http://127.0.0.1:8080/api/ddns/status")
+    local health_time=$(measure_api_response_time "http://127.0.0.1:8080/api/ddns/health")
+    local domains_time=$(measure_api_response_time "http://127.0.0.1:8080/api/ddns/domains")
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [PERFORMANCE] API响应时间 - 状态: ${status_time}ms, 健康: ${health_time}ms, 域名: ${domains_time}ms" >> "$LOG_FILE"
+    
+    # 测量DNS解析时间
+    local dns_time=$(measure_dns_resolution_time "ddns.0379.email")
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [PERFORMANCE] DNS解析时间: ${dns_time}ms" >> "$LOG_FILE"
+    
+    # 计算更新频率
+    local update_frequency=$(calculate_update_frequency "$LOG_FILE")
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [PERFORMANCE] IP更新频率: ${update_frequency}次/分钟" >> "$LOG_FILE"
+    
+    # 计算成功率
+    local success_rate=$(calculate_success_rate "$LOG_FILE")
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [PERFORMANCE] DNS更新成功率: ${success_rate}%" >> "$LOG_FILE"
+    
+    # 保存性能指标到JSON文件
+    cat > "$METRICS_FILE" << EOF
+{
+  "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "api_response_time": {
+    "status": $status_time,
+    "health": $health_time,
+    "domains": $domains_time
+  },
+  "dns_resolution_time": $dns_time,
+  "update_frequency": $update_frequency,
+  "success_rate": $success_rate
+}
+EOF
+    
+    # 性能优化建议
+    if [ "$status_time" -gt 1000 ]; then
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] WARN [PERFORMANCE] API响应时间过长，建议优化API服务" >> "$LOG_FILE"
+    fi
+    
+    if [ "$dns_time" -gt 500 ]; then
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] WARN [PERFORMANCE] DNS解析时间过长，建议更换DNS服务器" >> "$LOG_FILE"
+    fi
+    
+    if [ "$success_rate" -lt 95 ]; then
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] WARN [PERFORMANCE] DNS更新成功率过低，建议检查网络和API配置" >> "$LOG_FILE"
+    fi
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [PERFORMANCE] 性能监控完成" >> "$LOG_FILE"
+}
+
+main
+```
+
+**步骤2：创建性能监控定时器**
+
+```bash
+nano /etc/systemd/system/yyc3-ddns-performance-monitor.service
+```
+
+```ini
+[Unit]
+Description=YYC³ DDNS Performance Monitor Service
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/opt/yyc3/scripts/ddns-performance-monitor.sh
+User=root
+Group=root
+```
+
+```bash
+nano /etc/systemd/system/yyc3-ddns-performance-monitor.timer
+```
+
+```ini
+[Unit]
+Description=YYC³ DDNS Performance Monitor Timer
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=30min
+Unit=yyc3-ddns-performance-monitor.service
+
+[Install]
+WantedBy=timers.target
+```
+
+**步骤3：启用性能监控定时器**
+
+```bash
+# 重新加载Systemd配置
+systemctl daemon-reload
+
+# 启用性能监控定时器
+systemctl enable yyc3-ddns-performance-monitor.timer
+
+# 启动性能监控定时器
+systemctl start yyc3-ddns-performance-monitor.timer
+
+# 查看定时器状态
+systemctl status yyc3-ddns-performance-monitor.timer
+```
+
+**步骤4：查看性能指标**
+
+```bash
+# 手动运行性能监控
+/opt/yyc3/scripts/ddns-performance-monitor.sh
+
+# 查看性能指标JSON文件
+cat /opt/yyc3/metrics/ddns-performance.json
+
+# 查看性能监控日志
+tail -f /opt/yyc3/logs/ddns.log | grep PERFORMANCE
+```
+
+### 场景5：Webhook集成示例
+
+#### 需求描述
+将DDNS事件集成到第三方服务，如Slack、Discord、企业微信等。
+
+#### 配置步骤
+
+**步骤1：创建Webhook集成脚本**
+
+```bash
+nano /opt/yyc3/scripts/ddns-webhook.sh
+```
+
+```bash
+#!/bin/bash
+
+DDNS_CONFIG="/opt/yyc3/config/ddns.conf"
+LOG_FILE="/opt/yyc3/logs/ddns.log"
+
+source "$DDNS_CONFIG"
+
+send_slack_webhook() {
+    local webhook_url="$1"
+    local message="$2"
+    local color="$3"
+    
+    curl -X POST "$webhook_url" \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"attachments\": [{
+                \"color\": \"$color\",
+                \"text\": \"$message\",
+                \"footer\": \"YYC³ DDNS\",
+                \"ts\": $(date +%s)
+            }]
+        }" \
+        --silent --show-error
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [WEBHOOK] Slack通知已发送" >> "$LOG_FILE"
+}
+
+send_discord_webhook() {
+    local webhook_url="$1"
+    local message="$2"
+    local color="$3"
+    
+    curl -X POST "$webhook_url" \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"embeds\": [{
+                \"description\": \"$message\",
+                \"color\": $color,
+                \"footer\": {
+                    \"text\": \"YYC³ DDNS\"
+                },
+                \"timestamp\": \"$(date -u +%Y-%m-%dT%H:%M:%SZ)\"
+            }]
+        }" \
+        --silent --show-error
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [WEBHOOK] Discord通知已发送" >> "$LOG_FILE"
+}
+
+send_wechat_work_webhook() {
+    local webhook_url="$1"
+    local message="$2"
+    
+    curl -X POST "$webhook_url" \
+        -H "Content-Type: application/json" \
+        -d "{
+            \"msgtype\": \"markdown\",
+            \"markdown\": {
+                \"content\": \"$message\"
+            }
+        }" \
+        --silent --show-error
+    
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [WEBHOOK] 企业微信通知已发送" >> "$LOG_FILE"
+}
+
+case "$1" in
+    slack)
+        local webhook_url="$2"
+        local message="$3"
+        local color="$4"
+        send_slack_webhook "$webhook_url" "$message" "$color"
+        ;;
+    discord)
+        local webhook_url="$2"
+        local message="$3"
+        local color="$4"
+        send_discord_webhook "$webhook_url" "$message" "$color"
+        ;;
+    wechat)
+        local webhook_url="$2"
+        local message="$3"
+        send_wechat_work_webhook "$webhook_url" "$message"
+        ;;
+    *)
+        echo "Usage: $0 {slack|discord|wechat} ..."
+        exit 1
+        ;;
+esac
+```
+
+**步骤2：配置Webhook URL**
+
+```bash
+nano /opt/yyc3/config/ddns.conf
+```
+
+```bash
+# ======================
+# Webhook配置
+# ======================
+
+# Slack Webhook
+SLACK_WEBHOOK_ENABLED="1"
+SLACK_WEBHOOK_URL="https://hooks.slack.com/services/YOUR/WEBHOOK/URL"
+
+# Discord Webhook
+DISCORD_WEBHOOK_ENABLED="1"
+DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/YOUR/WEBHOOK/URL"
+
+# 企业微信 Webhook
+WECHAT_WEBHOOK_ENABLED="1"
+WECHAT_WEBHOOK_URL="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_KEY"
+```
+
+**步骤3：在DDNS脚本中集成Webhook**
+
+```bash
+nano /opt/yyc3/scripts/ddns.sh
+```
+
+在IP更新成功后添加Webhook调用：
+
+```bash
+# IP已变化，更新DNS记录
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [DDNS] IP地址已变化，开始更新DNS记录" >> "$LOG_FILE"
+
+# 更新DNS记录
+update_result=$(update_dns_record "$domain" "$sub_domain" "$record_type" "$current_ip" "$ttl")
+
+if [ "$update_result" = "success" ]; then
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [DDNS] DNS记录更新成功: $sub_domain.$domain -> $current_ip" >> "$LOG_FILE"
+    
+    # 发送Slack通知（绿色表示成功）
+    if [ "$SLACK_WEBHOOK_ENABLED" = "1" ]; then
+        /opt/yyc3/scripts/ddns-webhook.sh slack "$SLACK_WEBHOOK_URL" \
+            "DDNS IP地址已更新\n\n*域名*: $sub_domain.$domain\n*旧IP*: $old_ip\n*新IP*: $current_ip\n*时间*: $(date '+%Y-%m-%d %H:%M:%S')" \
+            "good"
+    fi
+    
+    # 发送Discord通知（绿色表示成功）
+    if [ "$DISCORD_WEBHOOK_ENABLED" = "1" ]; then
+        /opt/yyc3/scripts/ddns-webhook.sh discord "$DISCORD_WEBHOOK_URL" \
+            "DDNS IP地址已更新\n\n**域名**: $sub_domain.$domain\n**旧IP**: $old_ip\n**新IP**: $current_ip\n**时间**: $(date '+%Y-%m-%d %H:%M:%S')" \
+            "52280"
+    fi
+    
+    # 发送企业微信通知
+    if [ "$WECHAT_WEBHOOK_ENABLED" = "1" ]; then
+        /opt/yyc3/scripts/ddns-webhook.sh wechat "$WECHAT_WEBHOOK_URL" \
+            "## DDNS IP地址已更新\n\n> 域名：$sub_domain.$domain\n> 旧IP：$old_ip\n> 新IP：$current_ip\n> 时间：$(date '+%Y-%m-%d %H:%M:%S')"
+    fi
+else
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR [DDNS] DNS记录更新失败: $update_result" >> "$LOG_FILE"
+    
+    # 发送Slack通知（红色表示失败）
+    if [ "$SLACK_WEBHOOK_ENABLED" = "1" ]; then
+        /opt/yyc3/scripts/ddns-webhook.sh slack "$SLACK_WEBHOOK_URL" \
+            "DDNS DNS更新失败\n\n*域名*: $sub_domain.$domain\n*错误*: $update_result\n*时间*: $(date '+%Y-%m-%d %H:%M:%S')" \
+            "danger"
+    fi
+    
+    # 发送Discord通知（红色表示失败）
+    if [ "$DISCORD_WEBHOOK_ENABLED" = "1" ]; then
+        /opt/yyc3/scripts/ddns-webhook.sh discord "$DISCORD_WEBHOOK_URL" \
+            "DDNS DNS更新失败\n\n**域名**: $sub_domain.$domain\n**错误**: $update_result\n**时间**: $(date '+%Y-%m-%d %H:%M:%S')" \
+            "15548997"
+    fi
+    
+    # 发送企业微信通知
+    if [ "$WECHAT_WEBHOOK_ENABLED" = "1" ]; then
+        /opt/yyc3/scripts/ddns-webhook.sh wechat "$WECHAT_WEBHOOK_URL" \
+            "## DDNS DNS更新失败\n\n> 域名：$sub_domain.$domain\n> 错误：$update_result\n> 时间：$(date '+%Y-%m-%d %H:%M:%S')"
+    fi
+fi
+```
+
+**步骤4：测试Webhook集成**
+
+```bash
+# 测试Slack Webhook
+/opt/yyc3/scripts/ddns-webhook.sh slack "https://hooks.slack.com/services/YOUR/WEBHOOK/URL" \
+    "DDNS测试消息\n\n这是一条测试消息" "good"
+
+# 测试Discord Webhook
+/opt/yyc3/scripts/ddns-webhook.sh discord "https://discord.com/api/webhooks/YOUR/WEBHOOK/URL" \
+    "DDNS测试消息\n\n这是一条测试消息" "52280"
+
+# 测试企业微信Webhook
+/opt/yyc3/scripts/ddns-webhook.sh wechat "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_KEY" \
+    "## DDNS测试消息\n\n这是一条测试消息"
+
+# 检查Webhook日志
+tail -f /opt/yyc3/logs/ddns.log | grep WEBHOOK
 ```
 
 ---
