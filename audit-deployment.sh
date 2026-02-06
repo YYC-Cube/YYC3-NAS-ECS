@@ -1,7 +1,7 @@
 #!/bin/bash
 # ============================================
 # YYC³ NAS-ECS ECS服务器部署现状审查脚本
-# 版本: 1.0.3
+# 版本: 1.0.4
 # 创建日期: 2026-02-04
 # 作者: YYC³ Team
 # ============================================
@@ -50,7 +50,7 @@ log_info() {
 echo "# YYC³ NAS-ECS ECS服务器部署现状审查报告" > "$REPORT_FILE"
 echo "**生成时间**: $(date '+%Y-%m-%d %H:%M:%S')" >> "$REPORT_FILE"
 echo "**服务器IP**: 8.152.195.33" >> "$REPORT_FILE"
-echo "**审查脚本版本**: 1.0.3" >> "$REPORT_FILE"
+echo "**审查脚本版本**: 1.0.4" >> "$REPORT_FILE"
 echo "" >> "$REPORT_FILE"
 
 echo "## 📋 执行摘要" >> "$REPORT_FILE"
@@ -239,7 +239,7 @@ check_service "Docker容器运行" "docker ps --format 'table {{.Names}}\t{{.Sta
 if command -v docker-compose >/dev/null 2>&1 && [ -f "/opt/nas-ecs/api/docker-compose.yml" ]; then
     echo "**Docker容器状态**: " >> "$REPORT_FILE"
     echo '```bash' >> "$REPORT_FILE"
-    cd /opt/nas-ecs/api && docker-compose ps 2>/dev/null | tail -n +3 >> "$REPORT_FILE" || echo "无法获取容器状态" >> "$REPORT_FILE"
+    (cd /opt/nas-ecs/api && docker-compose ps 2>/dev/null | tail -n +3) >> "$REPORT_FILE" || echo "无法获取容器状态" >> "$REPORT_FILE"
     echo '```' >> "$REPORT_FILE"
 fi
 
@@ -456,7 +456,7 @@ if [ -d "/opt/nas-ecs/backup" ]; then
     echo "备份文件数量: $backup_count" >> "$REPORT_FILE"
 
     if [ "$backup_count" -gt 0 ]; then
-        latest_backup=$(find /opt/nas-ecs/backup -type f -name "*.tar.gz" -printf "%T@ %p\n" 2>/dev/null | sort -n | tail -1 | cut -d' ' -f2-)
+        latest_backup=$(find /opt/nas-ecs/backup -type f -name "*.tar.gz" 2>/dev/null | xargs ls -lt 2>/dev/null | head -1 | awk '{print $NF}')
         if [ -n "$latest_backup" ]; then
             backup_size=$(du -h "$latest_backup" 2>/dev/null | cut -f1)
             backup_date=$(stat -c %y "$latest_backup" 2>/dev/null | cut -d' ' -f1)
@@ -484,9 +484,9 @@ echo '```bash' >> "$REPORT_FILE"
 # CPU使用率
 cpu_usage=$(top -bn1 | grep "Cpu(s)" | awk '{print $2}' | cut -d'%' -f1)
 if [ -n "$cpu_usage" ]; then
-    if (( $(echo "$cpu_usage < 80" | bc -l 2>/dev/null || echo "0") )); then
+    if (( $(echo "$cpu_usage < 80" | bc -l 2>/dev/null || echo "1") )); then
         echo "✅ CPU使用率: ${cpu_usage}%" >> "$REPORT_FILE"
-    elif (( $(echo "$cpu_usage < 90" | bc -l 2>/dev/null || echo "0") )); then
+    elif (( $(echo "$cpu_usage < 90" | bc -l 2>/dev/null || echo "1") )); then
         echo "⚠️ CPU使用率: ${cpu_usage}%" >> "$REPORT_FILE"
     else
         echo "❌ CPU使用率: ${cpu_usage}%" >> "$REPORT_FILE"
