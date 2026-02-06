@@ -1,7 +1,7 @@
 #!/bin/bash
 # ============================================
 # YYC³ NAS-ECS ECS服务器部署现状审查脚本
-# 版本: 1.0.1
+# 版本: 1.0.2
 # 创建日期: 2026-02-04
 # 作者: YYC³ Team
 # ============================================
@@ -50,7 +50,7 @@ log_info() {
 echo "# YYC³ NAS-ECS ECS服务器部署现状审查报告" > "$REPORT_FILE"
 echo "**生成时间**: $(date '+%Y-%m-%d %H:%M:%S')" >> "$REPORT_FILE"
 echo "**服务器IP**: 8.152.195.33" >> "$REPORT_FILE"
-echo "**审查脚本版本**: 1.0.1" >> "$REPORT_FILE"
+echo "**审查脚本版本**: 1.0.2" >> "$REPORT_FILE"
 echo "" >> "$REPORT_FILE"
 
 echo "## 📋 执行摘要" >> "$REPORT_FILE"
@@ -140,7 +140,16 @@ check_service "Nginx服务" "systemctl is-active --quiet nginx" "Nginx服务运�
 check_service "Python 3" "python3 --version" "Python 3版本检查"
 
 # 1.6 检查防火墙
-check_service "UFW防火墙" "ufw status | grep -q 'Status: active'" "防火墙状态检查"
+if command -v ufw &> /dev/null; then
+    check_service "UFW防火墙" "ufw status | grep -q 'Status: active'" "防火墙状态检查"
+elif command -v firewall-cmd &> /dev/null; then
+    check_service "Firewalld防火墙" "systemctl is-active --quiet firewalld" "防火墙状态检查"
+else
+    echo "⚠️ **防火墙**: 未检测到UFW或Firewalld" >> "$REPORT_FILE"
+    log_warning "未检测到防火墙工具"
+    total_checks=$((total_checks + 1))
+    warning_checks=$((warning_checks + 1))
+fi
 
 echo "" >> "$REPORT_FILE"
 
