@@ -1,7 +1,7 @@
 #!/bin/bash
 # ============================================
 # YYC³ NAS-ECS ECS服务器部署现状审查脚本
-# 版本: 1.0.2
+# 版本: 1.0.3
 # 创建日期: 2026-02-04
 # 作者: YYC³ Team
 # ============================================
@@ -50,7 +50,7 @@ log_info() {
 echo "# YYC³ NAS-ECS ECS服务器部署现状审查报告" > "$REPORT_FILE"
 echo "**生成时间**: $(date '+%Y-%m-%d %H:%M:%S')" >> "$REPORT_FILE"
 echo "**服务器IP**: 8.152.195.33" >> "$REPORT_FILE"
-echo "**审查脚本版本**: 1.0.2" >> "$REPORT_FILE"
+echo "**审查脚本版本**: 1.0.3" >> "$REPORT_FILE"
 echo "" >> "$REPORT_FILE"
 
 echo "## 📋 执行摘要" >> "$REPORT_FILE"
@@ -66,9 +66,9 @@ check_service() {
     local service_name="$1"
     local check_cmd="$2"
     local description="$3"
-    
+
     total_checks=$((total_checks + 1))
-    
+
     if eval "$check_cmd" > /dev/null 2>&1; then
         echo "✅ **$service_name**: $description" >> "$REPORT_FILE"
         log_success "$service_name 检查通过"
@@ -86,9 +86,9 @@ check_service_warning() {
     local service_name="$1"
     local check_cmd="$2"
     local description="$3"
-    
+
     total_checks=$((total_checks + 1))
-    
+
     if eval "$check_cmd" > /dev/null 2>&1; then
         echo "✅ **$service_name**: $description" >> "$REPORT_FILE"
         log_success "$service_name 检查通过"
@@ -168,16 +168,23 @@ check_service "HTTP代理端口(18080)" "netstat -tln | grep -q ':18080'" "HTTP�
 check_service_warning "HTTPS代理端口(4443)" "netstat -tln | grep -q ':4443'" "HTTPS代理端口监听"
 
 # 2.3 检查FRP配置文件
-check_service "FRP配置文件" "test -f /etc/frp/frps.toml" "FRP配置文件存在"
-if [ -f /etc/frp/frps.toml ]; then
+FRP_CONFIG_FILE="/root/frps/frps.toml"
+if [ ! -f "$FRP_CONFIG_FILE" ]; then
+    FRP_CONFIG_FILE="/etc/frp/frps.toml"
+fi
+check_service "FRP配置文件" "test -f $FRP_CONFIG_FILE" "FRP配置文件存在"
+if [ -f "$FRP_CONFIG_FILE" ]; then
+    echo "**FRP配置文件路径**: $FRP_CONFIG_FILE" >> "$REPORT_FILE"
     echo "**FRP配置摘要**: " >> "$REPORT_FILE"
     echo '```toml' >> "$REPORT_FILE"
-    grep -E "(bindPort|auth.token|webServer|subDomainHost)" /etc/frp/frps.toml | head -10 >> "$REPORT_FILE" 2>/dev/null || echo "无法读取配置文件" >> "$REPORT_FILE"
+    grep -E "(bindPort|auth.token|webServer|subDomainHost)" "$FRP_CONFIG_FILE" | head -10 >> "$REPORT_FILE" 2>/dev/null || echo "无法读取配置文件" >> "$REPORT_FILE"
     echo '```' >> "$REPORT_FILE"
 fi
 
 # 2.4 检查FRP日志
-check_service_warning "FRP日志文件" "test -f /root/frps/frps.log" "FRP日志文件存在"
+FRP_LOG_DIR=$(dirname "$FRP_CONFIG_FILE")
+FRP_LOG_FILE="$FRP_LOG_DIR/frps.log"
+check_service_warning "FRP日志文件" "test -f $FRP_LOG_FILE" "FRP日志文件存在"
 
 echo "" >> "$REPORT_FILE"
 
@@ -193,18 +200,18 @@ if [ -d /etc/letsencrypt/live/0379.email ]; then
     # 3.2 检查证书文件
     check_service "证书文件(fullchain.pem)" "test -f /etc/letsencrypt/live/0379.email/fullchain.pem" "完整证书链文件"
     check_service "私钥文件(privkey.pem)" "test -f /etc/letsencrypt/live/0379.email/privkey.pem" "私钥文件"
-    
+
     # 3.3 检查证书有效期
     if [ -f /etc/letsencrypt/live/0379.email/fullchain.pem ]; then
         cert_expiry=$(openssl x509 -in /etc/letsencrypt/live/0379.email/fullchain.pem -noout -enddate 2>/dev/null | cut -d= -f2)
         if [ -n "$cert_expiry" ]; then
             echo "**证书过期时间**: $cert_expiry" >> "$REPORT_FILE"
-            
+
             # 计算剩余天数
             expiry_seconds=$(date -d "$cert_expiry" +%s)
             current_seconds=$(date +%s)
             days_left=$(( (expiry_seconds - current_seconds) / 86400 ))
-            
+
             if [ "$days_left" -gt 30 ]; then
                 echo "✅ **证书有效期**: 剩余 ${days_left} 天" >> "$REPORT_FILE"
                 log_success "证书有效期充足"
@@ -258,7 +265,7 @@ ports_to_check=(
 for port_info in "${ports_to_check[@]}"; do
     port=$(echo "$port_info" | cut -d: -f1)
     service=$(echo "$port_info" | cut -d: -f2)
-    
+
     if netstat -tln 2>/dev/null | grep -q ":$port "; then
         echo "✅ 端口 $port ($service): 监听中" >> "$REPORT_FILE"
     else
@@ -304,7 +311,7 @@ echo "**关键文件检查**: " >> "$REPORT_FILE"
 for file_info in "${key_files[@]}"; do
     file=$(echo "$file_info" | cut -d: -f1)
     description=$(echo "$file_info" | cut -d: -f2)
-    
+
     if [ -f "$file" ]; then
         echo "✅ $description: 存在" >> "$REPORT_FILE"
     else
@@ -343,7 +350,7 @@ local_tests=(
 for test_info in "${local_tests[@]}"; do
     cmd=$(echo "$test_info" | cut -d: -f1)
     description=$(echo "$test_info" | cut -d: -f2)
-    
+
     if eval "$cmd" > /dev/null 2>&1; then
         echo "✅ $description: 通过" >> "$REPORT_FILE"
     else
@@ -377,7 +384,7 @@ echo '```' >> "$REPORT_FILE"
 echo "**关键文件权限**: " >> "$REPORT_FILE"
 echo '```bash' >> "$REPORT_FILE"
 ls -la /opt/nas-ecs/.env 2>/dev/null | awk '{print "环境变量文件:", $1, $3, $4}' >> "$REPORT_FILE"
-ls -la /etc/frp/frps.toml 2>/dev/null | awk '{print "FRP服务器配置:", $1, $3, $4}' >> "$REPORT_FILE"
+ls -la "$FRP_CONFIG_FILE" 2>/dev/null | awk '{print "FRP服务器配置:", $1, $3, $4}' >> "$REPORT_FILE"
 ls -la /etc/letsencrypt/live/0379.email/privkey.pem 2>/dev/null | awk '{print "SSL私钥:", $1, $3, $4}' >> "$REPORT_FILE"
 echo '```' >> "$REPORT_FILE"
 
@@ -404,7 +411,7 @@ echo '```bash' >> "$REPORT_FILE"
 log_files=(
     "/var/log/nginx/access.log:Nginx访问日志"
     "/var/log/nginx/error.log:Nginx错误日志"
-    "/root/frps/frps.log:FRP服务器日志"
+    "$FRP_LOG_FILE:FRP服务器日志"
     "/opt/nas-ecs/logs/ddns.log:DDNS服务日志"
     "/opt/nas-ecs/logs/api.log:API服务日志"
 )
@@ -412,7 +419,7 @@ log_files=(
 for log_info in "${log_files[@]}"; do
     file=$(echo "$log_info" | cut -d: -f1)
     description=$(echo "$log_info" | cut -d: -f2)
-    
+
     if [ -f "$file" ]; then
         size=$(du -h "$file" 2>/dev/null | cut -f1)
         if [ -z "$size" ]; then
@@ -447,7 +454,7 @@ if [ -d "/opt/nas-ecs/backup" ]; then
     echo '```bash' >> "$REPORT_FILE"
     backup_count=$(find /opt/nas-ecs/backup -type f -name "*.tar.gz" 2>/dev/null | wc -l)
     echo "备份文件数量: $backup_count" >> "$REPORT_FILE"
-    
+
     if [ "$backup_count" -gt 0 ]; then
         latest_backup=$(find /opt/nas-ecs/backup -type f -name "*.tar.gz" -printf "%T@ %p\n" 2>/dev/null | sort -n | tail -1 | cut -d' ' -f2-)
         if [ -n "$latest_backup" ]; then
@@ -530,17 +537,17 @@ echo "## 📈 第十一阶段：部署状态评估" >> "$REPORT_FILE"
 # 计算总体评分
 if [ "$total_checks" -gt 0 ]; then
     success_rate=$((passed_checks * 100 / total_checks))
-    
+
     echo "**检查统计**: " >> "$REPORT_FILE"
     echo "- 总检查项: $total_checks" >> "$REPORT_FILE"
     echo "- 通过项: $passed_checks" >> "$REPORT_FILE"
     echo "- 警告项: $warning_checks" >> "$REPORT_FILE"
     echo "- 失败项: $failed_checks" >> "$REPORT_FILE"
     echo "- 总体成功率: ${success_rate}%" >> "$REPORT_FILE"
-    
+
     echo "" >> "$REPORT_FILE"
     echo "**部署状态**: " >> "$REPORT_FILE"
-    
+
     if [ "$success_rate" -ge 90 ]; then
         echo "✅ **优秀** - 部署状态良好，生产就绪" >> "$REPORT_FILE"
         log_success "部署状态评估：优秀"
