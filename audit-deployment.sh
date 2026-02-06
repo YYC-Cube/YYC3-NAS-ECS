@@ -1,7 +1,7 @@
 #!/bin/bash
 # ============================================
 # YYC³ NAS-ECS ECS服务器部署现状审查脚本
-# 版本: 1.0.4
+# 版本: 1.0.5
 # 创建日期: 2026-02-04
 # 作者: YYC³ Team
 # ============================================
@@ -50,7 +50,7 @@ log_info() {
 echo "# YYC³ NAS-ECS ECS服务器部署现状审查报告" > "$REPORT_FILE"
 echo "**生成时间**: $(date '+%Y-%m-%d %H:%M:%S')" >> "$REPORT_FILE"
 echo "**服务器IP**: 8.152.195.33" >> "$REPORT_FILE"
-echo "**审查脚本版本**: 1.0.4" >> "$REPORT_FILE"
+echo "**审查脚本版本**: 1.0.5" >> "$REPORT_FILE"
 echo "" >> "$REPORT_FILE"
 
 echo "## 📋 执行摘要" >> "$REPORT_FILE"
@@ -208,9 +208,9 @@ if [ -d /etc/letsencrypt/live/0379.email ]; then
             echo "**证书过期时间**: $cert_expiry" >> "$REPORT_FILE"
 
             # 计算剩余天数
-            expiry_seconds=$(date -d "$cert_expiry" +%s)
-            current_seconds=$(date +%s)
-            days_left=$(( (expiry_seconds - current_seconds) / 86400 ))
+            expiry_seconds=$(date -d "$cert_expiry" +%s 2>/dev/null || echo "0")
+            current_seconds=$(date +%s 2>/dev/null || echo "0")
+            days_left=$(( (expiry_seconds - current_seconds) / 86400 )) 2>/dev/null || echo "0"
 
             if [ "$days_left" -gt 30 ]; then
                 echo "✅ **证书有效期**: 剩余 ${days_left} 天" >> "$REPORT_FILE"
@@ -263,8 +263,8 @@ ports_to_check=(
 )
 
 for port_info in "${ports_to_check[@]}"; do
-    port=$(echo "$port_info" | cut -d: -f1)
-    service=$(echo "$port_info" | cut -d: -f2)
+    port=$(echo "$port_info" | cut -d: -f1 2>/dev/null || echo "0")
+    service=$(echo "$port_info" | cut -d: -f2 2>/dev/null || echo "unknown")
 
     if netstat -tln 2>/dev/null | grep -q ":$port "; then
         echo "✅ 端口 $port ($service): 监听中" >> "$REPORT_FILE"
@@ -309,10 +309,10 @@ key_files=(
 
 echo "**关键文件检查**: " >> "$REPORT_FILE"
 for file_info in "${key_files[@]}"; do
-    file=$(echo "$file_info" | cut -d: -f1)
-    description=$(echo "$file_info" | cut -d: -f2)
+    file=$(echo "$file_info" | cut -d: -f1 2>/dev/null || echo "")
+    description=$(echo "$file_info" | cut -d: -f2 2>/dev/null || echo "unknown")
 
-    if [ -f "$file" ]; then
+    if [ -n "$file" ] && [ -f "$file" ]; then
         echo "✅ $description: 存在" >> "$REPORT_FILE"
     else
         echo "❌ $description: 缺失" >> "$REPORT_FILE"
@@ -494,10 +494,10 @@ if [ -n "$cpu_usage" ]; then
 fi
 
 # 内存使用率
-mem_total=$(free -m | awk '/Mem:/ {print $2}')
-mem_used=$(free -m | awk '/Mem:/ {print $3}')
-if [ -n "$mem_total" ] && [ -n "$mem_used" ]; then
-    mem_percent=$((mem_used * 100 / mem_total))
+mem_total=$(free -m | awk '/Mem:/ {print $2}' 2>/dev/null || echo "0")
+mem_used=$(free -m | awk '/Mem:/ {print $3}' 2>/dev/null || echo "0")
+if [ -n "$mem_total" ] && [ -n "$mem_used" ] && [ "$mem_total" -gt 0 ]; then
+    mem_percent=$((mem_used * 100 / mem_total)) 2>/dev/null || echo "0"
     if [ "$mem_percent" -lt 80 ]; then
         echo "✅ 内存使用率: ${mem_percent}% (${mem_used}M/${mem_total}M)" >> "$REPORT_FILE"
     elif [ "$mem_percent" -lt 90 ]; then
@@ -508,8 +508,8 @@ if [ -n "$mem_total" ] && [ -n "$mem_used" ]; then
 fi
 
 # 磁盘使用率
-disk_usage=$(df -h / | awk 'NR==2 {print $5}' | cut -d'%' -f1)
-if [ -n "$disk_usage" ]; then
+disk_usage=$(df -h / | awk 'NR==2 {print $5}' | cut -d'%' -f1 2>/dev/null || echo "0")
+if [ -n "$disk_usage" ] && [ "$disk_usage" != "0" ]; then
     if [ "$disk_usage" -lt 80 ]; then
         echo "✅ 根分区使用率: ${disk_usage}%" >> "$REPORT_FILE"
     elif [ "$disk_usage" -lt 90 ]; then
@@ -520,9 +520,13 @@ if [ -n "$disk_usage" ]; then
 fi
 
 # Docker容器数量
-container_count=$(docker ps -q 2>/dev/null | wc -l)
-if [ -n "$container_count" ]; then
-    echo "📦 运行中的Docker容器: $container_count" >> "$REPORT_FILE"
+container_count=$(docker ps -q 2>/dev/null | wc -l 2>/dev/null || echo "0")
+if [ -n "$container_count" ] && [ "$container_count" -ge 0 ]; then
+    if [ "$container_count" -gt 0 ]; then
+        echo "✅ 运行容器数: $container_count" >> "$REPORT_FILE"
+    else
+        echo "⚠️ 运行容器数: $container_count" >> "$REPORT_FILE"
+    fi
 fi
 
 echo '```' >> "$REPORT_FILE"
@@ -536,7 +540,7 @@ echo "## 📈 第十一阶段：部署状态评估" >> "$REPORT_FILE"
 
 # 计算总体评分
 if [ "$total_checks" -gt 0 ]; then
-    success_rate=$((passed_checks * 100 / total_checks))
+    success_rate=$((passed_checks * 100 / total_checks 2>/dev/null || echo "0"))
 
     echo "**检查统计**: " >> "$REPORT_FILE"
     echo "- 总检查项: $total_checks" >> "$REPORT_FILE"
