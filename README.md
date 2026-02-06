@@ -656,6 +656,7 @@ YYC3-NAS-ECS/
 ### 部署文档
 
 - [完整部署文档](docs/YYC3-NAS-ECS-完整部署文档.md) - 完整的部署指南，包含架构设计和步骤说明
+- [阿里云ECS部署实施记录](docs/YYC3-NAS-ECS-阿里云ECS部署实施记录.md) - 阿里云ECS服务器部署实施过程记录
 - [生产环境准备检查清单](docs/YYC3-NAS-ECS-部署指导/YYC3-NAS-ECS-生产环境准备检查清单.md) - 生产环境部署前的准备检查项
 - [部署流程指导](docs/YYC3-NAS-ECS-部署指导/YYC3-NAS-ECS-部署流程指导.md) - 详细的部署流程和故障排除
 - [文档映射目录](docs/YYC3-NAS-ECS-文档映射目录.md) - 完整的文档索引和映射关系
