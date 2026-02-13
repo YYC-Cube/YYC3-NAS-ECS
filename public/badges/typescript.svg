@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="110" height="20" viewBox="0 0 110 20">
+  <style>
+    .bg { fill: #3178C6; }
+    .text { font-family: 'Segoe UI', sans-serif; font-size: 10px; fill: white; font-weight: 600; }
+  </style>
+  <rect class="bg" x="0" y="0" width="110" height="20" rx="3" />
+  <text class="text" x="55" y="14" text-anchor="middle">TypeScript</text>
+</svg>

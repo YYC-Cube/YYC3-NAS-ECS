@@ -1,5 +1,13 @@
 # YYC³ NAS-ECS 安全漏洞报告
 
+> ***YanYuCloudCube***
+> 言启象限 | 语枢未来
+> ***Words Initiate Quadrants, Language Serves as Core for the Future***
+> 万象归元于云枢 | 深栈智启新纪元
+> ***All things converge in the cloud pivot; Deep stacks ignite a new era of intelligence***
+
+---
+
 > **文档版本**: 1.0.0  
 > **创建日期**: 2026-02-10  
 > **作者**: YYC³ Team  

@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="90" height="20" viewBox="0 0 90 20">
+  <style>
+    .bg { fill: #4A90E2; }
+    .text { font-family: 'Segoe UI', sans-serif; font-size: 10px; fill: white; font-weight: 600; }
+  </style>
+  <rect class="bg" x="0" y="0" width="90" height="20" rx="3" />
+  <text class="text" x="45" y="14" text-anchor="middle">v1.0.0</text>
+</svg>
