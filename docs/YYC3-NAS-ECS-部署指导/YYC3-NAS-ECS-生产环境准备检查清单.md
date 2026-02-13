@@ -147,7 +147,7 @@ FRPS_CONFIG_PATH=/etc/frp/frps.toml
 ✅ **基础配置**
 ```bash
 export NAS_DOMAIN="ddns.0379.email"
-export NAS_SERVER_IP="8.152.195.33"
+export NAS_SERVER_IP="SERVER_IP_PLACEHOLDER"
 export NAS_LOCAL_IP="192.168.3.45"
 export NAS_SERVER_NAME="yyc3-33"
 export NAS_LOCAL_NAME="nas-local"
@@ -312,7 +312,7 @@ ALERT_WEBHOOK_URL=
 ✅ **备份存储**
 ```bash
 BACKUP_STORAGE_TYPE=local
-BACKUP_LOCAL_PATH=/opt/yyc3/backup
+BACKUP_LOCAL_PATH=/opt/nas-ecs/backup
 BACKUP_S3_BUCKET=
 BACKUP_S3_REGION=
 BACKUP_S3_ACCESS_KEY=
@@ -402,7 +402,7 @@ log.level = "warn"
 
 ✅ **FRP客户端配置**
 ```toml
-serverAddr = "8.152.195.33"
+serverAddr = "SERVER_IP_PLACEHOLDER"
 serverPort = 7001
 auth.method = "token"
 auth.token = "yyc3_nas"
@@ -423,7 +423,7 @@ subdomain = "api"
 name = "nas-0379"
 type = "http"
 localIP = "127.0.0.1"
-localPort = 6004
+localPort = 6009
 subdomain = "nas"
 
 [[proxies]]
@@ -466,7 +466,7 @@ subdomain = "ddns"
 | 服务名称 | 本地端口 | 子域名 | 外部访问地址 |
 |---------|---------|--------|------------|
 | API服务 | 6000 | api | https://api.0379.email |
-| NAS服务 | 6004 | nas | https://nas.0379.email |
+| NAS服务 | 6009 | nas | https://nas.0379.email |
 | 邮件服务 | 6003 | mail | https://mail.0379.email |
 | LLM服务 | 6002 | llm | https://llm.0379.email |
 | 管理服务 | 6001 | admin | https://admin.0379.email |
@@ -639,10 +639,10 @@ subdomain = "ddns"
 - [ ] Systemd服务已启用
 - [ ] 日志目录已创建
 - [ ] 备份目录已创建
-- [ ] FRP服务器已配置并运行（8.152.195.33:7001）
+- [ ] FRP服务器已配置并运行（SERVER_IP_PLACEHOLDER:7001）
 - [ ] FRP客户端已配置并运行（192.168.3.45）
 - [ ] SSL证书已配置（0379.email）
-- [ ] FRP管理后台可访问（http://8.152.195.33:7500）
+- [ ] FRP管理后台可访问（http://SERVER_IP_PLACEHOLDER:7500）
 - [ ] 所有FRP代理服务正常工作
 
 ---
@@ -678,16 +678,16 @@ npm run build:prod
 1. **部署应用**
 ```bash
 # 复制构建文件到服务器
-scp -r dist/* user@server:/opt/yyc3/web/nas/
+scp -r dist/* user@server:/opt/nas-ecs/web/nas/
 
 # 或使用rsync
-rsync -avz dist/ user@server:/opt/yyc3/web/nas/
+rsync -avz dist/ user@server:/opt/nas-ecs/web/nas/
 ```
 
 2. **配置FRP服务器（阿里云ECS）**
 ```bash
 # SSH登录到阿里云ECS
-ssh root@8.152.195.33
+ssh root@SERVER_IP_PLACEHOLDER
 
 # 确保FRP服务器配置文件存在
 cat /etc/frp/frps.toml
@@ -703,7 +703,7 @@ sudo systemctl start frps
 sudo systemctl status frps
 
 # 访问FRP管理后台
-# http://8.152.195.33:7500
+# http://SERVER_IP_PLACEHOLDER:7500
 # 用户名: yyc3
 # 密码: my151001
 ```
@@ -855,7 +855,7 @@ limit_req zone=api burst=20 nodelay;
 
 3. **配置IP白名单**
 ```nginx
-allow 8.152.195.33;
+allow SERVER_IP_PLACEHOLDER;
 allow 192.168.3.0/24;
 deny all;
 ```

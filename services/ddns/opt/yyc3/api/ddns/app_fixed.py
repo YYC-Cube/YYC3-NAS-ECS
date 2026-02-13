@@ -12,7 +12,7 @@ from datetime import datetime
 from flask import Flask, request, jsonify
 
 # 添加虚拟环境路径
-venv_path = '/opt/yyc3/api/ddns/venv'
+venv_path = '/opt/nas-ecs/api/ddns/venv'
 if venv_path not in sys.path:
     sys.path.insert(0, venv_path)
 
@@ -34,7 +34,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     handlers=[
-        logging.FileHandler('/opt/yyc3/logs/ddns_api.log'),
+        logging.FileHandler('/opt/nas-ecs/logs/ddns_api.log'),
         logging.StreamHandler()
     ]
 )
@@ -107,7 +107,7 @@ def api_update():
     """手动触发DDNS更新API"""
     try:
         # 执行DDNS更新脚本
-        ddns_script = '/opt/yyc3/ddns/ddns-update.sh'
+        ddns_script = '/opt/nas-ecs/ddns/ddns-update.sh'
         
         if os.path.exists(ddns_script):
             result = subprocess.run(
@@ -146,7 +146,7 @@ def api_logs():
     """获取DDNS日志API"""
     try:
         lines = request.args.get('lines', 50, type=int)
-        log_file = '/opt/yyc3/logs/ddns.log'
+        log_file = '/opt/nas-ecs/logs/ddns.log'
         
         if not os.path.exists(log_file):
             return jsonify({
@@ -214,8 +214,8 @@ def api_config():
 
 if __name__ == '__main__':
     # 创建必要的目录
-    os.makedirs('/opt/yyc3/logs', exist_ok=True)
-    os.makedirs('/opt/yyc3/run', exist_ok=True)
+    os.makedirs('/opt/nas-ecs/logs', exist_ok=True)
+    os.makedirs('/opt/nas-ecs/run', exist_ok=True)
     
     logger.info("DDNS API服务启动")
     print(f"服务启动在: http://127.0.0.1:8080")

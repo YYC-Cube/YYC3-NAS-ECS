@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-type ModuleTheme = 'cpu' | 'memory' | 'storage' | 'network' | 'security';
+export type ModuleTheme = 'cpu' | 'memory' | 'storage' | 'network' | 'security';
 
 interface ThemeContextType {
   currentTheme: ModuleTheme;

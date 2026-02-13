@@ -7,7 +7,7 @@
  * @created 2025-01-30
  */
 
-import { EventEmitter } from '@utils/EventEmitter';
+import { EventEmitter } from '@/utils/EventEmitter';
 import { ChatInterface } from './ChatInterface';
 import { ToolboxPanel } from './ToolboxPanel';
 import { InsightsDashboard } from './InsightsDashboard';

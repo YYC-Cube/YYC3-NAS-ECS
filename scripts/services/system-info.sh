@@ -1,4 +1,4 @@
-cat > /opt/yyc3/scripts/system-info.sh << 'EOF'
+cat > /opt/nas-ecs/scripts/system-info.sh << 'EOF'
 #!/bin/bash
 
 echo "=== 系统信息报告 ==="
@@ -40,11 +40,11 @@ journalctl -u yyc3-ddns.service -n 3 --no-pager 2>/dev/null | grep -E "(开始DD
 echo ""
 
 echo "6. 目录结构:"
-echo "/opt/yyc3/ 目录内容:"
-ls -la /opt/yyc3/ 2>/dev/null || echo "  目录不存在"
+echo "/opt/nas-ecs/ 目录内容:"
+ls -la /opt/nas-ecs/ 2>/dev/null || echo "  目录不存在"
 echo ""
 
 echo "=== 报告结束 ==="
 EOF
 
-chmod +x /opt/yyc3/scripts/system-info.sh
+chmod +x /opt/nas-ecs/scripts/system-info.sh

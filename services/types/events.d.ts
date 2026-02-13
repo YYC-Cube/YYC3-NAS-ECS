@@ -8,5 +8,5 @@
  */
 
 declare module 'events' {
-  export { EventEmitter } from '@utils/EventEmitter';
+  export { EventEmitter } from '@/utils/EventEmitter';
 }

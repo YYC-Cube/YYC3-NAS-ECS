@@ -46,10 +46,10 @@
 
 ```bash
 # 运行配置向导
-/opt/yyc3/scripts/configure-ddns.sh
+/opt/nas-ecs/scripts/configure-ddns.sh
 
 # 或手动编辑配置文件
-nano /opt/yyc3/config/ddns.conf
+nano /opt/nas-ecs/config/ddns.conf
 ```
 
 #### 步骤3：编辑配置文件
@@ -91,7 +91,7 @@ ENABLE_NOTIFICATION="0"
 # 日志配置
 # ======================
 # 日志文件路径
-LOG_FILE="/opt/yyc3/logs/ddns.log"
+LOG_FILE="/opt/nas-ecs/logs/ddns.log"
 # 日志级别（debug, info, warning, error）
 LOG_LEVEL="info"
 ```
@@ -112,7 +112,7 @@ systemctl enable nginx
 
 ```bash
 # 手动运行DDNS脚本
-/opt/yyc3/scripts/ddns.sh
+/opt/nas-ecs/scripts/ddns.sh
 
 # 测试Web界面
 curl -s http://127.0.0.1 | grep -q "DDNS" && echo "Web界面正常"
@@ -202,7 +202,7 @@ DDNS（Dynamic DNS）是一种将动态IP地址映射到固定域名的服务。
 
 ```bash
 # 运行配置向导
-/opt/yyc3/scripts/configure-ddns.sh
+/opt/nas-ecs/scripts/configure-ddns.sh
 
 # 按照提示输入配置信息
 # 1. 输入阿里云Access Key ID
@@ -218,7 +218,7 @@ DDNS（Dynamic DNS）是一种将动态IP地址映射到固定域名的服务。
 
 ```bash
 # 编辑配置文件
-nano /opt/yyc3/config/ddns.conf
+nano /opt/nas-ecs/config/ddns.conf
 
 # 修改以下配置项
 ALIYUN_ACCESS_KEY_ID="your-access-key-id"
@@ -234,13 +234,13 @@ CHECK_INTERVAL="300"
 
 ```bash
 # 测试DDNS脚本（不实际更新DNS）
-/opt/yyc3/scripts/ddns.sh test
+/opt/nas-ecs/scripts/ddns.sh test
 
 # 检查配置文件
-cat /opt/yyc3/config/ddns.conf | grep -v "^#"
+cat /opt/nas-ecs/config/ddns.conf | grep -v "^#"
 
 # 查看DDNS日志
-tail -f /opt/yyc3/logs/ddns.log
+tail -f /opt/nas-ecs/logs/ddns.log
 ```
 
 ---
@@ -278,7 +278,7 @@ curl -X POST http://127.0.0.1:8080/api/ddns/domains \
 
 ```bash
 # 编辑配置文件
-nano /opt/yyc3/config/ddns.conf
+nano /opt/nas-ecs/config/ddns.conf
 
 # 添加新域名配置
 DOMAIN_1="0379.email"
@@ -312,7 +312,7 @@ curl -X GET http://127.0.0.1:8080/api/ddns/domains
       "domain": "0379.email",
       "sub_domain": "ddns",
       "record_type": "A",
-      "current_ip": "8.152.195.33",
+      "current_ip": "SERVER_IP_PLACEHOLDER",
       "last_updated": "2026-01-25T10:30:00Z",
       "status": "active"
     }
@@ -396,13 +396,13 @@ journalctl -u yyc3-ddns.timer -f
 
 ```bash
 # 正常模式（检查IP并更新）
-/opt/yyc3/scripts/ddns.sh
+/opt/nas-ecs/scripts/ddns.sh
 
 # 测试模式（不实际更新DNS）
-/opt/yyc3/scripts/ddns.sh test
+/opt/nas-ecs/scripts/ddns.sh test
 
 # 强制更新模式（忽略IP检查，强制更新）
-/opt/yanyu/Downloads/YYC3-NAS-ECS/services/opt/yyc3/scripts/ddns.sh force
+/opt/yanyu/Downloads/YYC3-NAS-ECS/services/opt/nas-ecs/scripts/ddns.sh force
 ```
 
 #### 方法2：通过API
@@ -420,8 +420,8 @@ curl -X POST http://127.0.0.1:8080/api/ddns/update \
 {
   "success": true,
   "data": {
-    "old_ip": "8.152.195.33",
-    "new_ip": "8.152.195.33",
+    "old_ip": "SERVER_IP_PLACEHOLDER",
+    "new_ip": "SERVER_IP_PLACEHOLDER",
     "changed": false,
     "message": "IP地址未变化，无需更新"
   }
@@ -446,14 +446,14 @@ curl -s api.ipify.org
 
 ```bash
 # 查看DDNS更新日志
-tail -f /opt/yyc3/logs/ddns.log
+tail -f /opt/nas-ecs/logs/ddns.log
 
 # 日志示例
-2026-01-25 10:30:00 INFO [DDNS] 检查公网IP: 8.152.195.33
-2026-01-25 10:30:00 INFO [DDNS] 当前DNS记录IP: 8.152.195.33
+2026-01-25 10:30:00 INFO [DDNS] 检查公网IP: SERVER_IP_PLACEHOLDER
+2026-01-25 10:30:00 INFO [DDNS] 当前DNS记录IP: SERVER_IP_PLACEHOLDER
 2026-01-25 10:30:00 INFO [DDNS] IP地址未变化，无需更新
 2026-01-25 10:35:00 INFO [DDNS] 检查公网IP: 8.152.195.34
-2026-01-25 10:35:00 INFO [DDNS] 当前DNS记录IP: 8.152.195.33
+2026-01-25 10:35:00 INFO [DDNS] 当前DNS记录IP: SERVER_IP_PLACEHOLDER
 2026-01-25 10:35:00 INFO [DDNS] IP地址已变化，开始更新DNS记录
 2026-01-25 10:35:01 INFO [DDNS] DNS记录更新成功: ddns.0379.email -> 8.152.195.34
 ```
@@ -480,7 +480,7 @@ curl -X GET http://127.0.0.1:8080/api/ddns/status
   "success": true,
   "data": {
     "status": "online",
-    "current_ip": "8.152.195.33",
+    "current_ip": "SERVER_IP_PLACEHOLDER",
     "last_updated": "2026-01-25T10:30:00Z",
     "next_update": "2026-01-25T10:35:00Z",
     "domains": [
@@ -488,7 +488,7 @@ curl -X GET http://127.0.0.1:8080/api/ddns/status
         "domain": "0379.email",
         "sub_domain": "ddns",
         "record_type": "A",
-        "current_ip": "8.152.195.33",
+        "current_ip": "SERVER_IP_PLACEHOLDER",
         "status": "active"
       }
     ]
@@ -520,7 +520,7 @@ curl -X GET http://ddns.0379.email/api/ddns/health
 
 ```bash
 # 编辑配置文件
-nano /opt/yyc3/config/ddns.conf
+nano /opt/nas-ecs/config/ddns.conf
 
 # 启用邮件通知
 ENABLE_NOTIFICATION="1"
@@ -553,7 +553,7 @@ curl -X GET http://127.0.0.1:8080/api/ddns/alerts
     {
       "id": 1,
       "type": "ip_changed",
-      "message": "IP地址已变化: 8.152.195.33 -> 8.152.195.34",
+      "message": "IP地址已变化: SERVER_IP_PLACEHOLDER -> 8.152.195.34",
       "timestamp": "2026-01-25T10:35:00Z",
       "resolved": true
     }
@@ -606,7 +606,7 @@ curl -X GET http://127.0.0.1:8080/api/ddns/status
   "success": true,
   "data": {
     "status": "online",
-    "current_ip": "8.152.195.33",
+    "current_ip": "SERVER_IP_PLACEHOLDER",
     "last_updated": "2026-01-25T10:30:00Z",
     "next_update": "2026-01-25T10:35:00Z",
     "domains": [
@@ -614,7 +614,7 @@ curl -X GET http://127.0.0.1:8080/api/ddns/status
         "domain": "0379.email",
         "sub_domain": "ddns",
         "record_type": "A",
-        "current_ip": "8.152.195.33",
+        "current_ip": "SERVER_IP_PLACEHOLDER",
         "status": "active"
       }
     ]
@@ -645,7 +645,7 @@ curl -X POST http://127.0.0.1:8080/api/ddns/domains \
     "sub_domain": "ddns",
     "record_type": "A",
     "ttl": 600,
-    "current_ip": "8.152.195.33",
+    "current_ip": "SERVER_IP_PLACEHOLDER",
     "status": "active",
     "created_at": "2026-01-25T10:30:00Z"
   }
@@ -674,7 +674,7 @@ curl -X PUT http://127.0.0.1:8080/api/ddns/domains/1 \
     "sub_domain": "ddns",
     "record_type": "A",
     "ttl": 300,
-    "current_ip": "8.152.195.33",
+    "current_ip": "SERVER_IP_PLACEHOLDER",
     "status": "active",
     "updated_at": "2026-01-25T10:35:00Z"
   }
@@ -697,7 +697,7 @@ curl -X POST http://127.0.0.1:8080/api/ddns/update \
 {
   "success": true,
   "data": {
-    "old_ip": "8.152.195.33",
+    "old_ip": "SERVER_IP_PLACEHOLDER",
     "new_ip": "8.152.195.34",
     "changed": true,
     "message": "DNS记录更新成功: ddns.0379.email -> 8.152.195.34"
@@ -719,7 +719,7 @@ curl -X GET http://127.0.0.1:8080/api/ddns/alerts
     {
       "id": 1,
       "type": "ip_changed",
-      "message": "IP地址已变化: 8.152.195.33 -> 8.152.195.34",
+      "message": "IP地址已变化: SERVER_IP_PLACEHOLDER -> 8.152.195.34",
       "timestamp": "2026-01-25T10:35:00Z",
       "resolved": true
     }
@@ -1033,7 +1033,7 @@ export function useDDNSUpdate() {
 **步骤1：编辑配置文件**
 
 ```bash
-nano /opt/yyc3/config/ddns.conf
+nano /opt/nas-ecs/config/ddns.conf
 ```
 
 **步骤2：添加多域名配置**
@@ -1125,7 +1125,7 @@ nslookup nas.0379.email
 nslookup api.0379.email
 
 # 检查DDNS日志
-tail -f /opt/yyc3/logs/ddns.log
+tail -f /opt/nas-ecs/logs/ddns.log
 ```
 
 #### Python批量管理脚本
@@ -1216,7 +1216,7 @@ if __name__ == "__main__":
 **步骤1：启用通知功能**
 
 ```bash
-nano /opt/yyc3/config/ddns.conf
+nano /opt/nas-ecs/config/ddns.conf
 ```
 
 ```bash
@@ -1249,14 +1249,14 @@ TELEGRAM_CHAT_ID="your-chat-id"
 **步骤2：创建通知脚本**
 
 ```bash
-nano /opt/yyc3/scripts/ddns-notify.sh
+nano /opt/nas-ecs/scripts/ddns-notify.sh
 ```
 
 ```bash
 #!/bin/bash
 
-DDNS_CONFIG="/opt/yyc3/config/ddns.conf"
-LOG_FILE="/opt/yyc3/logs/ddns.log"
+DDNS_CONFIG="/opt/nas-ecs/config/ddns.conf"
+LOG_FILE="/opt/nas-ecs/logs/ddns.log"
 
 source "$DDNS_CONFIG"
 
@@ -1341,7 +1341,7 @@ esac
 **步骤3：修改DDNS脚本以集成通知**
 
 ```bash
-nano /opt/yyc3/scripts/ddns.sh
+nano /opt/nas-ecs/scripts/ddns.sh
 ```
 
 在IP更新成功后添加通知调用：
@@ -1357,12 +1357,12 @@ if [ "$update_result" = "success" ]; then
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [DDNS] DNS记录更新成功: $sub_domain.$domain -> $current_ip" >> "$LOG_FILE"
     
     # 发送IP变化通知
-    /opt/yyc3/scripts/ddns-notify.sh ip_changed "$old_ip" "$current_ip" "$sub_domain.$domain"
+    /opt/nas-ecs/scripts/ddns-notify.sh ip_changed "$old_ip" "$current_ip" "$sub_domain.$domain"
 else
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] ERROR [DDNS] DNS记录更新失败: $update_result" >> "$LOG_FILE"
     
     # 发送DNS更新失败通知
-    /opt/yyc3/scripts/ddns-notify.sh dns_update_failed "$sub_domain.$domain" "$update_result"
+    /opt/nas-ecs/scripts/ddns-notify.sh dns_update_failed "$sub_domain.$domain" "$update_result"
 fi
 ```
 
@@ -1370,13 +1370,13 @@ fi
 
 ```bash
 # 测试IP变化通知
-/opt/yyc3/scripts/ddns-notify.sh ip_changed "8.152.195.33" "8.152.195.34" "ddns.0379.email"
+/opt/nas-ecs/scripts/ddns-notify.sh ip_changed "SERVER_IP_PLACEHOLDER" "8.152.195.34" "ddns.0379.email"
 
 # 测试DNS更新失败通知
-/opt/yyc3/scripts/ddns-notify.sh dns_update_failed "ddns.0379.email" "阿里云API调用失败"
+/opt/nas-ecs/scripts/ddns-notify.sh dns_update_failed "ddns.0379.email" "阿里云API调用失败"
 
 # 检查通知日志
-tail -f /opt/yyc3/logs/ddns.log
+tail -f /opt/nas-ecs/logs/ddns.log
 ```
 
 ### 场景3：故障自动恢复
@@ -1389,13 +1389,13 @@ tail -f /opt/yyc3/logs/ddns.log
 **步骤1：创建故障检测脚本**
 
 ```bash
-nano /opt/yyc3/scripts/ddns-health-check.sh
+nano /opt/nas-ecs/scripts/ddns-health-check.sh
 ```
 
 ```bash
 #!/bin/bash
 
-LOG_FILE="/opt/yyc3/logs/ddns.log"
+LOG_FILE="/opt/nas-ecs/logs/ddns.log"
 MAX_RETRIES=3
 RETRY_DELAY=60
 
@@ -1492,7 +1492,7 @@ main() {
         
         # 手动触发IP更新
         echo "[$(date '+%Y-%m-%d %H:%M:%S')] WARN [HEALTH] DNS解析不匹配，手动触发IP更新" >> "$LOG_FILE"
-        /opt/yyc3/scripts/ddns.sh force
+        /opt/nas-ecs/scripts/ddns.sh force
     fi
     
     # 输出健康检查结果
@@ -1521,7 +1521,7 @@ After=network.target
 
 [Service]
 Type=oneshot
-ExecStart=/opt/yyc3/scripts/ddns-health-check.sh
+ExecStart=/opt/nas-ecs/scripts/ddns-health-check.sh
 User=root
 Group=root
 ```
@@ -1566,10 +1566,10 @@ systemctl list-timers yyc3-ddns-health-check.timer
 
 ```bash
 # 手动运行健康检查
-/opt/yyc3/scripts/ddns-health-check.sh
+/opt/nas-ecs/scripts/ddns-health-check.sh
 
 # 查看健康检查日志
-tail -f /opt/yyc3/logs/ddns.log | grep HEALTH
+tail -f /opt/nas-ecs/logs/ddns.log | grep HEALTH
 ```
 
 ### 场景4：性能监控与优化
@@ -1582,14 +1582,14 @@ tail -f /opt/yyc3/logs/ddns.log | grep HEALTH
 **步骤1：创建性能监控脚本**
 
 ```bash
-nano /opt/yyc3/scripts/ddns-performance-monitor.sh
+nano /opt/nas-ecs/scripts/ddns-performance-monitor.sh
 ```
 
 ```bash
 #!/bin/bash
 
-LOG_FILE="/opt/yyc3/logs/ddns.log"
-METRICS_FILE="/opt/yyc3/metrics/ddns-performance.json"
+LOG_FILE="/opt/nas-ecs/logs/ddns.log"
+METRICS_FILE="/opt/nas-ecs/metrics/ddns-performance.json"
 
 measure_api_response_time() {
     local endpoint="$1"
@@ -1698,7 +1698,7 @@ After=network.target
 
 [Service]
 Type=oneshot
-ExecStart=/opt/yyc3/scripts/ddns-performance-monitor.sh
+ExecStart=/opt/nas-ecs/scripts/ddns-performance-monitor.sh
 User=root
 Group=root
 ```
@@ -1740,13 +1740,13 @@ systemctl status yyc3-ddns-performance-monitor.timer
 
 ```bash
 # 手动运行性能监控
-/opt/yyc3/scripts/ddns-performance-monitor.sh
+/opt/nas-ecs/scripts/ddns-performance-monitor.sh
 
 # 查看性能指标JSON文件
-cat /opt/yyc3/metrics/ddns-performance.json
+cat /opt/nas-ecs/metrics/ddns-performance.json
 
 # 查看性能监控日志
-tail -f /opt/yyc3/logs/ddns.log | grep PERFORMANCE
+tail -f /opt/nas-ecs/logs/ddns.log | grep PERFORMANCE
 ```
 
 ### 场景5：Webhook集成示例
@@ -1759,14 +1759,14 @@ tail -f /opt/yyc3/logs/ddns.log | grep PERFORMANCE
 **步骤1：创建Webhook集成脚本**
 
 ```bash
-nano /opt/yyc3/scripts/ddns-webhook.sh
+nano /opt/nas-ecs/scripts/ddns-webhook.sh
 ```
 
 ```bash
 #!/bin/bash
 
-DDNS_CONFIG="/opt/yyc3/config/ddns.conf"
-LOG_FILE="/opt/yyc3/logs/ddns.log"
+DDNS_CONFIG="/opt/nas-ecs/config/ddns.conf"
+LOG_FILE="/opt/nas-ecs/logs/ddns.log"
 
 source "$DDNS_CONFIG"
 
@@ -1857,7 +1857,7 @@ esac
 **步骤2：配置Webhook URL**
 
 ```bash
-nano /opt/yyc3/config/ddns.conf
+nano /opt/nas-ecs/config/ddns.conf
 ```
 
 ```bash
@@ -1881,7 +1881,7 @@ WECHAT_WEBHOOK_URL="https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_KE
 **步骤3：在DDNS脚本中集成Webhook**
 
 ```bash
-nano /opt/yyc3/scripts/ddns.sh
+nano /opt/nas-ecs/scripts/ddns.sh
 ```
 
 在IP更新成功后添加Webhook调用：
@@ -1898,21 +1898,21 @@ if [ "$update_result" = "success" ]; then
     
     # 发送Slack通知（绿色表示成功）
     if [ "$SLACK_WEBHOOK_ENABLED" = "1" ]; then
-        /opt/yyc3/scripts/ddns-webhook.sh slack "$SLACK_WEBHOOK_URL" \
+        /opt/nas-ecs/scripts/ddns-webhook.sh slack "$SLACK_WEBHOOK_URL" \
             "DDNS IP地址已更新\n\n*域名*: $sub_domain.$domain\n*旧IP*: $old_ip\n*新IP*: $current_ip\n*时间*: $(date '+%Y-%m-%d %H:%M:%S')" \
             "good"
     fi
     
     # 发送Discord通知（绿色表示成功）
     if [ "$DISCORD_WEBHOOK_ENABLED" = "1" ]; then
-        /opt/yyc3/scripts/ddns-webhook.sh discord "$DISCORD_WEBHOOK_URL" \
+        /opt/nas-ecs/scripts/ddns-webhook.sh discord "$DISCORD_WEBHOOK_URL" \
             "DDNS IP地址已更新\n\n**域名**: $sub_domain.$domain\n**旧IP**: $old_ip\n**新IP**: $current_ip\n**时间**: $(date '+%Y-%m-%d %H:%M:%S')" \
             "52280"
     fi
     
     # 发送企业微信通知
     if [ "$WECHAT_WEBHOOK_ENABLED" = "1" ]; then
-        /opt/yyc3/scripts/ddns-webhook.sh wechat "$WECHAT_WEBHOOK_URL" \
+        /opt/nas-ecs/scripts/ddns-webhook.sh wechat "$WECHAT_WEBHOOK_URL" \
             "## DDNS IP地址已更新\n\n> 域名：$sub_domain.$domain\n> 旧IP：$old_ip\n> 新IP：$current_ip\n> 时间：$(date '+%Y-%m-%d %H:%M:%S')"
     fi
 else
@@ -1920,21 +1920,21 @@ else
     
     # 发送Slack通知（红色表示失败）
     if [ "$SLACK_WEBHOOK_ENABLED" = "1" ]; then
-        /opt/yyc3/scripts/ddns-webhook.sh slack "$SLACK_WEBHOOK_URL" \
+        /opt/nas-ecs/scripts/ddns-webhook.sh slack "$SLACK_WEBHOOK_URL" \
             "DDNS DNS更新失败\n\n*域名*: $sub_domain.$domain\n*错误*: $update_result\n*时间*: $(date '+%Y-%m-%d %H:%M:%S')" \
             "danger"
     fi
     
     # 发送Discord通知（红色表示失败）
     if [ "$DISCORD_WEBHOOK_ENABLED" = "1" ]; then
-        /opt/yyc3/scripts/ddns-webhook.sh discord "$DISCORD_WEBHOOK_URL" \
+        /opt/nas-ecs/scripts/ddns-webhook.sh discord "$DISCORD_WEBHOOK_URL" \
             "DDNS DNS更新失败\n\n**域名**: $sub_domain.$domain\n**错误**: $update_result\n**时间**: $(date '+%Y-%m-%d %H:%M:%S')" \
             "15548997"
     fi
     
     # 发送企业微信通知
     if [ "$WECHAT_WEBHOOK_ENABLED" = "1" ]; then
-        /opt/yyc3/scripts/ddns-webhook.sh wechat "$WECHAT_WEBHOOK_URL" \
+        /opt/nas-ecs/scripts/ddns-webhook.sh wechat "$WECHAT_WEBHOOK_URL" \
             "## DDNS DNS更新失败\n\n> 域名：$sub_domain.$domain\n> 错误：$update_result\n> 时间：$(date '+%Y-%m-%d %H:%M:%S')"
     fi
 fi
@@ -1944,19 +1944,19 @@ fi
 
 ```bash
 # 测试Slack Webhook
-/opt/yyc3/scripts/ddns-webhook.sh slack "https://hooks.slack.com/services/YOUR/WEBHOOK/URL" \
+/opt/nas-ecs/scripts/ddns-webhook.sh slack "https://hooks.slack.com/services/YOUR/WEBHOOK/URL" \
     "DDNS测试消息\n\n这是一条测试消息" "good"
 
 # 测试Discord Webhook
-/opt/yyc3/scripts/ddns-webhook.sh discord "https://discord.com/api/webhooks/YOUR/WEBHOOK/URL" \
+/opt/nas-ecs/scripts/ddns-webhook.sh discord "https://discord.com/api/webhooks/YOUR/WEBHOOK/URL" \
     "DDNS测试消息\n\n这是一条测试消息" "52280"
 
 # 测试企业微信Webhook
-/opt/yyc3/scripts/ddns-webhook.sh wechat "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_KEY" \
+/opt/nas-ecs/scripts/ddns-webhook.sh wechat "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=YOUR_KEY" \
     "## DDNS测试消息\n\n这是一条测试消息"
 
 # 检查Webhook日志
-tail -f /opt/yyc3/logs/ddns.log | grep WEBHOOK
+tail -f /opt/nas-ecs/logs/ddns.log | grep WEBHOOK
 ```
 
 ---
@@ -1979,7 +1979,7 @@ systemctl status ddns-api.service
 journalctl -u ddns-api.service -n 50
 
 # 检查配置文件
-cat /opt/yyc3/config/ddns.conf | grep -v "^#"
+cat /opt/nas-ecs/config/ddns.conf | grep -v "^#"
 
 # 检查端口占用
 netstat -tln | grep 8080
@@ -1999,16 +1999,16 @@ systemctl restart ddns-api.service
 # 确保Access Key有DNS修改权限
 
 # 测试DDNS脚本
-/opt/yyc3/scripts/ddns.sh test
+/opt/nas-ecs/scripts/ddns.sh test
 
 # 查看DDNS日志
-tail -f /opt/yyc3/logs/ddns.log
+tail -f /opt/nas-ecs/logs/ddns.log
 
 # 手动测试阿里云DNS API
 aliyun alidns DescribeDomainRecords --DomainName 0379.email
 
 # 强制更新IP
-/opt/yyc3/scripts/ddns.sh force
+/opt/nas-ecs/scripts/ddns.sh force
 ```
 
 #### 3. Web界面无法访问
@@ -2067,21 +2067,21 @@ systemctl enable yyc3-ddns.timer
 
 ```bash
 # 运行系统状态检查脚本
-/opt/yyc3/scripts/system-status.sh
+/opt/nas-ecs/scripts/system-status.sh
 ```
 
 #### DDNS诊断
 
 ```bash
 # 运行DDNS诊断脚本
-/opt/yyc3/scripts/diagnose-ddns.sh
+/opt/nas-ecs/scripts/diagnose-ddns.sh
 ```
 
 #### Web界面测试
 
 ```bash
 # 运行Web界面测试脚本
-/opt/yyc3/scripts/test-web.sh
+/opt/nas-ecs/scripts/test-web.sh
 ```
 
 ### 日志分析
@@ -2090,16 +2090,16 @@ systemctl enable yyc3-ddns.timer
 
 ```bash
 # 查看DDNS日志
-tail -f /opt/yyc3/logs/ddns.log
+tail -f /opt/nas-ecs/logs/ddns.log
 
 # 搜索错误日志
-grep -i error /opt/yyc3/logs/ddns.log
+grep -i error /opt/nas-ecs/logs/ddns.log
 
 # 搜索警告日志
-grep -i warning /opt/yyc3/logs/ddns.log
+grep -i warning /opt/nas-ecs/logs/ddns.log
 
 # 统计更新次数
-grep "DNS记录更新成功" /opt/yyc3/logs/ddns.log | wc -l
+grep "DNS记录更新成功" /opt/nas-ecs/logs/ddns.log | wc -l
 ```
 
 #### API服务日志
@@ -2188,7 +2188,7 @@ grep "ddns.0379.email" /var/log/nginx/access.log | wc -l
 1. **备份配置文件**:
    ```bash
    # 备份DDNS配置
-   cp /opt/yyc3/config/ddns.conf /opt/yyc3/config/ddns.conf.backup
+   cp /opt/nas-ecs/config/ddns.conf /opt/nas-ecs/config/ddns.conf.backup
    
    # 备份Nginx配置
    cp /etc/nginx/conf.d/ddns.conf /etc/nginx/conf.d/ddns.conf.backup
@@ -2214,7 +2214,7 @@ grep "ddns.0379.email" /var/log/nginx/access.log | wc -l
 
 如有问题，请检查日志文件或联系系统管理员。
 
-- **服务器IP**: 8.152.195.33
+- **服务器IP**: SERVER_IP_PLACEHOLDER
 - **域名**: ddns.0379.email
 - **部署时间**: 2026-01-25
 

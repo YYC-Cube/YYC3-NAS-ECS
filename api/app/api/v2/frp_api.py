@@ -37,7 +37,7 @@ MOCK_FRP_CONFIGS = [
         'name': 'nas-0379',
         'type': 'http',
         'localIP': '127.0.0.1',
-        'localPort': 6004,
+        'localPort': 6009,
         'subdomain': 'nas',
         'enabled': True,
         'status': 'running'

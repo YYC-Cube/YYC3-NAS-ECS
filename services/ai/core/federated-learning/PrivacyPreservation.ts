@@ -169,7 +169,7 @@ export class PrivacyPreservation {
     };
   }
 
-  async implementSecureMasking(gradients: number[][], numClients: number): Promise<{
+  async implementSecureMasking(gradients: number[][], _numClients: number): Promise<{
     maskedGradients: number[][];
     maskingMethod: string;
     unmaskingTime: number;
@@ -265,7 +265,7 @@ export class PrivacyPreservation {
     };
   }
 
-  async evaluateHomomorphicPerformance(operations: string[]): Promise<{
+  async evaluateHomomorphicPerformance(_operations: string[]): Promise<{
     computationalOverhead: number;
     communicationOverhead: number;
     operationAccuracy: number;

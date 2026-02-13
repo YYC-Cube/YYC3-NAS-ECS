@@ -1,4 +1,4 @@
-import { EventEmitter } from '@utils/EventEmitter';
+import { EventEmitter } from '@/utils/EventEmitter';
 import { ThreatDetector } from './ThreatDetector';
 import { ThreatResponseSystem } from './ThreatResponseSystem';
 import { AnomalyDetectionEngine, AnomalyData } from './AnomalyDetectionEngine';

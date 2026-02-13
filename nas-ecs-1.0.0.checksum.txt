@@ -1,0 +1,37 @@
+YYC³ NAS-ECS 部署包校验信息
+======================================
+
+包名: nas-ecs
+版本: 1.0.0
+文件: nas-ecs-1.0.0.tar.gz
+大小:  32K
+SHA256: 1c687338abe26a2e9e408c639691b503d8e8f00dbe6657dff21fef71d3136a1d
+打包时间: 2026-02-13 10:21:33
+
+文件列表:
+drwxr-xr-x  0 yanyu  staff       0 Feb 13 10:21 nas-ecs/
+drwxr-xr-x  0 yanyu  staff       0 Feb 13 09:59 nas-ecs/docker/
+drwxr-xr-x  0 yanyu  staff       0 Feb 13 09:59 nas-ecs/config/
+drwxr-xr-x  0 yanyu  staff       0 Feb 13 10:03 nas-ecs/docs/
+-rw-r--r--  0 yanyu  staff    6568 Feb 13 10:00 nas-ecs/README.md
+drwxr-xr-x  0 yanyu  staff       0 Feb 13 10:03 nas-ecs/scripts/
+-rwxr-xr-x  0 yanyu  staff    3534 Feb 13 10:21 nas-ecs/scripts/package-deployment.sh
+-rwxr-xr-x  0 yanyu  staff    3090 Feb 13 09:59 nas-ecs/scripts/quick-start.sh
+-rwxr-xr-x  0 yanyu  staff   28012 Feb 13 09:59 nas-ecs/scripts/init-system.sh
+-rwxr-xr-x  0 yanyu  staff     386 Feb 13 09:59 nas-ecs/scripts/quick-restart.sh
+-rwxr-xr-x  0 yanyu  staff    3061 Feb 13 09:59 nas-ecs/scripts/health-check.sh
+-rwxr-xr-x  0 yanyu  staff    1953 Feb 13 09:59 nas-ecs/scripts/quick-stop.sh
+-rwxr-xr-x  0 yanyu  staff   12851 Feb 13 09:59 nas-ecs/scripts/stack-manager.sh
+-rwx--x--x  0 yanyu  staff     397 Feb 13 09:59 nas-ecs/scripts/start.sh
+-rw-r--r--  0 yanyu  staff   12363 Feb 13 10:03 nas-ecs/docs/DEPLOYMENT.md
+-rw-r--r--  0 yanyu  staff    1698 Feb 13 09:59 nas-ecs/config/.env.production
+-rwx------  0 yanyu  staff     381 Feb 13 09:59 nas-ecs/config/.env.services
+-rw-r--r--  0 yanyu  staff    1935 Feb 13 09:59 nas-ecs/config/.env.ports
+-rw-r--r--  0 yanyu  staff    1763 Feb 13 09:59 nas-ecs/config/.env.staging
+-rw-r--r--  0 yanyu  staff    8145 Feb 13 09:59 nas-ecs/config/.env.example
+-rw-r--r--  0 yanyu  staff    1716 Feb 13 09:59 nas-ecs/config/.env.development
+-rw-r--r--  0 yanyu  staff    3916 Feb 13 09:59 nas-ecs/docker/docker-compose.ai.prod.yml
+-rw-r--r--  0 yanyu  staff    2355 Feb 13 09:59 nas-ecs/docker/docker-compose.override.yml
+-rw-r--r--  0 yanyu  staff    3173 Feb 13 09:59 nas-ecs/docker/docker-compose.staging.yml
+-rw-r--r--  0 yanyu  staff   10457 Feb 13 09:59 nas-ecs/docker/docker-compose.yml
+-rw-r--r--  0 yanyu  staff    2131 Feb 13 09:59 nas-ecs/docker/docker-compose.ai.dev.yml

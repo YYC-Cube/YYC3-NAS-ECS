@@ -52,11 +52,12 @@ export class IntegratedErrorHandler {
   }
 
   private setupEventForwarding(): void {
-    this.errorHandler.on('error', (report) => {
+    this.errorHandler.on('error', (...args: unknown[]) => {
+      const report = args[0] as { error: Error; context: Partial<ErrorContext> };
       const globalContext: GlobalErrorContext = {
-        timestamp: new Date(report.context.timestamp || Date.now()),
-        component: report.context.component,
-        operation: report.context.operation,
+        timestamp: report.context.timestamp || Date.now(),
+        component: report.context.component || 'Unknown',
+        operation: report.context.operation || 'unknown',
         metadata: report.context
       };
 
@@ -66,9 +67,11 @@ export class IntegratedErrorHandler {
       );
     });
 
-    this.errorBoundary.on('error', ({ error, errorInfo }) => {
+    this.errorBoundary.on('error', (...args: unknown[]) => {
+      const data = args[0] as { error: Error; errorInfo: { componentStack?: string } };
+      const { error, errorInfo } = data;
       const globalContext: GlobalErrorContext = {
-        timestamp: new Date(),
+        timestamp: Date.now(),
         component: errorInfo.componentStack || 'Unknown',
         operation: errorInfo.componentStack ? 'render' : 'unknown',
         metadata: errorInfo

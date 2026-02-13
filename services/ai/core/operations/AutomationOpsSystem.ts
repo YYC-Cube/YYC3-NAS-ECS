@@ -1,4 +1,4 @@
-import { EventEmitter } from '@utils/EventEmitter';
+import { EventEmitter } from '@/utils/EventEmitter';
 import { SelfHealingEngine } from './self-healing/SelfHealingEngine';
 import { PredictiveMaintenanceSystem } from './predictive-maintenance/PredictiveMaintenanceSystem';
 

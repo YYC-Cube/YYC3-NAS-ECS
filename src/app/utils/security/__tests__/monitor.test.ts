@@ -14,7 +14,7 @@ import {
   disposePerformanceMonitor,
   PerformanceMetric,
   PerformanceReport,
-} from '../monitor';
+} from '../../performance/monitor';
 
 describe('PerformanceMonitor', () => {
   let monitor: PerformanceMonitor;
@@ -117,9 +117,11 @@ describe('PerformanceMonitor', () => {
       const syncFn = () => {
         return 'result';
       };
-      monitor.measure('test-measure', syncFn);
+      const result = monitor.measure('test-measure', syncFn);
       const entries = monitor.getEntries();
-      expect(entries[0].duration).toBeGreaterThanOrEqual(0);
+      expect(result).toBe('result');
+      expect(entries.length).toBeGreaterThan(0);
+      expect(entries[entries.length - 1].duration).toBeGreaterThanOrEqual(0);
     });
   });
 
@@ -253,8 +255,8 @@ describe('PerformanceMonitor', () => {
         category: 'timing',
       };
       monitor.addMetric(metric);
-      monitor.startEntry('test-entry');
-      monitor.endEntry(monitor.getEntries()[0].name);
+      const entryId = monitor.startEntry('test-entry');
+      monitor.endEntry(entryId);
 
       const report: PerformanceReport = monitor.generateReport();
       expect(report.metrics).toHaveLength(1);
@@ -264,21 +266,21 @@ describe('PerformanceMonitor', () => {
     });
 
     it('should calculate average duration correctly', () => {
-      monitor.startEntry('entry-1');
-      monitor.endEntry(monitor.getEntries()[0].name);
-      monitor.startEntry('entry-2');
-      monitor.endEntry(monitor.getEntries()[1].name);
+      const entryId1 = monitor.startEntry('entry-1');
+      monitor.endEntry(entryId1);
+      const entryId2 = monitor.startEntry('entry-2');
+      monitor.endEntry(entryId2);
 
       const report: PerformanceReport = monitor.generateReport();
       expect(report.summary.averageDuration).toBeGreaterThan(0);
     });
 
     it('should identify slowest and fastest entries', () => {
-      monitor.startEntry('fast-entry');
-      monitor.endEntry(monitor.getEntries()[0].name);
-      monitor.startEntry('slow-entry');
+      const fastEntryId = monitor.startEntry('fast-entry');
+      monitor.endEntry(fastEntryId);
+      const slowEntryId = monitor.startEntry('slow-entry');
       setTimeout(() => {
-        monitor.endEntry(monitor.getEntries()[1].name);
+        monitor.endEntry(slowEntryId);
         const report: PerformanceReport = monitor.generateReport();
         expect(report.summary.fastestEntry?.name).toBe('fast-entry');
         expect(report.summary.slowestEntry?.name).toBe('slow-entry');
@@ -305,7 +307,7 @@ describe('PerformanceMonitor', () => {
 
   describe('trimEntries', () => {
     it('should trim entries when exceeding maxEntries', () => {
-      const smallMonitor = new PerformanceMonitor(5);
+      const smallMonitor = new PerformanceMonitor({ maxEntries: 5 });
       for (let i = 0; i < 10; i++) {
         smallMonitor.startEntry(`entry-${i}`);
       }

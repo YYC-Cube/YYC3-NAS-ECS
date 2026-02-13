@@ -35,7 +35,7 @@
 
 | 配置项 | 值 | 说明 |
 |---------|-----|------|
-| **服务器IP** | 8.152.195.33 | 阿里云ECS公网IP |
+| **服务器IP** | SERVER_IP_PLACEHOLDER | 阿里云ECS公网IP |
 | **服务器名称** | yyc3-33 | SSH连接别名 |
 | **SSH连接** | ssh yyc3-33 | 本地快速连接命令 |
 | **操作系统** | Linux (待确认) | 推荐Ubuntu 22.04 LTS |
@@ -46,7 +46,7 @@
 
 | 配置项 | 值 | 说明 |
 |---------|-----|------|
-| **公网IP** | 8.152.195.33 | 用于FRPS和外部访问 |
+| **公网IP** | SERVER_IP_PLACEHOLDER | 用于FRPS和外部访问 |
 | **内网IP** | (待确认) | 用于内部服务通信 |
 | **安全组** | (待配置) | 需要开放必要端口 |
 | **域名** | 0379.email | 主域名 |
@@ -64,7 +64,7 @@
 | 6001 | DDNS服务 | ⏳ 待配置 | DDNS API服务 |
 | 6002 | 监控服务 | ⏳ 待配置 | 监控API服务 |
 | 6003 | 邮件服务 | ⏳ 待配置 | 邮件API服务 |
-| 6004 | 日志服务 | ⏳ 待配置 | 日志API服务 |
+| 6009 | 日志服务 | ⏳ 待配置 | 日志API服务 |
 | 6005 | AI服务 | ⏳ 待配置 | AI API服务 |
 
 ---
@@ -170,7 +170,7 @@ systemctl enable frps
 | DDNS服务 | ddns.0379.email:6001 | 192.168.3.45:6001 | ⏳ 待配置 |
 | 监控服务 | monitor.0379.email:6002 | 192.168.3.45:6002 | ⏳ 待配置 |
 | 邮件服务 | mail.0379.email:6003 | 192.168.3.45:6003 | ⏳ 待配置 |
-| 日志服务 | log.0379.email:6004 | 192.168.3.45:6004 | ⏳ 待配置 |
+| 日志服务 | log.0379.email:6009 | 192.168.3.45:6009 | ⏳ 待配置 |
 | AI服务 | ai.0379.email:6005 | 192.168.3.45:6005 | ⏳ 待配置 |
 
 ### FRPS验证测试
@@ -356,7 +356,7 @@ tail -f /root/frps/frps.log
 2. **上传项目代码**
    ```bash
    # 通过SCP或其他方式上传完整代码
-   scp -r YYC3-NAS-ECS/* root@8.152.195.33:/opt/nas-ecs/
+   scp -r YYC3-NAS-ECS/* root@SERVER_IP_PLACEHOLDER:/opt/nas-ecs/
    
    # 或在服务器上克隆项目
    git clone https://github.com/YYC-Cube/YYC3-NAS-ECS.git .
@@ -583,7 +583,7 @@ tail -f /root/frps/frps.log
 
 2. **配置服务代理**
    ```toml
-   serverAddr = "8.152.195.33"
+   serverAddr = "SERVER_IP_PLACEHOLDER"
    serverPort = 7001
    auth.token = "yyc3_nas"
 
@@ -772,7 +772,7 @@ CELERY_BROKER_URL=redis://localhost:6379/1
 CELERY_RESULT_BACKEND=redis://localhost:6379/2
 
 # 服务器配置
-NAS_SERVER_IP=8.152.195.33
+NAS_SERVER_IP=SERVER_IP_PLACEHOLDER
 NAS_DOMAIN=nas.0379.email
 
 # 阿里云配置
@@ -882,7 +882,7 @@ frpc verify /opt/nas-ecs/services/frp/frpc.toml
 journalctl -u frpc -f
 
 # 测试网络连接
-telnet 8.152.195.33 7001
+telnet SERVER_IP_PLACEHOLDER 7001
 ```
 
 ---

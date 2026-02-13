@@ -101,7 +101,7 @@ export class FederatedOptimization {
     }
 
     regularizationLoss /= clientUpdates.length;
-    const aggregationTime = Date.now() - startTime;
+    const _aggregationTime = Date.now() - startTime;
     const convergenceSpeed = 0.94;
 
     return {
@@ -271,7 +271,7 @@ export class FederatedOptimization {
     };
   }
 
-  async improveConvergenceEfficiency(batchSize: number, learningRate: number): Promise<{
+  async improveConvergenceEfficiency(batchSize: number, _learningRate: number): Promise<{
     optimizedBatchSize: number;
     efficiencyMetric: number;
     resourceUtilization: number;
@@ -287,7 +287,7 @@ export class FederatedOptimization {
     };
   }
 
-  async evaluateAggregationPerformance(strategy: string, clientUpdates: number[][]): Promise<{
+  async evaluateAggregationPerformance(_strategy: string, clientUpdates: number[][]): Promise<{
     accuracy: number;
     convergenceTime: number;
     communicationCost: number;
@@ -323,7 +323,7 @@ export class FederatedOptimization {
     };
   }
 
-  async monitorConvergence(accuracyHistory: number[], lossHistory: number[]): Promise<{
+  async monitorConvergence(accuracyHistory: number[], _lossHistory: number[]): Promise<{
     isConverged: boolean;
     convergenceEpoch: number;
     convergenceRate: number;

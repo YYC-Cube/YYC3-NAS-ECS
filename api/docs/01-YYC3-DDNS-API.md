@@ -136,7 +136,7 @@ class JWTAuthManager:
     
     def _load_private_key(self):
         """加载或生成RSA私钥"""
-        key_path = "/opt/yyc3/secrets/jwt_private.pem"
+        key_path = "/opt/nas-ecs/secrets/jwt_private.pem"
         if os.path.exists(key_path):
             with open(key_path, "rb") as f:
                 return serialization.load_pem_private_key(
@@ -489,7 +489,7 @@ def get_ddns_status():
     """获取DDNS服务状态"""
     try:
         # 从配置文件获取状态
-        status_file = "/opt/yyc3/run/status.json"
+        status_file = "/opt/nas-ecs/run/status.json"
         if os.path.exists(status_file):
             with open(status_file, 'r') as f:
                 status_data = json.load(f)
@@ -2380,7 +2380,7 @@ secrets_bp = Blueprint('secrets_v2', __name__, url_prefix='/api/v2/secrets')
 
 class SecretsManager:
     def __init__(self):
-        self.key_file = "/opt/yyc3/secrets/master.key"
+        self.key_file = "/opt/nas-ecs/secrets/master.key"
         self.load_or_generate_key()
     
     def load_or_generate_key(self):
@@ -3446,7 +3446,7 @@ def start_error_logs_stream(client_id):
     """启动错误日志流"""
     async def stream_error_logs():
         # 监控错误日志文件
-        log_file = "/opt/yyc3/logs/error.log"
+        log_file = "/opt/nas-ecs/logs/error.log"
         last_position = 0
         
         while client_id in connected_clients:

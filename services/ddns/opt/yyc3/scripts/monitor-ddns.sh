@@ -1,9 +1,9 @@
 #!/bin/bash
 # DDNS服务监控脚本
 
-LOG_FILE="/opt/yyc3/logs/ddns_monitor.log"
+LOG_FILE="/opt/nas-ecs/logs/ddns_monitor.log"
 API_URL="http://127.0.0.1:8080/health"
-STATUS_FILE="/opt/yyc3/run/ddns_status.json"
+STATUS_FILE="/opt/nas-ecs/run/ddns_status.json"
 
 # 日志函数
 log() {

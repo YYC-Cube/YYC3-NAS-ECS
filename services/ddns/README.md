@@ -13,7 +13,7 @@
 
 ### 1. DDNS服务
 
-- 脚本: /opt/yyc3/ddns/ddns-simple.sh
+- 脚本: /opt/nas-ecs/ddns/ddns-simple.sh
 - 定时器: 每5分钟运行一次
 - 服务: yyc3-ddns.service / yyc3-ddns.timer
 - 日志: `journalctl -u yyc3-ddns.service`
@@ -21,37 +21,37 @@
 ### 2. Web门户
 
 - Nginx配置: /etc/nginx/conf.d/nas.0379.email.conf
-- 门户页面: /opt/yyc3/web/nas/
+- 门户页面: /opt/nas-ecs/web/nas/
 - 访问地址: <http://nas.0379.email>
 
 ### 3. 监控系统
 
-- 监控脚本: /opt/yyc3/scripts/monitor-nas.sh
+- 监控脚本: /opt/nas-ecs/scripts/monitor-nas.sh
 - 定时器: 每30分钟运行一次
 - 服务: nas-monitor.service / nas-monitor.timer
 
 ### 4. 每日报告
 
-- 脚本: /opt/yyc3/scripts/daily-report.sh
+- 脚本: /opt/nas-ecs/scripts/daily-report.sh
 - 定时器: 每天8:00运行
 - 服务: nas-daily-report.service / nas-daily-report.timer
-- 报告目录: /opt/yyc3/reports/
+- 报告目录: /opt/nas-ecs/reports/
 
 ## 目录结构
 
-/opt/yyc3/ ├── ddns/ # DDNS脚本 │ └── ddns-simple.sh ├── scripts/ # 管理脚本 │ ├── nas-manager.sh # 主管理脚本 │ ├── monitor-nas.sh # 监控脚本 │ ├── system-info.sh # 系统信息 │ ├── test-all.sh # 完整测试 │ ├── fix-nginx.sh # Nginx修复 │ └── nas-tunnel.sh # NAS隧道（待配置） ├── web/nas/ # Web门户页面 │ ├── index.html │ └── status.html ├── logs/ # 日志目录 ├── reports/ # 每日报告 └── run/ # PID文件
+/opt/nas-ecs/ ├── ddns/ # DDNS脚本 │ └── ddns-simple.sh ├── scripts/ # 管理脚本 │ ├── nas-manager.sh # 主管理脚本 │ ├── monitor-nas.sh # 监控脚本 │ ├── system-info.sh # 系统信息 │ ├── test-all.sh # 完整测试 │ ├── fix-nginx.sh # Nginx修复 │ └── nas-tunnel.sh # NAS隧道（待配置） ├── web/nas/ # Web门户页面 │ ├── index.html │ └── status.html ├── logs/ # 日志目录 ├── reports/ # 每日报告 └── run/ # PID文件
 
 ## 管理命令
 
 ### 快速测试
 
 ```bash
-/opt/yyc3/scripts/test-all.sh
+/opt/nas-ecs/scripts/test-all.sh
 
 系统管理
-/opt/yyc3/scripts/nas-manager.sh
+/opt/nas-ecs/scripts/nas-manager.sh
 查看系统信息
-/opt/yyc3/scripts/system-info.sh
+/opt/nas-ecs/scripts/system-info.sh
 服务管理
 # DDNS服务
 systemctl status yyc3-ddns.timer
@@ -80,12 +80,12 @@ curl -I http://nas.0379.email/health
 # 应该返回: HTTP/1.1 200 OK
 3. Nginx配置问题
 nginx -t
-/opt/yyc3/scripts/fix-nginx.sh
+/opt/nas-ecs/scripts/fix-nginx.sh
 4. 服务状态检查
 systemctl list-timers | grep -E "(yyc3-ddns|nas-monitor|nas-daily-report)"
 后续配置
 1. NAS隧道（需要额外配置）
-脚本: /opt/yyc3/scripts/nas-tunnel.sh
+脚本: /opt/nas-ecs/scripts/nas-tunnel.sh
 需要: SSH免密登录配置
 需要: 本地NAS有公网访问能力或VPN
 2. 警报通知
@@ -95,14 +95,14 @@ systemctl list-timers | grep -E "(yyc3-ddns|nas-monitor|nas-daily-report)"
 可申请SSL证书
 配置Nginx支持HTTPS
 维护说明
-每日报告会自动生成在 /opt/yyc3/reports/
+每日报告会自动生成在 /opt/nas-ecs/reports/
 日志会自动轮转
 监控会自动检查服务状态
 DDNS会自动更新IP变化
 创建时间: 2025-12-20 最后更新: 2025-12-20 11:30:00 EOF
 
 完成管理脚本
-cat >> /opt/yyc3/scripts/nas-manager.sh << 'EOF'
+cat >> /opt/nas-ecs/scripts/nas-manager.sh << 'EOF'
 
 工具菜单
 tools_menu() { while true; do clear show_header echo -e "${YELLOW}=== 工具菜单 ===${NC}" echo "1. 运行完整测试" echo "2. 查看系统信息" echo "3. 修复Nginx配置" echo "4. 手动运行DDNS检查" echo "5. 手动运行监控检查" echo "6. 查看README文档" echo "7. 返回主菜单" echo ""
@@ -111,13 +111,13 @@ tools_menu() { while true; do clear show_header echo -e "${YELLOW}=== 工具菜�
     
     case $choice in
         1)
-            /opt/yyc3/scripts/test-all.sh
+            /opt/nas-ecs/scripts/test-all.sh
             ;;
         2)
-            /opt/yyc3/scripts/system-info.sh
+            /opt/nas-ecs/scripts/system-info.sh
             ;;
         3)
-            /opt/yyc3/scripts/fix-nginx.sh
+            /opt/nas-ecs/scripts/fix-nginx.sh
             ;;
         4)
             echo -e "\n${YELLOW}手动运行DDNS检查...${NC}"
@@ -126,11 +126,11 @@ tools_menu() { while true; do clear show_header echo -e "${YELLOW}=== 工具菜�
             ;;
         5)
             echo -e "\n${YELLOW}手动运行监控检查...${NC}"
-            /opt/yyc3/scripts/monitor-nas.sh check
+            /opt/nas-ecs/scripts/monitor-nas.sh check
             ;;
         6)
             echo -e "\n${YELLOW}README文档:${NC}"
-            cat /opt/yyc3/README.md | head -50
+            cat /opt/nas-ecs/README.md | head -50
             echo "..."
             ;;
         7)
@@ -190,13 +190,13 @@ if [ "$(id -u)" != "0" ]; then echo -e "${RED}错误：此脚本需要root权限
 启动主菜单
 main_menu EOF
 
-chmod +x /opt/yyc3/scripts/nas-manager.sh
+chmod +x /opt/nas-ecs/scripts/nas-manager.sh
 
 创建监控脚本
-cat > /opt/yyc3/scripts/monitor-nas.sh << 'EOF' #!/bin/bash
+cat > /opt/nas-ecs/scripts/monitor-nas.sh << 'EOF' #!/bin/bash
 
 NAS 监控脚本
-LOG_DIR="/opt/yyc3/logs" mkdir -p "$LOG_DIR" LOG_FILE="$LOG_DIR/monitor-$(date +%Y%m%d).log"
+LOG_DIR="/opt/nas-ecs/logs" mkdir -p "$LOG_DIR" LOG_FILE="$LOG_DIR/monitor-$(date +%Y%m%d).log"
 
 颜色定义
 RED='\033[0;31m' GREEN='\033[0;32m' YELLOW='\033[1;33m' NC='\033[0m'
@@ -287,12 +287,12 @@ clean_logs() { echo -e "${YELLOW}清理7天前的日志...${NC}" find "$LOG_DIR"
 命令行参数处理
 case "$1" in "check") main_check ;; "logs") show_logs ;; "clean") clean_logs ;; *) echo "用法: $0 {check|logs|clean}" echo " check - 执行监控检查" echo " logs - 查看监控日志" echo " clean - 清理旧日志" exit 1 ;; esac EOF
 
-chmod +x /opt/yyc3/scripts/monitor-nas.sh
+chmod +x /opt/nas-ecs/scripts/monitor-nas.sh
 
 创建监控服务
 cat > /etc/systemd/system/nas-monitor.service << 'EOF' [Unit] Description=NAS Monitoring Service After=network.target
 
-[Service] Type=oneshot User=root Group=root WorkingDirectory=/opt/yyc3/scripts ExecStart=/bin/bash /opt/yyc3/scripts/monitor-nas.sh check StandardOutput=journal StandardError=journal SyslogIdentifier=nas-monitor
+[Service] Type=oneshot User=root Group=root WorkingDirectory=/opt/nas-ecs/scripts ExecStart=/bin/bash /opt/nas-ecs/scripts/monitor-nas.sh check StandardOutput=journal StandardError=journal SyslogIdentifier=nas-monitor
 
 [Install] WantedBy=multi-user.target EOF
 
@@ -309,13 +309,13 @@ echo "=== 最终验证 ===" echo "" echo "1. 测试Nginx配置:" nginx -t echo "
 
 echo "2. 测试所有服务状态:" systemctl status nginx --no-pager | head -10 systemctl status yyc3-ddns.timer --no-pager | head -10 systemctl status nas-monitor.timer --no-pager | head -10 systemctl status nas-daily-report.timer --no-pager | head -10 echo ""
 
-echo "3. 测试管理脚本:" /opt/yyc3/scripts/nas-manager.sh --help 2>/dev/null || echo "管理脚本就绪" echo ""
+echo "3. 测试管理脚本:" /opt/nas-ecs/scripts/nas-manager.sh --help 2>/dev/null || echo "管理脚本就绪" echo ""
 
-echo "4. 测试监控脚本:" /opt/yyc3/scripts/monitor-nas.sh check echo ""
+echo "4. 测试监控脚本:" /opt/nas-ecs/scripts/monitor-nas.sh check echo ""
 
 echo "5. 测试访问:" curl -s http://nas.0379.email/health | jq .status 2>/dev/null || curl -s http://nas.0379.email/health echo ""
 
-echo "=== 配置完成 ===" echo "✅ 所有服务配置完成并运行正常！" echo "" echo "📋 访问地址:" echo " - 门户首页: http://nas.0379.email" echo " - 健康检查: http://nas.0379.email/health" echo " - 状态页面: http://nas.0379.email/status" echo "" echo "🛠️ 管理工具:" echo " - 主管理面板: /opt/yyc3/scripts/nas-manager.sh" echo " - 完整测试: /opt/yyc3/scripts/test-all.sh" echo " - 系统信息: /opt/yyc3/scripts/system-info.sh" echo "" echo "📊 监控报告:" echo " - 每日报告: /opt/yyc3/reports/" echo " - 监控日志: /opt/yyc3/logs/" echo "" echo "🔧 服务状态:" systemctl list-timers --no-pager | grep -E "(yyc3-ddns|nas-monitor|nas-daily-report)" EOF
+echo "=== 配置完成 ===" echo "✅ 所有服务配置完成并运行正常！" echo "" echo "📋 访问地址:" echo " - 门户首页: http://nas.0379.email" echo " - 健康检查: http://nas.0379.email/health" echo " - 状态页面: http://nas.0379.email/status" echo "" echo "🛠️ 管理工具:" echo " - 主管理面板: /opt/nas-ecs/scripts/nas-manager.sh" echo " - 完整测试: /opt/nas-ecs/scripts/test-all.sh" echo " - 系统信息: /opt/nas-ecs/scripts/system-info.sh" echo "" echo "📊 监控报告:" echo " - 每日报告: /opt/nas-ecs/reports/" echo " - 监控日志: /opt/nas-ecs/logs/" echo "" echo "🔧 服务状态:" systemctl list-timers --no-pager | grep -E "(yyc3-ddns|nas-monitor|nas-daily-report)" EOF
 
 
 现在您的NAS DDNS系统已经完全配置完成！系统包含：
@@ -340,15 +340,15 @@ echo "=== 配置完成 ===" echo "✅ 所有服务配置完成并运行正常！
 
 ## 📁 文件结构：
 
-/opt/yyc3/ ├── ddns/ # DDNS核心脚本 ├── scripts/ # 所有管理脚本 ├── web/nas/ # Web门户页面 ├── logs/ # 监控日志 ├── reports/ # 每日报告 └── README.md # 完整文档
+/opt/nas-ecs/ ├── ddns/ # DDNS核心脚本 ├── scripts/ # 所有管理脚本 ├── web/nas/ # Web门户页面 ├── logs/ # 监控日志 ├── reports/ # 每日报告 └── README.md # 完整文档
 
 
 ## 🚀 使用方法：
 
-1. **快速测试**：`/opt/yyc3/scripts/test-all.sh`
-2. **管理面板**：`/opt/yyc3/scripts/nas-manager.sh`
-3. **系统信息**：`/opt/yyc3/scripts/system-info.sh`
-4. **监控检查**：`/opt/yyc3/scripts/monitor-nas.sh check`
+1. **快速测试**：`/opt/nas-ecs/scripts/test-all.sh`
+2. **管理面板**：`/opt/nas-ecs/scripts/nas-manager.sh`
+3. **系统信息**：`/opt/nas-ecs/scripts/system-info.sh`
+4. **监控检查**：`/opt/nas-ecs/scripts/monitor-nas.sh check`
 5. **查看日志**：`journalctl -u yyc3-ddns.service`
 
 ## 🔧 维护命令
@@ -363,7 +363,7 @@ tail -f /var/log/nginx/nas_access.log
 systemctl start yyc3-ddns.service
 
 # 修复Nginx配置
-/opt/yyc3/scripts/fix-nginx.sh
+/opt/nas-ecs/scripts/fix-nginx.sh
 
 📊 监控指标：
 DNS解析正确性
@@ -378,7 +378,7 @@ HTTP服务可用性
 检查HTTP服务：curl -I http://nas.0379.email/health
 检查服务状态：systemctl status nginx yyc3-ddns.timer
 查看日志：journalctl -u yyc3-ddns.service -f
-运行修复脚本：/opt/yyc3/scripts/fix-nginx.sh
+运行修复脚本：/opt/nas-ecs/scripts/fix-nginx.sh
 📈 后续扩展：
 系统设计为模块化，可以轻松扩展：
 
@@ -399,12 +399,12 @@ API接口：提供REST API供其他系统调用
 
 # 运行最终验证
 echo "=== 最终验证结果 ==="
-/opt/yyc3/scripts/test-all.sh | tail -20
+/opt/nas-ecs/scripts/test-all.sh | tail -20
 
 ## NAS DDNS 系统完整配置
 📁 文件树结构
 
-/opt/yyc3/
+/opt/nas-ecs/
 ├── README.md                              # 系统文档
 ├── config/
 │   └── env.sh                            # 全局配置文件

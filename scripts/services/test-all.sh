@@ -1,4 +1,4 @@
-cat > /opt/yyc3/scripts/test-all.sh << 'EOF'
+cat > /opt/nas-ecs/scripts/test-all.sh << 'EOF'
 #!/bin/bash
 
 echo "=== NAS DDNS配置完整测试 ==="
@@ -65,4 +65,4 @@ else
 fi
 EOF
 
-chmod +x /opt/yyc3/scripts/test-all.sh
+chmod +x /opt/nas-ecs/scripts/test-all.sh

@@ -229,11 +229,11 @@ describe('PerformanceMonitor', () => {
           reportInterval: 100,
         });
 
-        const consoleSpy = vi.spyOn(console, 'log');
+        const consoleSpy = vi.spyOn(console, 'info');
 
         setTimeout(() => {
           expect(consoleSpy).toHaveBeenCalled();
-          monitor.destroy();
+          monitor.dispose();
           resolve();
         }, 200);
       });

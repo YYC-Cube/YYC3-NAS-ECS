@@ -8,7 +8,7 @@ if [ $? -eq 0 ] && echo "$API_RESPONSE" | grep -q "healthy"; then
 else
     echo "   ✗ API服务异常"
     echo "   尝试手动启动:"
-    cd /opt/yyc3/api/ddns
+    cd /opt/nas-ecs/api/ddns
     source venv/bin/activate
     timeout 5 python -c "
 from app_fixed import app
@@ -31,7 +31,7 @@ elif curl -s http://127.0.0.1/ 2>/dev/null | grep -q "DDNS 管理面板"; then
     echo "   ✓ Web界面可访问 (HTTP)"
 else
     echo "   ⚠ Web界面访问测试失败"
-    echo "   检查文件: ls -la /opt/yyc3/web/ddns/"
+    echo "   检查文件: ls -la /opt/nas-ecs/web/ddns/"
 fi
 
 # 4. 测试DDNS功能
@@ -50,7 +50,7 @@ fi
 # 5. 检查日志文件
 echo -e "\n5. 检查日志文件:"
 LOGS_EXIST=true
-for log in /opt/yyc3/logs/ddns_api.log /opt/yyc3/logs/ddns.log; do
+for log in /opt/nas-ecs/logs/ddns_api.log /opt/nas-ecs/logs/ddns.log; do
     if [ -f "$log" ]; then
         echo "   ✓ $(basename $log): 存在 ($(wc -l < "$log") 行)"
     else
@@ -67,7 +67,7 @@ echo "   本地测试: curl -s http://127.0.0.1:8080/api/ddns/status | python3 -
 echo "   查看日志: journalctl -u ddns-api.service -f"
 
 # 7. 创建快速检查脚本
-cat > /opt/yyc3/scripts/check-ddns.sh << 'EOF'
+cat > /opt/nas-ecs/scripts/check-ddns.sh << 'EOF'
 #!/bin/bash
 # DDNS快速检查脚本
 
@@ -113,7 +113,7 @@ echo "最近日志 (最后5行):"
 journalctl -u ddns-api.service -n 5 --no-pager 2>/dev/null | tail -5 | sed 's/^/  /'
 EOF
 
-chmod +x /opt/yyc3/scripts/check-ddns.sh
+chmod +x /opt/nas-ecs/scripts/check-ddns.sh
 
 echo -e "\n✓ 所有配置完成！"
-echo "运行 '/opt/yyc3/scripts/check-ddns.sh' 检查服务状态"
+echo "运行 '/opt/nas-ecs/scripts/check-ddns.sh' 检查服务状态"

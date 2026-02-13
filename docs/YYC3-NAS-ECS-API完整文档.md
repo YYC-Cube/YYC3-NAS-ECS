@@ -203,7 +203,7 @@ X-Request-ID: <uuid>
     "client": {
       "running": true,
       "connected": true,
-      "serverAddr": "8.152.195.33",
+      "serverAddr": "SERVER_IP_PLACEHOLDER",
       "serverPort": 7001,
       "proxyCount": 5,
       "uptime": "15天 3小时 45分钟"
@@ -318,8 +318,8 @@ X-Request-ID: <uuid>
     "enabled": true,
     "provider": "aliyun",
     "domain": "ddns.0379.email",
-    "currentIP": "8.152.195.33",
-    "expectedIP": "8.152.195.33",
+    "currentIP": "SERVER_IP_PLACEHOLDER",
+    "expectedIP": "SERVER_IP_PLACEHOLDER",
     "lastUpdate": "2026-01-31T10:30:00Z",
     "nextUpdate": 1706696700000,
     "updateInterval": 300,
@@ -379,7 +379,7 @@ X-Request-ID: <uuid>
       "id": "1",
       "timestamp": "2026-01-31T10:30:00Z",
       "oldIP": "8.152.195.32",
-      "newIP": "8.152.195.33",
+      "newIP": "SERVER_IP_PLACEHOLDER",
       "status": "success"
     }
   ]

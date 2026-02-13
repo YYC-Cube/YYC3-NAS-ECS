@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # 加载全局配置
-source /opt/yyc3/config/env.sh
+source /opt/nas-ecs/config/env.sh
 
 # 设置日志文件
 LOG_FILE="${NAS_LOGS_DIR}/ddns-$(date +%Y%m%d).log"

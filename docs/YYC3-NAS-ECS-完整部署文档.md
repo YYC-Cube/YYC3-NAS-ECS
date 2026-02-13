@@ -24,7 +24,7 @@
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                         阿里云 ECS                               │
-│                      8.152.195.33                               │
+│                      SERVER_IP_PLACEHOLDER                               │
 ├─────────────────────────────────────────────────────────────────┤
 │                                                                   │
 │  ┌─────────────────────────────────────────────────────────┐   │
@@ -51,7 +51,7 @@
 │                                                                   │
 │  ┌─────────────────────────────────────────────────────────┐   │
 │  │              FRP Client (frpc)                          │   │
-│  │              连接到: 8.152.195.33:7001                   │   │
+│  │              连接到: SERVER_IP_PLACEHOLDER:7001                   │   │
 │  └─────────────────────────────────────────────────────────┘   │
 │                                                                   │
 │  ┌─────────────────────────────────────────────────────────┐   │
@@ -60,7 +60,7 @@
 │  │              - 管理面板 (6001)                           │   │
 │  │              - LLM服务 (6002)                            │   │
 │  │              - 邮件服务 (6003)                            │   │
-│  │              - NAS服务 (6004)                            │   │
+│  │              - NAS服务 (6009)                            │   │
 │  │              - 监控服务 (6006)                           │   │
 │  │              - DDNS服务 (6007)                           │   │
 │  └─────────────────────────────────────────────────────────┘   │
@@ -87,13 +87,13 @@
 | admin.0379.email | 6001 | https://admin.0379.email | 管理面板 |
 | llm.0379.email | 6002 | https://llm.0379.email | LLM AI服务 |
 | mail.0379.email | 6003 | https://mail.0379.email | 邮件服务 |
-| nas.0379.email | 6004 | https://nas.0379.email | NAS管理服务 |
+| nas.0379.email | 6009 | https://nas.0379.email | NAS管理服务 |
 | monitor.0379.email | 6006 | https://monitor.0379.email | 监控面板 |
 | ddns.0379.email | 6007 | https://ddns.0379.email | DDNS服务 |
 
 ### FRP服务器配置
 
-**服务器**: 阿里云 ECS 8.152.195.33
+**服务器**: 阿里云 ECS SERVER_IP_PLACEHOLDER
 
 **配置文件**: `services/frp/frps.toml`
 
@@ -133,7 +133,7 @@ log.level = "warn"
 **配置文件**: `services/frp/frpc.toml`
 
 ```toml
-serverAddr = "8.152.195.33"
+serverAddr = "SERVER_IP_PLACEHOLDER"
 serverPort = 7001
 auth.method = "token"
 auth.token = "yyc3_nas"
@@ -154,7 +154,7 @@ subdomain = "api"
 name = "nas-0379"
 type = "http"
 localIP = "127.0.0.1"
-localPort = 6004
+localPort = 6009
 subdomain = "nas"
 
 [[proxies]]
@@ -328,7 +328,7 @@ systemctl status frps
 netstat -tlnp | grep frps
 
 # 访问管理面板
-# http://8.152.195.33:7500
+# http://SERVER_IP_PLACEHOLDER:7500
 # 用户名: yyc3
 # 密码: my151001
 ```
@@ -508,7 +508,7 @@ docker ps
 curl http://localhost:6000/api/v2/health
 
 # 检查各服务端口
-netstat -tlnp | grep -E '6000|6001|6002|6003|6004|6006|6007'
+netstat -tlnp | grep -E '6000|6001|6002|6003|6009|6006|6007'
 ```
 
 ---
@@ -987,7 +987,7 @@ docker run --rm -v yyc3-nas-ecs_prometheus_data:/data -v $(pwd)/backup:/backup a
 | Admin | 8080 | 6001 | HTTP |
 | LLM | 8080 | 6002 | HTTP |
 | Mail | 8080 | 6003 | HTTP |
-| NAS | 8080 | 6004 | HTTP |
+| NAS | 8080 | 6009 | HTTP |
 | Monitor | 8080 | 6006 | HTTP |
 | DDNS | 8080 | 6007 | HTTP |
 | PostgreSQL | 5432 | 5432 | TCP |
@@ -1025,7 +1025,7 @@ docker run --rm -v yyc3-nas-ecs_prometheus_data:/data -v $(pwd)/backup:/backup a
 
 2. **部署架构更新**
    - 更新部署架构图，包含 FRP 服务器和客户端
-   - 新增阿里云 ECS (8.152.195.33) 和本地 NAS (192.168.3.45) 的架构说明
+   - 新增阿里云 ECS (SERVER_IP_PLACEHOLDER) 和本地 NAS (192.168.3.45) 的架构说明
    - 新增 FRP 代理服务的端口映射说明
    - 新增 Let's Encrypt SSL 证书配置说明
 
@@ -1057,8 +1057,8 @@ docker run --rm -v yyc3-nas-ecs_prometheus_data:/data -v $(pwd)/backup:/backup a
 #### 技术更新
 
 1. **FRP 配置**
-   - FRP 服务器: 8.152.195.33:7001
-   - FRP 管理后台: http://8.152.195.33:7500
+   - FRP 服务器: SERVER_IP_PLACEHOLDER:7001
+   - FRP 管理后台: http://SERVER_IP_PLACEHOLDER:7500
    - FRP 客户端: 192.168.3.45
    - TLS 加密传输
    - 子域名支持: api, admin, llm, mail, nas, monitor, ddns
@@ -1068,7 +1068,7 @@ docker run --rm -v yyc3-nas-ecs_prometheus_data:/data -v $(pwd)/backup:/backup a
    - 管理服务: 127.0.0.1:6001 → admin.0379.email
    - LLM 服务: 127.0.0.1:6002 → llm.0379.email
    - 邮件服务: 127.0.0.1:6003 → mail.0379.email
-   - NAS 服务: 127.0.0.1:6004 → nas.0379.email
+   - NAS 服务: 127.0.0.1:6009 → nas.0379.email
    - 监控服务: 127.0.0.1:6006 → monitor.0379.email
    - DDNS 服务: 127.0.0.1:6007 → ddns.0379.email
 
@@ -1092,7 +1092,7 @@ docker run --rm -v yyc3-nas-ecs_prometheus_data:/data -v $(pwd)/backup:/backup a
    # 检查新增的 FRP 相关配置
 
    # 3. 配置 FRP 服务器（如果需要内网穿透）
-   ssh root@8.152.195.33
+   ssh root@SERVER_IP_PLACEHOLDER
    # 按照 FRP 配置章节进行配置
 
    # 4. 配置 FRP 客户端（如果需要内网穿透）

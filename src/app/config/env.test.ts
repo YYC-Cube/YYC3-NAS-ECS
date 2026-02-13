@@ -199,7 +199,7 @@ describe('EnvironmentConfig', () => {
 
     it('应该正确配置Redis API URL', () => {
       const devEnv = envConfig.getEnvironment('development');
-      expect(devEnv?.redisApiUrl).toBe('http://localhost:6004');
+      expect(devEnv?.redisApiUrl).toBe('http://localhost:6009');
     });
 
     it('应该正确配置DDNS API URL', () => {
@@ -219,7 +219,7 @@ describe('EnvironmentConfig', () => {
 
     it('应该正确配置NAS API URL', () => {
       const devEnv = envConfig.getEnvironment('development');
-      expect(devEnv?.nasApiUrl).toBe('http://localhost:6004');
+      expect(devEnv?.nasApiUrl).toBe('http://localhost:6009');
     });
 
     it('应该正确配置WebSocket URL', () => {

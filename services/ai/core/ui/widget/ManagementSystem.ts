@@ -7,7 +7,7 @@
  * @created 2025-01-03
  */
 
-import { EventEmitter } from '@utils/EventEmitter';
+import { EventEmitter } from '@/utils/EventEmitter';
 
 export interface ManagementConfig {
   enabled?: boolean;

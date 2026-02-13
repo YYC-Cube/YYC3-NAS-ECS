@@ -84,9 +84,9 @@ YYC3-NAS-ECS/
 
 | 变量名 | 默认值 | 说明 | 是否必须 |
 |-------|--------|------|---------|
-| `POSTGRES_USER` | `yyc3_33` | PostgreSQL用户名 | ✅ 是 |
-| `POSTGRES_PASSWORD` | `yyc3_33` | PostgreSQL密码 | ✅ 是 |
-| `POSTGRES_DB` | `yyc3_33` | PostgreSQL数据库名 | ✅ 是 |
+| `POSTGRES_USER` | `DB_PASSWORD_PLACEHOLDER` | PostgreSQL用户名 | ✅ 是 |
+| `POSTGRES_PASSWORD` | `DB_PASSWORD_PLACEHOLDER` | PostgreSQL密码 | ✅ 是 |
+| `POSTGRES_DB` | `DB_PASSWORD_PLACEHOLDER` | PostgreSQL数据库名 | ✅ 是 |
 | `POSTGRES_PORT` | `5432` | PostgreSQL端口 | ✅ 是 |
 
 #### Redis配置
@@ -112,7 +112,7 @@ YYC3-NAS-ECS/
 | 变量名 | 默认值 | 说明 | 是否必须 |
 |-------|--------|------|---------|
 | `NAS_DOMAIN` | `ddns.0379.email` | NAS域名 | ✅ 是 |
-| `NAS_SERVER_IP` | `8.152.195.33` | ECS服务器IP | ✅ 是 |
+| `NAS_SERVER_IP` | `SERVER_IP_PLACEHOLDER` | ECS服务器IP | ✅ 是 |
 | `NAS_LOCAL_IP` | `192.168.3.45` | 本地NAS IP | ✅ 是 |
 | `NAS_SERVER_NAME` | `yyc3-33` | 服务器名称 | ✅ 是 |
 
@@ -256,7 +256,7 @@ YYC3-NAS-ECS/
 | `BACKUP_SCHEDULE` | `0 2 * * *` | 备份计划（Cron表达式） | ✅ 是 |
 | `BACKUP_RETENTION_DAYS` | `7` | 备份保留天数 | ✅ 是 |
 | `BACKUP_STORAGE_TYPE` | `local` | 备份存储类型 | ✅ 是 |
-| `BACKUP_LOCAL_PATH` | `/opt/yyc3/backup` | 本地备份路径 | ✅ 是 |
+| `BACKUP_LOCAL_PATH` | `/opt/nas-ecs/backup` | 本地备份路径 | ✅ 是 |
 
 #### S3备份配置
 
@@ -290,13 +290,13 @@ YYC3-NAS-ECS/
 | 变量名 | 默认值 | 说明 | 是否必须 |
 |-------|--------|------|---------|
 | `NAS_BASE_DIR` | `/opt/yyc3` | NAS基础目录 | ✅ 是 |
-| `NAS_SCRIPTS_DIR` | `/opt/yyc3/scripts` | 脚本目录 | ✅ 是 |
-| `NAS_DDNS_DIR` | `/opt/yyc3/ddns` | DDNS目录 | ✅ 是 |
-| `NAS_WEB_DIR` | `/opt/yyc3/web/nas` | Web目录 | ✅ 是 |
-| `NAS_LOGS_DIR` | `/opt/yyc3/logs` | 日志目录 | ✅ 是 |
-| `NAS_REPORTS_DIR` | `/opt/yyc3/reports` | 报告目录 | ✅ 是 |
-| `NAS_RUN_DIR` | `/opt/yyc3/run` | 运行目录 | ✅ 是 |
-| `NAS_BACKUP_DIR` | `/opt/yyc3/backup` | 备份目录 | ✅ 是 |
+| `NAS_SCRIPTS_DIR` | `/opt/nas-ecs/scripts` | 脚本目录 | ✅ 是 |
+| `NAS_DDNS_DIR` | `/opt/nas-ecs/ddns` | DDNS目录 | ✅ 是 |
+| `NAS_WEB_DIR` | `/opt/nas-ecs/web/nas` | Web目录 | ✅ 是 |
+| `NAS_LOGS_DIR` | `/opt/nas-ecs/logs` | 日志目录 | ✅ 是 |
+| `NAS_REPORTS_DIR` | `/opt/nas-ecs/reports` | 报告目录 | ✅ 是 |
+| `NAS_RUN_DIR` | `/opt/nas-ecs/run` | 运行目录 | ✅ 是 |
+| `NAS_BACKUP_DIR` | `/opt/nas-ecs/backup` | 备份目录 | ✅ 是 |
 
 ### 12. 系统服务配置
 

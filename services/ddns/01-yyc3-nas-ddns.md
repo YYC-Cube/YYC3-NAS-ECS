@@ -3,7 +3,7 @@
 
  现在，需要做两件事：
 
- 1. 创建DDNS配置文件（/opt/yyc3/config/ddns.conf），以便DDNS脚本能够正常运行。
+ 1. 创建DDNS配置文件（/opt/nas-ecs/config/ddns.conf），以便DDNS脚本能够正常运行。
  2. 更新Web界面，确保API路径正确（因为之前已经更新过Web界面，所以这里只需检查配置文件）。
 
  首先，创建DDNS配置文件。根据之前的脚本，配置文件应该包含阿里云的Access Key等信息。
@@ -17,10 +17,10 @@
 
 ```bash
 # 创建配置目录
-mkdir -p /opt/yyc3/config
+mkdir -p /opt/nas-ecs/config
 
 # 创建DDNS配置文件
-cat > /opt/yyc3/config/ddns.conf << 'EOF'
+cat > /opt/nas-ecs/config/ddns.conf << 'EOF'
 # DDNS 配置文件
 # 更新时间: $(date)
 
@@ -57,7 +57,7 @@ ENABLE_NOTIFICATION="0"
 # 日志配置
 # ======================
 # 日志文件路径
-LOG_FILE="/opt/yyc3/logs/ddns.log"
+LOG_FILE="/opt/nas-ecs/logs/ddns.log"
 # 日志级别（debug, info, warning, error）
 LOG_LEVEL="info"
 
@@ -87,10 +87,10 @@ WEB_DOMAIN="ddns.0379.email"
 API_PORT="8080"
 EOF
 
-echo "配置文件已创建: /opt/yyc3/config/ddns.conf"
+echo "配置文件已创建: /opt/nas-ecs/config/ddns.conf"
 
 # 创建测试用的配置文件（不包含敏感信息）
-cat > /opt/yyc3/config/ddns.conf.example << 'EOF'
+cat > /opt/nas-ecs/config/ddns.conf.example << 'EOF'
 # DDNS 配置文件示例
 # 请复制此文件为 ddns.conf 并填入实际配置
 
@@ -110,7 +110,7 @@ CHECK_INTERVAL="300"
 ENABLE_NOTIFICATION="0"
 
 # 日志配置
-LOG_FILE="/opt/yyc3/logs/ddns.log"
+LOG_FILE="/opt/nas-ecs/logs/ddns.log"
 LOG_LEVEL="info"
 
 # 通知配置
@@ -124,15 +124,15 @@ WEB_DOMAIN="ddns.0379.email"
 API_PORT="8080"
 EOF
 
-echo "示例配置文件已创建: /opt/yyc3/config/ddns.conf.example"
+echo "示例配置文件已创建: /opt/nas-ecs/config/ddns.conf.example"
 
 # 查看配置文件
 echo -e "\n=== 配置文件内容 ==="
-cat /opt/yyc3/config/ddns.conf
+cat /opt/nas-ecs/config/ddns.conf
 
 echo -e "\n=== 重要提示 ==="
-echo "请编辑 /opt/yyc3/config/ddns.conf 文件，填入您的阿里云Access Key信息"
-echo "编辑命令: nano /opt/yyc3/config/ddns.conf"
+echo "请编辑 /opt/nas-ecs/config/ddns.conf 文件，填入您的阿里云Access Key信息"
+echo "编辑命令: nano /opt/nas-ecs/config/ddns.conf"
 echo ""
 echo "需要修改的配置项:"
 echo "1. ALIYUN_ACCESS_KEY_ID: 您的阿里云AccessKey ID"
@@ -144,29 +144,29 @@ echo "3. 其他配置项根据需要调整"
 
 ```bash
 # 先备份现有的DDNS脚本
-cp /opt/yyc3/scripts/ddns.sh /opt/yyc3/scripts/ddns.sh.backup
+cp /opt/nas-ecs/scripts/ddns.sh /opt/nas-ecs/scripts/ddns.sh.backup
 
 # 检查DDNS脚本是否需要更新配置路径
-if grep -q "/opt/yyc3/config/ddns.conf" /opt/yyc3/scripts/ddns.sh; then
+if grep -q "/opt/nas-ecs/config/ddns.conf" /opt/nas-ecs/scripts/ddns.sh; then
     echo "DDNS脚本已配置正确的配置文件路径"
 else
     echo "更新DDNS脚本中的配置文件路径..."
     # 更新配置文件路径
-    sed -i 's|/etc/ddns.conf|/opt/yyc3/config/ddns.conf|g' /opt/yyc3/scripts/ddns.sh
+    sed -i 's|/etc/ddns.conf|/opt/nas-ecs/config/ddns.conf|g' /opt/nas-ecs/scripts/ddns.sh
 
     # 检查是否还有其他需要更新的路径
-    sed -i 's|/var/log/ddns.log|/opt/yyc3/logs/ddns.log|g' /opt/yyc3/scripts/ddns.sh
+    sed -i 's|/var/log/ddns.log|/opt/nas-ecs/logs/ddns.log|g' /opt/nas-ecs/scripts/ddns.sh
 fi
 
 # 测试DDNS脚本是否能正确读取配置
 echo -e "\n=== 测试DDNS脚本配置读取 ==="
-cd /opt/yyc3/scripts
+cd /opt/nas-ecs/scripts
 if [ -f "ddns.sh" ]; then
     # 运行测试模式
     bash ddns.sh test 2>&1 | head -20
 
     # 检查配置文件读取
-    if source /opt/yyc3/config/ddns.conf 2>/dev/null; then
+    if source /opt/nas-ecs/config/ddns.conf 2>/dev/null; then
         echo -e "\n配置文件可正常加载"
         echo "域名: ${DOMAIN:-未设置}"
         echo "子域名: ${SUB_DOMAIN:-未设置}"
@@ -180,7 +180,7 @@ fi
 
 ```bash
 # 创建完整的系统状态检查脚本
-cat > /opt/yyc3/scripts/system-status.sh << 'EOF'
+cat > /opt/nas-ecs/scripts/system-status.sh << 'EOF'
 #!/bin/bash
 # DDNS系统状态检查脚本
 
@@ -220,11 +220,11 @@ echo ""
 echo "3. 配置文件状态:"
 echo "----------------------------------------"
 config_files=(
-    "/opt/yyc3/config/ddns.conf"
-    "/opt/yyc3/api/ddns/app.py"
+    "/opt/nas-ecs/config/ddns.conf"
+    "/opt/nas-ecs/api/ddns/app.py"
     "/etc/systemd/system/ddns-api.service"
     "/etc/nginx/conf.d/ddns.conf"
-    "/opt/yyc3/scripts/ddns.sh"
+    "/opt/nas-ecs/scripts/ddns.sh"
 )
 
 for file in "${config_files[@]}"; do
@@ -287,9 +287,9 @@ echo ""
 # 6. 检查DDNS功能
 echo "6. DDNS功能检查:"
 echo "----------------------------------------"
-if [ -f "/opt/yyc3/config/ddns.conf" ]; then
+if [ -f "/opt/nas-ecs/config/ddns.conf" ]; then
     # 检查阿里云配置
-    source /opt/yyc3/config/ddns.conf 2>/dev/null
+    source /opt/nas-ecs/config/ddns.conf 2>/dev/null
 
     if [ -n "$ALIYUN_ACCESS_KEY_ID" ] && [ "$ALIYUN_ACCESS_KEY_ID" != "your-access-key-id" ]; then
         echo "  阿里云配置: ✓ 已配置 (Key ID: ${ALIYUN_ACCESS_KEY_ID:0:8}...)"
@@ -301,9 +301,9 @@ if [ -f "/opt/yyc3/config/ddns.conf" ]; then
     echo "  检查间隔: $CHECK_INTERVAL 秒"
 
     # 检查DDNS日志
-    if [ -f "/opt/yyc3/logs/ddns.log" ]; then
-        log_lines=$(wc -l < /opt/yyc3/logs/ddns.log)
-        last_run=$(tail -5 /opt/yyc3/logs/ddns.log | head -1)
+    if [ -f "/opt/nas-ecs/logs/ddns.log" ]; then
+        log_lines=$(wc -l < /opt/nas-ecs/logs/ddns.log)
+        last_run=$(tail -5 /opt/nas-ecs/logs/ddns.log | head -1)
         echo "  DDNS日志: 存在 ($log_lines 行)"
         echo "  最后运行: $last_run"
     else
@@ -345,7 +345,7 @@ echo "  ✓ Nginx服务: $(systemctl is-active nginx 2>/dev/null || echo '未知
 echo "  ✓ DDNS定时器: $(systemctl is-active yyc3-ddns.timer 2>/dev/null || echo '未知')"
 echo ""
 
-if [ -f "/opt/yyc3/config/ddns.conf" ] && grep -q "your-access-key" /opt/yyc3/config/ddns.conf; then
+if [ -f "/opt/nas-ecs/config/ddns.conf" ] && grep -q "your-access-key" /opt/nas-ecs/config/ddns.conf; then
     echo "  ⚠ 注意: DDNS配置文件包含示例Access Key，需要替换为真实的阿里云凭证"
 fi
 
@@ -354,27 +354,27 @@ echo ""
 echo "访问信息:"
 echo "  Web管理界面: https://ddns.0379.email"
 echo "  API服务: http://127.0.0.1:8080"
-echo "  配置文件: /opt/yyc3/config/ddns.conf"
+echo "  配置文件: /opt/nas-ecs/config/ddns.conf"
 echo ""
 echo "管理命令:"
 echo "  启动API服务: systemctl start ddns-api.service"
 echo "  查看API日志: journalctl -u ddns-api.service -f"
-echo "  手动运行DDNS: /opt/yyc3/scripts/ddns.sh"
-echo "  系统状态检查: /opt/yyc3/scripts/system-status.sh"
+echo "  手动运行DDNS: /opt/nas-ecs/scripts/ddns.sh"
+echo "  系统状态检查: /opt/nas-ecs/scripts/system-status.sh"
 EOF
 
-chmod +x /opt/yyc3/scripts/system-status.sh
+chmod +x /opt/nas-ecs/scripts/system-status.sh
 
 # 运行系统状态检查
 echo "正在运行系统状态检查..."
-/opt/yyc3/scripts/system-status.sh
+/opt/nas-ecs/scripts/system-status.sh
 ```
 
 最后，让创建一个简单的配置向导，帮助用户配置DDNS：
 
 ```bash
 # 创建配置向导脚本
-cat > /opt/yyc3/scripts/configure-ddns.sh << 'EOF'
+cat > /opt/nas-ecs/scripts/configure-ddns.sh << 'EOF'
 #!/bin/bash
 # DDNS配置向导
 
@@ -382,13 +382,13 @@ echo "=== DDNS配置向导 ==="
 echo "此向导将帮助您配置DDNS服务"
 echo ""
 
-CONFIG_FILE="/opt/yyc3/config/ddns.conf"
+CONFIG_FILE="/opt/nas-ecs/config/ddns.conf"
 
 # 检查配置文件是否存在
 if [ ! -f "$CONFIG_FILE" ]; then
     echo "配置文件不存在，正在创建..."
-    mkdir -p /opt/yyc3/config
-    cp /opt/yyc3/config/ddns.conf.example "$CONFIG_FILE" 2>/dev/null || {
+    mkdir -p /opt/nas-ecs/config
+    cp /opt/nas-ecs/config/ddns.conf.example "$CONFIG_FILE" 2>/dev/null || {
         echo "无法创建配置文件，请手动创建"
         exit 1
     }
@@ -425,16 +425,16 @@ echo "2. 域名已在阿里云解析控制台添加"
 echo "3. 防火墙已开放80和443端口"
 echo ""
 echo "测试DDNS功能:"
-echo "  /opt/yyc3/scripts/ddns.sh"
+echo "  /opt/nas-ecs/scripts/ddns.sh"
 echo ""
 echo "查看服务状态:"
-echo "  /opt/yyc3/scripts/system-status.sh"
+echo "  /opt/nas-ecs/scripts/system-status.sh"
 EOF
 
-chmod +x /opt/yyc3/scripts/configure-ddns.sh
+chmod +x /opt/nas-ecs/scripts/configure-ddns.sh
 
 # 创建快速启动指南
-cat > /opt/yyc3/README.md << 'EOF'
+cat > /opt/nas-ecs/README.md << 'EOF'
 # DDNS 动态域名解析系统
 
 ## 系统概述
@@ -450,7 +450,7 @@ cat > /opt/yyc3/README.md << 'EOF'
 
 ```
 
-/opt/yyc3/
+/opt/nas-ecs/
 ├── api/ddns/              # API服务代码
 │   ├── app.py            # Flask API应用
 │   └── venv/             # Python虚拟环境
@@ -477,10 +477,10 @@ cat > /opt/yyc3/README.md << 'EOF'
 
 ```bash
 # 运行配置向导
-/opt/yyc3/scripts/configure-ddns.sh
+/opt/nas-ecs/scripts/configure-ddns.sh
 
 # 或手动编辑配置文件
-nano /opt/yyc3/config/ddns.conf
+nano /opt/nas-ecs/config/ddns.conf
 ```
 
 需要配置以下参数：
@@ -506,7 +506,7 @@ systemctl enable nginx
 
 ```bash
 # 手动运行DDNS脚本
-/opt/yyc3/scripts/ddns.sh
+/opt/nas-ecs/scripts/ddns.sh
 
 # 测试Web界面
 curl -s http://127.0.0.1 | grep -q "DDNS" && echo "Web界面正常"
@@ -537,29 +537,29 @@ systemctl status ddns-api.service
 
 ```bash
 # 系统状态检查
-/opt/yyc3/scripts/system-status.sh
+/opt/nas-ecs/scripts/system-status.sh
 
 # 诊断服务问题
-/opt/yyc3/scripts/diagnose-ddns.sh
+/opt/nas-ecs/scripts/diagnose-ddns.sh
 
 # 测试Web界面
-/opt/yyc3/scripts/test-web.sh
+/opt/nas-ecs/scripts/test-web.sh
 
 # 配置向导
-/opt/yyc3/scripts/configure-ddns.sh
+/opt/nas-ecs/scripts/configure-ddns.sh
 ```
 
 ### DDNS脚本
 
 ```bash
 # 手动运行DDNS更新
-/opt/yyc3/scripts/ddns.sh
+/opt/nas-ecs/scripts/ddns.sh
 
 # 测试模式（不实际更新DNS）
-/opt/yyc3/scripts/ddns.sh test
+/opt/nas-ecs/scripts/ddns.sh test
 
 # 强制更新DNS记录
-/opt/yyc3/scripts/ddns.sh force
+/opt/nas-ecs/scripts/ddns.sh force
 ```
 
 ## 故障排除
@@ -568,7 +568,7 @@ systemctl status ddns-api.service
 
 ```bash
 # 检查Python依赖
-cd /opt/yyc3/api/ddns
+cd /opt/nas-ecs/api/ddns
 source venv/bin/activate
 pip list | grep Flask
 
@@ -593,13 +593,13 @@ firewall-cmd --list-all | grep -E '(http|https)'
 
 ```bash
 # 检查配置文件
-cat /opt/yyc3/config/ddns.conf | grep -v "^#"
+cat /opt/nas-ecs/config/ddns.conf | grep -v "^#"
 
 # 检查阿里云权限
 # 确保Access Key有DNS修改权限
 
 # 查看DDNS日志
-tail -f /opt/yyc3/logs/ddns.log
+tail -f /opt/nas-ecs/logs/ddns.log
 ```
 
 ## 定时任务
@@ -642,17 +642,17 @@ echo "配置向导和文档已创建"
 
 # 最后，运行系统状态检查以确认一切正常
 echo -e "\n=== 最终系统状态检查 ==="
-/opt/yyc3/scripts/system-status.sh | tail -30
+/opt/nas-ecs/scripts/system-status.sh | tail -30
 
 echo -e "\n✅ DDNS系统部署完成！"
 echo ""
 echo "📋 下一步操作:"
-echo "1. 配置阿里云Access Key: /opt/yyc3/scripts/configure-ddns.sh"
+echo "1. 配置阿里云Access Key: /opt/nas-ecs/scripts/configure-ddns.sh"
 echo "2. 访问Web管理界面: https://ddns.0379.email"
-echo "3. 测试DDNS功能: /opt/yyc3/scripts/ddns.sh"
-echo "4. 查看系统状态: /opt/yyc3/scripts/system-status.sh"
+echo "3. 测试DDNS功能: /opt/nas-ecs/scripts/ddns.sh"
+echo "4. 查看系统状态: /opt/nas-ecs/scripts/system-status.sh"
 echo ""
-echo "📚 详细文档: /opt/yyc3/README.md"
+echo "📚 详细文档: /opt/nas-ecs/README.md"
 ```
 
 现在您的DDNS系统已经完整部署。总结一下您需要做的事情：
@@ -662,13 +662,13 @@ echo "📚 详细文档: /opt/yyc3/README.md"
 1. **配置阿里云Access Key**：
 
    ```bash
-   /opt/yyc3/scripts/configure-ddns.sh
+   /opt/nas-ecs/scripts/configure-ddns.sh
    ```
 
    或者手动编辑：
 
    ```bash
-   nano /opt/yyc3/config/ddns.conf
+   nano /opt/nas-ecs/config/ddns.conf
    ```
 
 2. **获取阿里云Access Key**：
@@ -680,10 +680,10 @@ echo "📚 详细文档: /opt/yyc3/README.md"
 
    ```bash
    # 测试DDNS脚本
-   /opt/yyc3/scripts/ddns.sh test
+   /opt/nas-ecs/scripts/ddns.sh test
 
    # 检查系统状态
-   /opt/yyc3/scripts/system-status.sh
+   /opt/nas-ecs/scripts/system-status.sh
    ```
 
 ## **🌐 访问地址**
@@ -694,15 +694,15 @@ echo "📚 详细文档: /opt/yyc3/README.md"
 
 ## **🔧 管理工具**
 
-- **诊断工具**: `/opt/yyc3/scripts/diagnose-ddns.sh`
-- **状态检查**: `/opt/yyc3/scripts/system-status.sh`
-- **配置向导**: `/opt/yyc3/scripts/configure-ddns.sh`
-- **Web测试**: `/opt/yyc3/scripts/test-web.sh`
+- **诊断工具**: `/opt/nas-ecs/scripts/diagnose-ddns.sh`
+- **状态检查**: `/opt/nas-ecs/scripts/system-status.sh`
+- **配置向导**: `/opt/nas-ecs/scripts/configure-ddns.sh`
+- **Web测试**: `/opt/nas-ecs/scripts/test-web.sh`
 
 ## **📊 查看日志**
 
 - **API服务日志**: `journalctl -u ddns-api.service -f`
-- **DDNS运行日志**: `tail -f /opt/yyc3/logs/ddns.log`
+- **DDNS运行日志**: `tail -f /opt/nas-ecs/logs/ddns.log`
 - **Nginx访问日志**: `tail -f /var/log/nginx/access.log`
 
 现在您的DDNS系统已经完全部署并可以运行了！请按照上述步骤配置阿里云Access Key，然后系统就可以开始工作了。

@@ -1,4 +1,4 @@
-serverAddr = "8.152.195.33"
+serverAddr = "SERVER_IP_PLACEHOLDER"
 serverPort = 7001
 auth.method = "token"
 auth.token = "yyc3_nas"
@@ -19,7 +19,7 @@ subdomain = "api"
 name = "nas-0379"
 type = "http"
 localIP = "127.0.0.1"
-localPort = 6004
+localPort = 6009
 subdomain = "nas"
 
 [[proxies]]
@@ -56,3 +56,38 @@ type = "http"
 localIP = "127.0.0.1"
 localPort = 6007
 subdomain = "ddns"
+
+[[proxies]]
+name = "nas-tos-https"
+type = "https"
+localIP = "127.0.0.1"
+localPort = 8989
+customDomains = ["nas.0379.pro"]
+
+[[proxies]]
+name = "pg-0379"
+type = "tcp"
+localIP = "127.0.0.1"
+localPort = 5432
+remotePort = 54320
+
+[[proxies]]
+name = "logs-0379"
+type = "http"
+localIP = "127.0.0.1"
+localPort = 6004
+subdomain = "logs"
+
+[[proxies]]
+name = "backup-0379"
+type = "http"
+localIP = "127.0.0.1"
+localPort = 6005
+subdomain = "backup"
+
+[[proxies]]
+name = "widget-0379"
+type = "http"
+localIP = "127.0.0.1"
+localPort = 6008
+subdomain = "widget"

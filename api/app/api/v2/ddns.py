@@ -26,7 +26,7 @@ def get_ddns_status():
     """获取DDNS服务状态"""
     try:
         # 从配置文件获取状态
-        status_file = "/opt/yyc3/run/status.json"
+        status_file = "/opt/nas-ecs/run/status.json"
         if os.path.exists(status_file):
             import json
             with open(status_file, 'r') as f:

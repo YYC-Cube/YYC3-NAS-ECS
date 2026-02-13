@@ -100,7 +100,7 @@ export class CircuitBreakerStrategy implements ErrorRecoveryStrategy {
     };
   }
 
-  canRecover(error: YYC3Error): boolean {
+  canRecover(_error: YYC3Error): boolean {
     this.updateState();
     if (this.state === 'open') {
       return false;
@@ -111,7 +111,7 @@ export class CircuitBreakerStrategy implements ErrorRecoveryStrategy {
     return true;
   }
 
-  async recover(error: YYC3Error): Promise<boolean> {
+  async recover(_error: YYC3Error): Promise<boolean> {
     this.updateState();
     
     if (this.state === 'open') {
@@ -207,7 +207,7 @@ export class FallbackStrategy implements ErrorRecoveryStrategy {
     return this.config.fallbackValue !== undefined;
   }
 
-  private hasCachedValue(error: YYC3Error): boolean {
+  private hasCachedValue(_error: YYC3Error): boolean {
     if (!this.config.cacheKey) {
       return false;
     }

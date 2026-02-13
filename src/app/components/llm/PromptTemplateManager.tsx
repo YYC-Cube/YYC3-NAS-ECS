@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { 
-  Sparkles, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Copy, 
-  Save, 
-  X, 
-  Search, 
+import {
+  Sparkles,
+  Plus,
+  Edit,
+  Trash2,
+  Copy,
+  Save,
+  X,
+  Search,
   Star,
   StarOff,
   Play,
@@ -163,17 +163,6 @@ export const PromptTemplateManager: React.FC = () => {
     filtered.sort((a, b) => b.usageCount - a.usageCount);
     return filtered;
   }, [templates, searchQuery, selectedCategory, showFavoritesOnly]);
-
-  const loadTemplates = useCallback(async () => {
-    try {
-      const saved = localStorage.getItem('prompt-templates');
-      if (saved) {
-        setTemplates(JSON.parse(saved));
-      }
-    } catch (error) {
-      console.error('Load templates error:', error);
-    }
-  }, []);
 
   const saveTemplates = useCallback(async (newTemplates: PromptTemplate[]) => {
     try {
@@ -403,7 +392,7 @@ export const PromptTemplateManager: React.FC = () => {
                         使用 {template.usageCount} 次
                       </Badge>
                     </div>
-                    
+
                     {template.variables.length > 0 && (
                       <div className="flex flex-wrap gap-1">
                         {template.variables.map((variable: string, index: number) => (
@@ -492,7 +481,7 @@ export const PromptTemplateManager: React.FC = () => {
                 <Label htmlFor="template-category">分类</Label>
                 <Select
                   value={editingTemplate.category}
-                  onValueChange={(value: string) => setEditingTemplate({ ...editingTemplate, category: value })}
+                  onValueChange={(value) => setEditingTemplate({ ...editingTemplate, category: value as PromptTemplate['category'] })}
                 >
                   <SelectTrigger id="template-category">
                     <SelectValue />

@@ -10,7 +10,7 @@
  * @license MIT
  */
 
-import { EventEmitter } from '@utils/EventEmitter';
+import { EventEmitter } from '@/utils/EventEmitter';
 
 export type EasingFunction = (t: number) => number;
 

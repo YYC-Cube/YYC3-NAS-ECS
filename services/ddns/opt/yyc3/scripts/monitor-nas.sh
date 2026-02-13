@@ -3,7 +3,7 @@
 # NAS监控脚本
 # 定时检查NAS访问状态
 
-LOG_DIR="/opt/yyc3/logs/monitor"
+LOG_DIR="/opt/nas-ecs/logs/monitor"
 mkdir -p "$LOG_DIR"
 
 LOG_FILE="$LOG_DIR/nas-monitor-$(date +%Y%m%d).log"

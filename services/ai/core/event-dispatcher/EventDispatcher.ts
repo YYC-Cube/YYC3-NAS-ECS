@@ -7,7 +7,7 @@
  * @created 2025-01-30
  */
 
-import { EventEmitter } from '@utils/EventEmitter';
+import { EventEmitter } from '@/utils/EventEmitter';
 
 export interface SystemEvent {
   id: string;
@@ -51,7 +51,6 @@ export class EventDispatcher extends EventEmitter {
   private handlers: Map<string, EventHandler[]> = new Map();
   private eventHistory: SystemEvent[] = [];
   private metrics: EventMetrics;
-  private processingQueue: Map<string, Promise<void>> = new Map();
 
   constructor(config: EventDispatcherConfig = {}) {
     super();
@@ -144,7 +143,7 @@ export class EventDispatcher extends EventEmitter {
   on(
     eventType: string,
     handler: (...args: any[]) => void,
-    options?: {
+    _options?: {
       filter?: (event: SystemEvent) => boolean;
       priority?: number;
       once?: boolean;

@@ -7,7 +7,7 @@ import {
     InputEvent, FusedInput, ModalityConfig,
     MultimodalConfig, ContextState, FusionRule, InputModality
 } from './MultimodalProtocol'
-import { EventEmitter } from '@utils/EventEmitter'
+import { EventEmitter } from '@/utils/EventEmitter'
 
 export class MultimodalInputManager extends EventEmitter {
     private config: MultimodalConfig

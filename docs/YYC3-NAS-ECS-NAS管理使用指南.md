@@ -36,7 +36,7 @@
 ### 1. 访问NAS管理界面
 
 - **Web界面**: <https://nas.0379.email>
-- **API服务**: <http://localhost:6004>
+- **API服务**: <http://localhost:6009>
 - **健康检查**: <http://nas.0379.email/health>
 
 ### 2. 查看NAS状态
@@ -51,7 +51,7 @@
 
 ```bash
 # 获取NAS状态
-curl -X GET http://localhost:6004/api/nas/status
+curl -X GET http://localhost:6009/api/nas/status
 
 # 响应示例
 {
@@ -80,7 +80,7 @@ curl -X GET http://localhost:6004/api/nas/status
 
 ```bash
 # 获取存储卷列表
-curl -X GET http://localhost:6004/api/nas/volumes
+curl -X GET http://localhost:6009/api/nas/volumes
 
 # 响应示例
 {
@@ -122,7 +122,7 @@ curl -X GET http://localhost:6004/api/nas/volumes
 
 ```bash
 # 获取文件共享列表
-curl -X GET http://localhost:6004/api/nas/shares
+curl -X GET http://localhost:6009/api/nas/shares
 
 # 响应示例
 {
@@ -181,7 +181,7 @@ NAS（Network Attached Storage）管理是指对网络存储设备进行集中�
          ▼
 ┌─────────────────┐
 │  API服务        │
-│  (Flask/6004)  │
+│  (Flask/6009)  │
 └────────┬────────┘
          │
          ▼
@@ -219,7 +219,7 @@ NAS（Network Attached Storage）管理是指对网络存储设备进行集中�
 
 ```bash
 # 获取系统状态
-curl -X GET http://localhost:6004/api/nas/status
+curl -X GET http://localhost:6009/api/nas/status
 ```
 
 **响应示例**:
@@ -250,7 +250,7 @@ curl -X GET http://localhost:6004/api/nas/status
 
 ```bash
 # 启动NAS服务
-curl -X POST http://localhost:6004/api/nas/start
+curl -X POST http://localhost:6009/api/nas/start
 
 # 响应示例
 {
@@ -259,7 +259,7 @@ curl -X POST http://localhost:6004/api/nas/start
 }
 
 # 停止NAS服务
-curl -X POST http://localhost:6004/api/nas/stop
+curl -X POST http://localhost:6009/api/nas/stop
 
 # 响应示例
 {
@@ -281,7 +281,7 @@ curl -X POST http://localhost:6004/api/nas/stop
 
 ```bash
 # 重启NAS服务
-curl -X POST http://localhost:6004/api/nas/restart
+curl -X POST http://localhost:6009/api/nas/restart
 
 # 响应示例
 {
@@ -294,7 +294,7 @@ curl -X POST http://localhost:6004/api/nas/restart
 
 ```bash
 # 获取系统信息
-curl -X GET http://localhost:6004/api/nas/info
+curl -X GET http://localhost:6009/api/nas/info
 
 # 响应示例
 {
@@ -330,7 +330,7 @@ curl -X GET http://localhost:6004/api/nas/info
 
 ```bash
 # 获取存储卷列表
-curl -X GET http://localhost:6004/api/nas/volumes
+curl -X GET http://localhost:6009/api/nas/volumes
 ```
 
 **响应示例**:
@@ -374,7 +374,7 @@ curl -X GET http://localhost:6004/api/nas/volumes
 
 ```bash
 # 获取存储卷详情
-curl -X GET http://localhost:6004/api/nas/volumes/vol1
+curl -X GET http://localhost:6009/api/nas/volumes/vol1
 
 # 响应示例
 {
@@ -431,7 +431,7 @@ curl -X GET http://localhost:6004/api/nas/volumes/vol1
 
 ```bash
 # 创建存储卷
-curl -X POST http://localhost:6004/api/nas/volumes \
+curl -X POST http://localhost:6009/api/nas/volumes \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Volume 3",
@@ -468,7 +468,7 @@ curl -X POST http://localhost:6004/api/nas/volumes \
 
 ```bash
 # 删除存储卷
-curl -X DELETE http://localhost:6004/api/nas/volumes/vol3
+curl -X DELETE http://localhost:6009/api/nas/volumes/vol3
 
 # 响应示例
 {
@@ -492,7 +492,7 @@ curl -X DELETE http://localhost:6004/api/nas/volumes/vol3
 
 ```bash
 # 扩容存储卷
-curl -X POST http://localhost:6004/api/nas/volumes/vol1/expand \
+curl -X POST http://localhost:6009/api/nas/volumes/vol1/expand \
   -H "Content-Type: application/json" \
   -d '{
     "disks": ["disk3"]
@@ -526,7 +526,7 @@ curl -X POST http://localhost:6004/api/nas/volumes/vol1/expand \
 
 ```bash
 # 获取文件共享列表
-curl -X GET http://localhost:6004/api/nas/shares
+curl -X GET http://localhost:6009/api/nas/shares
 ```
 
 **响应示例**:
@@ -577,7 +577,7 @@ curl -X GET http://localhost:6004/api/nas/shares
 
 ```bash
 # 创建文件共享
-curl -X POST http://localhost:6004/api/nas/shares \
+curl -X POST http://localhost:6009/api/nas/shares \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Backup",
@@ -620,7 +620,7 @@ curl -X POST http://localhost:6004/api/nas/shares \
 
 ```bash
 # 更新文件共享配置
-curl -X PUT http://localhost:6004/api/nas/shares/share1 \
+curl -X PUT http://localhost:6009/api/nas/shares/share1 \
   -H "Content-Type: application/json" \
   -d '{
     "users": ["admin", "user1", "user2"],
@@ -657,7 +657,7 @@ curl -X PUT http://localhost:6004/api/nas/shares/share1 \
 
 ```bash
 # 删除文件共享
-curl -X DELETE http://localhost:6004/api/nas/shares/share1
+curl -X DELETE http://localhost:6009/api/nas/shares/share1
 
 # 响应示例
 {
@@ -679,7 +679,7 @@ curl -X DELETE http://localhost:6004/api/nas/shares/share1
 
 ```bash
 # 启用文件共享
-curl -X POST http://localhost:6004/api/nas/shares/share1/enable
+curl -X POST http://localhost:6009/api/nas/shares/share1/enable
 
 # 响应示例
 {
@@ -688,7 +688,7 @@ curl -X POST http://localhost:6004/api/nas/shares/share1/enable
 }
 
 # 禁用文件共享
-curl -X POST http://localhost:6004/api/nas/shares/share1/disable
+curl -X POST http://localhost:6009/api/nas/shares/share1/disable
 
 # 响应示例
 {
@@ -713,7 +713,7 @@ curl -X POST http://localhost:6004/api/nas/shares/share1/disable
 
 ```bash
 # 获取用户列表
-curl -X GET http://localhost:6004/api/nas/users
+curl -X GET http://localhost:6009/api/nas/users
 ```
 
 **响应示例**:
@@ -762,7 +762,7 @@ curl -X GET http://localhost:6004/api/nas/users
 
 ```bash
 # 创建用户
-curl -X POST http://localhost:6004/api/nas/users \
+curl -X POST http://localhost:6009/api/nas/users \
   -H "Content-Type: application/json" \
   -d '{
     "name": "user2",
@@ -801,7 +801,7 @@ curl -X POST http://localhost:6004/api/nas/users \
 
 ```bash
 # 更新用户信息
-curl -X PUT http://localhost:6004/api/nas/users/user2 \
+curl -X PUT http://localhost:6009/api/nas/users/user2 \
   -H "Content-Type: application/json" \
   -d '{
     "email": "newemail@0379.email",
@@ -836,7 +836,7 @@ curl -X PUT http://localhost:6004/api/nas/users/user2 \
 
 ```bash
 # 删除用户
-curl -X DELETE http://localhost:6004/api/nas/users/user2
+curl -X DELETE http://localhost:6009/api/nas/users/user2
 
 # 响应示例
 {
@@ -855,7 +855,7 @@ YYC³ NAS管理服务提供完整的RESTful API接口，支持系统管理、存
 
 ### API基础信息
 
-- **Base URL**: `http://localhost:6004/api/nas`
+- **Base URL**: `http://localhost:6009/api/nas`
 - **认证方式**: API Key（可选）
 - **数据格式**: JSON
 - **字符编码**: UTF-8
@@ -892,7 +892,7 @@ YYC³ NAS管理服务提供完整的RESTful API接口，支持系统管理、存
 #### 1. 获取NAS状态
 
 ```bash
-curl -X GET http://localhost:6004/api/nas/status
+curl -X GET http://localhost:6009/api/nas/status
 ```
 
 **响应示例**:
@@ -914,7 +914,7 @@ curl -X GET http://localhost:6004/api/nas/status
 #### 2. 获取存储卷列表
 
 ```bash
-curl -X GET http://localhost:6004/api/nas/volumes
+curl -X GET http://localhost:6009/api/nas/volumes
 ```
 
 **响应示例**:
@@ -939,7 +939,7 @@ curl -X GET http://localhost:6004/api/nas/volumes
 #### 3. 创建文件共享
 
 ```bash
-curl -X POST http://localhost:6004/api/nas/shares \
+curl -X POST http://localhost:6009/api/nas/shares \
   -H "Content-Type: application/json" \
   -d '{
     "name": "Backup",
@@ -971,7 +971,7 @@ curl -X POST http://localhost:6004/api/nas/shares \
 #### 4. 创建用户
 
 ```bash
-curl -X POST http://localhost:6004/api/nas/users \
+curl -X POST http://localhost:6009/api/nas/users \
   -H "Content-Type: application/json" \
   -d '{
     "name": "user2",
@@ -1007,7 +1007,7 @@ curl -X POST http://localhost:6004/api/nas/users \
 ```python
 import requests
 
-API_BASE_URL = "http://localhost:6004/api/nas"
+API_BASE_URL = "http://localhost:6009/api/nas"
 
 def get_nas_status():
     """获取NAS状态"""
@@ -1039,7 +1039,7 @@ if __name__ == "__main__":
 ```python
 import requests
 
-API_BASE_URL = "http://localhost:6004/api/nas"
+API_BASE_URL = "http://localhost:6009/api/nas"
 
 def get_volumes():
     """获取存储卷列表"""
@@ -1078,7 +1078,7 @@ if __name__ == "__main__":
 ```python
 import requests
 
-API_BASE_URL = "http://localhost:6004/api/nas"
+API_BASE_URL = "http://localhost:6009/api/nas"
 
 def create_share(name, path, share_type="smb", users=None, permissions="full"):
     """创建文件共享"""
@@ -1132,7 +1132,7 @@ if __name__ == "__main__":
 ```javascript
 const axios = require('axios');
 
-const API_BASE_URL = 'http://localhost:6004/api/nas';
+const API_BASE_URL = 'http://localhost:6009/api/nas';
 
 async function getNASStatus() {
     try {
@@ -1164,7 +1164,7 @@ getNASStatus();
 ```javascript
 const axios = require('axios');
 
-const API_BASE_URL = 'http://localhost:6004/api/nas';
+const API_BASE_URL = 'http://localhost:6009/api/nas';
 
 async function getVolumes() {
     try {
@@ -1205,7 +1205,7 @@ getVolumes();
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:6004/api/nas';
+const API_BASE_URL = 'http://localhost:6009/api/nas';
 
 interface NASSystemStatus {
   running: boolean;
@@ -1309,14 +1309,14 @@ export function useVolumes() {
 **步骤1：创建备份脚本**
 
 ```bash
-nano /opt/yyc3/scripts/nas-backup.sh
+nano /opt/nas-ecs/scripts/nas-backup.sh
 ```
 
 ```bash
 #!/bin/bash
 
-BACKUP_CONFIG="/opt/yyc3/config/backup.conf"
-LOG_FILE="/opt/yyc3/logs/backup.log"
+BACKUP_CONFIG="/opt/nas-ecs/config/backup.conf"
+LOG_FILE="/opt/nas-ecs/logs/backup.log"
 
 source "$BACKUP_CONFIG"
 
@@ -1393,7 +1393,7 @@ main() {
     
     # 发送备份完成通知
     if [ "$NOTIFICATION_ENABLED" = "1" ]; then
-        /opt/yyc3/scripts/notify.sh "backup_completed" "备份任务已完成"
+        /opt/nas-ecs/scripts/notify.sh "backup_completed" "备份任务已完成"
     fi
     
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] INFO [BACKUP] ========== 备份任务完成 ==========" >> "$LOG_FILE"
@@ -1405,7 +1405,7 @@ main
 **步骤2：配置备份参数**
 
 ```bash
-nano /opt/yyc3/config/backup.conf
+nano /opt/nas-ecs/config/backup.conf
 ```
 
 ```bash
@@ -1441,7 +1441,7 @@ After=network.target
 
 [Service]
 Type=oneshot
-ExecStart=/opt/yyc3/scripts/nas-backup.sh
+ExecStart=/opt/nas-ecs/scripts/nas-backup.sh
 User=root
 Group=root
 ```
@@ -1478,10 +1478,10 @@ systemctl start yyc3-nas-backup.timer
 systemctl status yyc3-nas-backup.timer
 
 # 手动运行备份
-/opt/yyc3/scripts/nas-backup.sh
+/opt/nas-ecs/scripts/nas-backup.sh
 
 # 查看备份日志
-tail -f /opt/yyc3/logs/backup.log
+tail -f /opt/nas-ecs/logs/backup.log
 ```
 
 ### 场景2：存储卷监控与告警
@@ -1494,13 +1494,13 @@ tail -f /opt/yyc3/logs/backup.log
 **步骤1：创建存储监控脚本**
 
 ```bash
-nano /opt/yyc3/scripts/nas-storage-monitor.sh
+nano /opt/nas-ecs/scripts/nas-storage-monitor.sh
 ```
 
 ```bash
 #!/bin/bash
 
-LOG_FILE="/opt/yyc3/logs/storage-monitor.log"
+LOG_FILE="/opt/nas-ecs/logs/storage-monitor.log"
 ALERT_THRESHOLD=80
 CRITICAL_THRESHOLD=90
 
@@ -1562,7 +1562,7 @@ check_storage() {
 }
 
 generate_report() {
-    local report_file="/opt/yyc3/reports/storage-report-$(date +%Y%m%d).txt"
+    local report_file="/opt/nas-ecs/reports/storage-report-$(date +%Y%m%d).txt"
     
     echo "NAS存储报告 - $(date '+%Y-%m-%d %H:%M:%S')" > "$report_file"
     echo "========================================" >> "$report_file"
@@ -1607,7 +1607,7 @@ After=network.target
 
 [Service]
 Type=oneshot
-ExecStart=/opt/yyc3/scripts/nas-storage-monitor.sh
+ExecStart=/opt/nas-ecs/scripts/nas-storage-monitor.sh
 User=root
 Group=root
 ```
@@ -1645,10 +1645,10 @@ systemctl start yyc3-nas-storage-monitor.timer
 systemctl status yyc3-nas-storage-monitor.timer
 
 # 手动运行存储监控
-/opt/yyc3/scripts/nas-storage-monitor.sh
+/opt/nas-ecs/scripts/nas-storage-monitor.sh
 
 # 查看存储监控日志
-tail -f /opt/yyc3/logs/storage-monitor.log
+tail -f /opt/nas-ecs/logs/storage-monitor.log
 ```
 
 ### 场景3：文件共享权限管理
@@ -1661,13 +1661,13 @@ tail -f /opt/yyc3/logs/storage-monitor.log
 **步骤1：创建权限管理脚本**
 
 ```bash
-nano /opt/yyc3/scripts/nas-permission-manager.sh
+nano /opt/nas-ecs/scripts/nas-permission-manager.sh
 ```
 
 ```bash
 #!/bin/bash
 
-LOG_FILE="/opt/yyc3/logs/permission-manager.log"
+LOG_FILE="/opt/nas-ecs/logs/permission-manager.log"
 
 set_share_permissions() {
     local share_path="$1"
@@ -1706,7 +1706,7 @@ apply_permission_policy() {
 }
 
 audit_permissions() {
-    local audit_file="/opt/yyc3/reports/permission-audit-$(date +%Y%m%d).txt"
+    local audit_file="/opt/nas-ecs/reports/permission-audit-$(date +%Y%m%d).txt"
     
     echo "NAS权限审计报告 - $(date '+%Y-%m-%d %H:%M:%S')" > "$audit_file"
     echo "========================================" >> "$audit_file"
@@ -1764,7 +1764,7 @@ main "$@"
 **步骤2：创建权限策略文件**
 
 ```bash
-nano /opt/yyc3/config/permission-policy.conf
+nano /opt/nas-ecs/config/permission-policy.conf
 ```
 
 ```bash
@@ -1790,16 +1790,16 @@ nano /opt/yyc3/config/permission-policy.conf
 
 ```bash
 # 应用权限策略
-/opt/yyc3/scripts/nas-permission-manager.sh apply /opt/yyc3/config/permission-policy.conf
+/opt/nas-ecs/scripts/nas-permission-manager.sh apply /opt/nas-ecs/config/permission-policy.conf
 
 # 审计权限
-/opt/yyc3/scripts/nas-permission-manager.sh audit
+/opt/nas-ecs/scripts/nas-permission-manager.sh audit
 
 # 修复权限问题
-/opt/yyc3/scripts/nas-permission-manager.sh fix
+/opt/nas-ecs/scripts/nas-permission-manager.sh fix
 
 # 查看权限管理日志
-tail -f /opt/yyc3/logs/permission-manager.log
+tail -f /opt/nas-ecs/logs/permission-manager.log
 ```
 
 ### 场景4：文件同步与镜像
@@ -1812,14 +1812,14 @@ tail -f /opt/yyc3/logs/permission-manager.log
 **步骤1：创建文件同步脚本**
 
 ```bash
-nano /opt/yyc3/scripts/nas-sync.sh
+nano /opt/nas-ecs/scripts/nas-sync.sh
 ```
 
 ```bash
 #!/bin/bash
 
-LOG_FILE="/opt/yyc3/logs/sync.log"
-SYNC_CONFIG="/opt/yyc3/config/sync.conf"
+LOG_FILE="/opt/nas-ecs/logs/sync.log"
+SYNC_CONFIG="/opt/nas-ecs/config/sync.conf"
 
 source "$SYNC_CONFIG"
 
@@ -1930,7 +1930,7 @@ main "$@"
 **步骤2：配置同步参数**
 
 ```bash
-nano /opt/yyc3/config/sync.conf
+nano /opt/nas-ecs/config/sync.conf
 ```
 
 ```bash
@@ -1952,16 +1952,16 @@ REMOTE_PATH="/volume1/Sync"
 
 ```bash
 # 推送到远程NAS
-/opt/yyc3/scripts/nas-sync.sh push /volume1/Documents
+/opt/nas-ecs/scripts/nas-sync.sh push /volume1/Documents
 
 # 从远程NAS拉取
-/opt/yyc3/scripts/nas-sync.sh pull /volume1/Documents
+/opt/nas-ecs/scripts/nas-sync.sh pull /volume1/Documents
 
 # 双向同步
-/opt/yyc3/scripts/nas-sync.sh bidirectional /volume1/Documents
+/opt/nas-ecs/scripts/nas-sync.sh bidirectional /volume1/Documents
 
 # 查看同步日志
-tail -f /opt/yyc3/logs/sync.log
+tail -f /opt/nas-ecs/logs/sync.log
 ```
 
 ### 场景5：文件去重与清理
@@ -1974,14 +1974,14 @@ tail -f /opt/yyc3/logs/sync.log
 **步骤1：创建文件去重脚本**
 
 ```bash
-nano /opt/yyc3/scripts/nas-dedup.sh
+nano /opt/nas-ecs/scripts/nas-dedup.sh
 ```
 
 ```bash
 #!/bin/bash
 
-LOG_FILE="/opt/yyc3/logs/dedup.log"
-REPORT_FILE="/opt/yyc3/reports/dedup-report-$(date +%Y%m%d).txt"
+LOG_FILE="/opt/nas-ecs/logs/dedup.log"
+REPORT_FILE="/opt/nas-ecs/reports/dedup-report-$(date +%Y%m%d).txt"
 
 find_duplicates() {
     local search_path="$1"
@@ -2180,22 +2180,22 @@ main "$@"
 
 ```bash
 # 查找重复文件（大于10MB）
-/opt/yyc3/scripts/nas-dedup.sh find /volume1/Documents 10
+/opt/nas-ecs/scripts/nas-dedup.sh find /volume1/Documents 10
 
 # 生成去重报告
-/opt/yyc3/scripts/nas-dedup.sh report /volume1/Documents
+/opt/nas-ecs/scripts/nas-dedup.sh report /volume1/Documents
 
 # 交互式去重
-/opt/yyc3/scripts/nas-dedup.sh interactive /volume1/Documents 10
+/opt/nas-ecs/scripts/nas-dedup.sh interactive /volume1/Documents 10
 
 # 自动去重（保留最新的文件）
-/opt/yyc3/scripts/nas-dedup.sh auto /volume1/Documents newest
+/opt/nas-ecs/scripts/nas-dedup.sh auto /volume1/Documents newest
 
 # 查看去重日志
-tail -f /opt/yyc3/logs/dedup.log
+tail -f /opt/nas-ecs/logs/dedup.log
 
 # 查看去重报告
-cat /opt/yyc3/reports/dedup-report-$(date +%Y%m%d).txt
+cat /opt/nas-ecs/reports/dedup-report-$(date +%Y%m%d).txt
 ```
 
 ---
@@ -2218,7 +2218,7 @@ systemctl status nas-api.service
 journalctl -u nas-api.service -n 50
 
 # 检查端口占用
-netstat -tln | grep 6004
+netstat -tln | grep 6009
 
 # 重启服务
 systemctl restart nas-api.service
@@ -2232,10 +2232,10 @@ systemctl restart nas-api.service
 
 ```bash
 # 检查存储卷状态
-curl -X GET http://localhost:6004/api/nas/volumes
+curl -X GET http://localhost:6009/api/nas/volumes
 
 # 检查存储卷健康状态
-curl -X GET http://localhost:6004/api/nas/volumes/vol1
+curl -X GET http://localhost:6009/api/nas/volumes/vol1
 
 # 查看系统日志
 journalctl -u nas-api.service | grep -i volume
@@ -2253,10 +2253,10 @@ df -h
 
 ```bash
 # 检查文件共享状态
-curl -X GET http://localhost:6004/api/nas/shares
+curl -X GET http://localhost:6009/api/nas/shares
 
 # 检查文件共享是否启用
-curl -X GET http://localhost:6004/api/nas/shares/share1
+curl -X GET http://localhost:6009/api/nas/shares/share1
 
 # 测试SMB连接
 smbclient -L //nas.0379.email -U admin
@@ -2276,13 +2276,13 @@ systemctl restart smbd.service
 
 ```bash
 # 检查用户状态
-curl -X GET http://localhost:6004/api/nas/users
+curl -X GET http://localhost:6009/api/nas/users
 
 # 检查用户详情
-curl -X GET http://localhost:6004/api/nas/users/user1
+curl -X GET http://localhost:6009/api/nas/users/user1
 
 # 重置用户密码
-curl -X PUT http://localhost:6004/api/nas/users/user1/reset-password \
+curl -X PUT http://localhost:6009/api/nas/users/user1/reset-password \
   -H "Content-Type: application/json" \
   -d '{
     "newPassword": "NewSecurePassword123!"
@@ -2298,20 +2298,20 @@ journalctl -u nas-api.service | grep -i auth
 
 ```bash
 # 检查系统状态
-curl -X GET http://localhost:6004/api/nas/status
+curl -X GET http://localhost:6009/api/nas/status
 
 # 检查系统信息
-curl -X GET http://localhost:6004/api/nas/info
+curl -X GET http://localhost:6009/api/nas/info
 ```
 
 #### 存储诊断
 
 ```bash
 # 检查存储卷列表
-curl -X GET http://localhost:6004/api/nas/volumes
+curl -X GET http://localhost:6009/api/nas/volumes
 
 # 检查存储卷详情
-curl -X GET http://localhost:6004/api/nas/volumes/vol1
+curl -X GET http://localhost:6009/api/nas/volumes/vol1
 
 # 检查磁盘健康状态
 smartctl -a /dev/sda
@@ -2324,13 +2324,13 @@ smartctl -a /dev/sda
 ping nas.0379.email
 
 # 检查端口连接
-telnet nas.0379.email 6004
+telnet nas.0379.email 6009
 
 # 检查DNS解析
 nslookup nas.0379.email
 
 # 检查防火墙
-firewall-cmd --list-all | grep 6004
+firewall-cmd --list-all | grep 6009
 ```
 
 ---
@@ -2411,7 +2411,7 @@ firewall-cmd --list-all | grep 6004
 
 如有问题，请检查日志文件或联系系统管理员。
 
-- **服务器IP**: 8.152.195.33
+- **服务器IP**: SERVER_IP_PLACEHOLDER
 - **域名**: nas.0379.email
 - **部署时间**: 2026-01-25
 

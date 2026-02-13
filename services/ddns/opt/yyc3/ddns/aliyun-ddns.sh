@@ -12,7 +12,7 @@ RECORD_TYPE="A"
 TTL="300"  # 5分钟
 
 # 日志
-LOG_DIR="/opt/yyc3/logs/ddns"
+LOG_DIR="/opt/nas-ecs/logs/ddns"
 mkdir -p "$LOG_DIR"
 LOG_FILE="$LOG_DIR/ddns-$(date +%Y%m%d).log"
 
