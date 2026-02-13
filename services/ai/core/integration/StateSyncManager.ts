@@ -1,4 +1,4 @@
-import { EventEmitter } from '@utils/EventEmitter';
+import { EventEmitter } from '@/utils/EventEmitter';
 
 export interface SyncOptions {
   conflictStrategy?: 'last_write_wins' | 'merge' | 'manual';

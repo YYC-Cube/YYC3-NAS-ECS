@@ -45,46 +45,6 @@ export class CEOAIAssistant {
     // 这里可以添加额外的配置逻辑
   }
 
-  private createStrategicDecisionTool(): AITool {
-    return createAITool({
-      name: 'strategic_decision_support',
-      description: '提供战略决策数据支持和分析',
-      category: 'strategic_planning',
-      parameters: {
-        type: 'object',
-        properties: {
-          decision_type: {
-            type: 'string',
-            enum: ['market_expansion', 'product_development', 'merger_acquisition', 'resource_allocation'],
-            description: '决策类型'
-          },
-          time_horizon: { type: 'string', description: '时间跨度' },
-          risk_tolerance: { type: 'string', enum: ['low', 'medium', 'high'], description: '风险承受度' }
-        },
-        required: ['decision_type']
-      },
-      execute: async (params: any) => {
-        const marketData = await this.fetchMarketData(params.decision_type);
-        const internalData = await this.fetchInternalCapabilities();
-        const riskAnalysis = await this.analyzeRisks(params.decision_type, params.risk_tolerance);
-
-        const scenarios = await this.generateDecisionScenarios({
-          marketData,
-          internalData,
-          riskAnalysis,
-          timeHorizon: params.time_horizon
-        });
-
-        return {
-          success: true,
-          scenarios,
-          recommended_scenario: await this.recommendBestScenario(scenarios),
-          implementation_roadmap: await this.createImplementationRoadmap(scenarios)
-        };
-      }
-    });
-  }
-
   async analyzeBusinessPerformance(): Promise<BusinessPerformanceReport> {
     if (!this.aiWidget) {
       throw new Error('CEOAIAssistant not initialized. Call initialize() first.');
@@ -171,7 +131,7 @@ export class CEOAIAssistant {
     };
   }
 
-  private processPerformanceReport(data: any): BusinessPerformanceReport {
+  private processPerformanceReport(_data: any): BusinessPerformanceReport {
     return {
       kpi: {
         financial: [0.15, 0.12, 0.18, 0.20],

@@ -678,8 +678,8 @@ docker stats
 <div align="center">
 
 ```bash
-ping 8.152.195.33
-traceroute 8.152.195.33
+ping SERVER_IP_PLACEHOLDER
+traceroute SERVER_IP_PLACEHOLDER
 ```
 
 </div>
@@ -734,7 +734,7 @@ sudo systemctl status yyc3-ddns.service
 <div align="center">
 
 ```bash
-tail -f /opt/yyc3/logs/ddns/ddns-*.log
+tail -f /opt/nas-ecs/logs/ddns/ddns-*.log
 ```
 
 </div>
@@ -744,7 +744,7 @@ tail -f /opt/yyc3/logs/ddns/ddns-*.log
 <div align="center">
 
 ```bash
-bash /opt/yyc3/ddns/aliyun-ddns.sh
+bash /opt/nas-ecs/ddns/aliyun-ddns.sh
 ```
 
 </div>
@@ -897,7 +897,7 @@ backup.sh脚本：
 
 # YYC³ 自动备份脚本
 
-BACKUP_DIR="/opt/yyc3/backups"
+BACKUP_DIR="/opt/nas-ecs/backups"
 DATE=$(date +%Y%m%d_%H%M%S)
 
 # 创建备份目录
@@ -905,10 +905,10 @@ mkdir -p $BACKUP_DIR
 
 # 备份配置文件
 tar -czf $BACKUP_DIR/config_$DATE.tar.gz \
-  /opt/yyc3/config/ \
-  /opt/yyc3/frp/frpc.toml \
-  /opt/yyc3/frp/frps.toml \
-  /opt/yyc3/.env.local
+  /opt/nas-ecs/config/ \
+  /opt/nas-ecs/frp/frpc.toml \
+  /opt/nas-ecs/frp/frps.toml \
+  /opt/nas-ecs/.env.local
 
 # 备份数据库
 docker exec nas-ddns-postgres pg_dump -U nas_admin nas_ddns > $BACKUP_DIR/db_$DATE.sql
@@ -1202,7 +1202,7 @@ tail -f logs/*.log | grep ERROR
 sudo nano /etc/logrotate.d/yyc3
 
 # 配置示例
-/opt/yyc3/logs/*.log {
+/opt/nas-ecs/logs/*.log {
     daily
     rotate 30
     compress
@@ -1263,7 +1263,7 @@ docker-compose -f api/docker-compose.yml logs -f api
 
 ```bash
 # 检查网络连接
-ping 8.152.195.33
+ping SERVER_IP_PLACEHOLDER
 
 # 检查FRP版本
 ./frp/frpc -v

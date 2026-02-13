@@ -8,11 +8,11 @@ echo ""
 
 # 1. 检查Python虚拟环境
 echo "1. 检查Python虚拟环境:"
-if [ -f "/opt/yyc3/api/ddns/venv/bin/python" ]; then
+if [ -f "/opt/nas-ecs/api/ddns/venv/bin/python" ]; then
     echo "  ✓ 虚拟环境存在"
     
     # 检查Flask是否安装
-    cd /opt/yyc3/api/ddns
+    cd /opt/nas-ecs/api/ddns
     source venv/bin/activate
     
     if python -c "import flask" 2>/dev/null; then
@@ -32,7 +32,7 @@ if [ -f "/opt/yyc3/api/ddns/venv/bin/python" ]; then
     deactivate
 else
     echo "  ✗ 虚拟环境不存在，正在创建..."
-    cd /opt/yyc3/api/ddns
+    cd /opt/nas-ecs/api/ddns
     python3 -m venv venv
     source venv/bin/activate
     pip install flask flask-cors requests
@@ -47,7 +47,7 @@ if [ -f "/etc/systemd/system/ddns-api.service" ]; then
     echo "  ✓ 服务文件存在"
     
     # 检查文件语法
-    if grep -q "ExecStart=/opt/yyc3/api/ddns/venv/bin/python" /etc/systemd/system/ddns-api.service; then
+    if grep -q "ExecStart=/opt/nas-ecs/api/ddns/venv/bin/python" /etc/systemd/system/ddns-api.service; then
         echo "  ✓ ExecStart配置正确"
     else
         echo "  ✗ ExecStart配置错误，正在修复..."
@@ -59,9 +59,9 @@ After=network.target
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/opt/yyc3/api/ddns
-Environment="PATH=/opt/yyc3/api/ddns/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=/opt/yyc3/api/ddns/venv/bin/python /opt/yyc3/api/ddns/app.py
+WorkingDirectory=/opt/nas-ecs/api/ddns
+Environment="PATH=/opt/nas-ecs/api/ddns/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/opt/nas-ecs/api/ddns/venv/bin/python /opt/nas-ecs/api/ddns/app.py
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -87,9 +87,9 @@ After=network.target
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/opt/yyc3/api/ddns
-Environment="PATH=/opt/yyc3/api/ddns/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=/opt/yyc3/api/ddns/venv/bin/python /opt/yyc3/api/ddns/app.py
+WorkingDirectory=/opt/nas-ecs/api/ddns
+Environment="PATH=/opt/nas-ecs/api/ddns/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/opt/nas-ecs/api/ddns/venv/bin/python /opt/nas-ecs/api/ddns/app.py
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -106,11 +106,11 @@ echo ""
 
 # 3. 检查应用文件
 echo "3. 检查应用文件:"
-if [ -f "/opt/yyc3/api/ddns/app.py" ]; then
+if [ -f "/opt/nas-ecs/api/ddns/app.py" ]; then
     echo "  ✓ 应用文件存在"
     
     # 检查应用文件是否有语法错误
-    cd /opt/yyc3/api/ddns
+    cd /opt/nas-ecs/api/ddns
     source venv/bin/activate
     
     if python -m py_compile app.py 2>/dev/null; then
@@ -130,7 +130,7 @@ from flask import Flask, jsonify
 app = Flask(__name__)
 
 # 确保日志目录存在
-os.makedirs('/opt/yyc3/logs', exist_ok=True)
+os.makedirs('/opt/nas-ecs/logs', exist_ok=True)
 
 @app.route('/')
 def index():
@@ -167,7 +167,7 @@ APP_EOF
     deactivate
 else
     echo "  ✗ 应用文件不存在，正在创建..."
-    cat > /opt/yyc3/api/ddns/app.py << 'APP_EOF'
+    cat > /opt/nas-ecs/api/ddns/app.py << 'APP_EOF'
 #!/usr/bin/env python3
 """
 DDNS API 服务 - 简单版本
@@ -180,7 +180,7 @@ from flask import Flask, jsonify
 app = Flask(__name__)
 
 # 确保日志目录存在
-os.makedirs('/opt/yyc3/logs', exist_ok=True)
+os.makedirs('/opt/nas-ecs/logs', exist_ok=True)
 
 @app.route('/')
 def index():
@@ -214,16 +214,16 @@ APP_EOF
     echo "  ✓ 应用文件已创建"
 fi
 
-chmod +x /opt/yyc3/api/ddns/app.py
+chmod +x /opt/nas-ecs/api/ddns/app.py
 echo ""
 
 # 4. 检查日志目录
 echo "4. 检查日志目录:"
-if [ -d "/opt/yyc3/logs" ]; then
+if [ -d "/opt/nas-ecs/logs" ]; then
     echo "  ✓ 日志目录存在"
 else
     echo "  ✗ 日志目录不存在，正在创建..."
-    mkdir -p /opt/yyc3/logs
+    mkdir -p /opt/nas-ecs/logs
     echo "  ✓ 日志目录已创建"
 fi
 echo ""

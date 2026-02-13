@@ -71,6 +71,7 @@ export class PerformanceMonitor {
   private allMetrics: PerformanceMetric[];
   private marks: Map<string, number>;
   private entries: PerformanceEntry[];
+  private entryIds: Map<string, PerformanceEntry>;
   private listeners: MetricListener[];
   private enabled: boolean;
   private maxMetrics: number;
@@ -85,6 +86,7 @@ export class PerformanceMonitor {
     this.allMetrics = [];
     this.marks = new Map();
     this.entries = [];
+    this.entryIds = new Map();
     this.listeners = [];
     this.enabled = true;
     this.maxMetrics = options.maxMetrics || 1000;
@@ -111,6 +113,60 @@ export class PerformanceMonitor {
       PerformanceMonitor.instance = new PerformanceMonitor();
     }
     return PerformanceMonitor.instance;
+  }
+
+  /**
+   * 开始一个新的性能条目
+   */
+  public startEntry(name: string, metadata?: Record<string, unknown>): string {
+    if (!this.enabled) {
+      return '';
+    }
+
+    const id = this.generateId();
+    const entry: PerformanceEntry = {
+      name,
+      startTime: performance.now(),
+      metadata,
+    };
+
+    this.entries.push(entry);
+    this.entryIds.set(id, entry);
+    this.trimEntries();
+
+    return id;
+  }
+
+  /**
+   * 结束一个性能条目
+   */
+  public endEntry(id: string, metadata?: Record<string, unknown>): void {
+    if (!this.enabled) {
+      return;
+    }
+
+    const entry = this.entryIds.get(id);
+    if (entry) {
+      entry.endTime = performance.now();
+      entry.duration = entry.endTime - entry.startTime;
+      if (metadata) {
+        entry.metadata = { ...entry.metadata, ...metadata };
+      }
+    }
+  }
+
+  /**
+   * 获取指定的指标
+   */
+  public getMetric(id: string): PerformanceMetric | undefined {
+    return this.allMetrics.find(m => m.id === id);
+  }
+
+  /**
+   * 获取所有指标
+   */
+  public getAllMetrics(): PerformanceMetric[] {
+    return [...this.allMetrics];
   }
 
   /**
@@ -183,26 +239,60 @@ export class PerformanceMonitor {
   public measure(name: string, fn?: () => Promise<unknown> | unknown): Promise<unknown> | number | null {
     if (!this.enabled) {
       if (fn) {
-        return fn();
+        const result = fn();
+        return result as Promise<unknown> | number | null;
       }
       return null;
     }
 
     if (fn) {
       const startTime = performance.now();
+      const id = this.generateId();
+      const entry: PerformanceEntry = {
+        name: `measure_${name}`,
+        startTime,
+        metadata: { success: true },
+      };
+      this.entries.push(entry);
+      this.entryIds.set(id, entry);
+      this.trimEntries();
 
-      return Promise.resolve()
-        .then(() => fn())
-        .then((result) => {
+      try {
+        const result = fn();
+        if (result && typeof result === 'object' && 'then' in result) {
+          return (result as Promise<unknown>)
+            .then((r) => {
+              const duration = performance.now() - startTime;
+              entry.endTime = performance.now();
+              entry.duration = duration;
+              entry.metadata = { success: true };
+              this.recordMetric(`measure_${name}`, duration, 'timing', { success: true });
+              return r;
+            })
+            .catch((error) => {
+              const duration = performance.now() - startTime;
+              entry.endTime = performance.now();
+              entry.duration = duration;
+              entry.metadata = { success: false, error };
+              this.recordMetric(`measure_${name}`, duration, 'timing', { success: false, error });
+              throw error;
+            });
+        } else {
           const duration = performance.now() - startTime;
+          entry.endTime = performance.now();
+          entry.duration = duration;
+          entry.metadata = { success: true };
           this.recordMetric(`measure_${name}`, duration, 'timing', { success: true });
-          return result;
-        })
-        .catch((error) => {
-          const duration = performance.now() - startTime;
-          this.recordMetric(`measure_${name}`, duration, 'timing', { success: false, error });
-          throw error;
-        });
+          return result as Promise<unknown> | number | null;
+        }
+      } catch (error) {
+        const duration = performance.now() - startTime;
+        entry.endTime = performance.now();
+        entry.duration = duration;
+        entry.metadata = { success: false, error };
+        this.recordMetric(`measure_${name}`, duration, 'timing', { success: false, error });
+        throw error;
+      }
     }
 
     if (!this.marks.has(name)) {
@@ -290,7 +380,7 @@ export class PerformanceMonitor {
   }
 
   /**
-   * 清除指标
+   * 清除指标（带选项）
    */
   public clearMetrics(options?: ClearOptions): void {
     if (!options) {
@@ -312,7 +402,7 @@ export class PerformanceMonitor {
     }
 
     if (options.name) {
-      this.metrics.forEach((metricArray, name) => {
+      this.metrics.forEach((_, name) => {
         if (name.includes(options.name!)) {
           this.metrics.delete(name);
         }
@@ -326,12 +416,13 @@ export class PerformanceMonitor {
    */
   public clearEntries(): void {
     this.entries = [];
+    this.entryIds.clear();
   }
 
   /**
    * 生成性能报告
    */
-  public getReport(): PerformanceReport {
+  public generateReport(): PerformanceReport {
     const allMetrics = this.getMetrics();
     const entriesWithDuration = this.entries.filter(e => e.duration !== undefined);
     const durations = entriesWithDuration.map(e => e.duration!);
@@ -385,6 +476,58 @@ export class PerformanceMonitor {
       },
       generatedAt: Date.now(),
     };
+  }
+
+  /**
+   * 添加指标
+   */
+  public addMetric(metric: PerformanceMetric): void {
+    if (!this.enabled) {
+      return;
+    }
+
+    const existingIndex = this.allMetrics.findIndex(m => m.id === metric.id);
+    if (existingIndex > -1) {
+      this.allMetrics[existingIndex] = metric;
+      const metricArray = this.metrics.get(metric.name);
+      if (metricArray) {
+        const nameIndex = metricArray.findIndex(m => m.id === metric.id);
+        if (nameIndex > -1) {
+          metricArray[nameIndex] = metric;
+        }
+      }
+    } else {
+      this.allMetrics.push(metric);
+      const metricArray = this.metrics.get(metric.name);
+      if (metricArray) {
+        metricArray.push(metric);
+      } else {
+        this.metrics.set(metric.name, [metric]);
+      }
+
+      if (this.allMetrics.length > this.maxMetrics) {
+        const removed = this.allMetrics.shift()!;
+        const nameArray = this.metrics.get(removed.name);
+        if (nameArray) {
+          const index = nameArray.indexOf(removed);
+          if (index > -1) {
+            nameArray.splice(index, 1);
+          }
+          if (nameArray.length === 0) {
+            this.metrics.delete(removed.name);
+          }
+        }
+      }
+    }
+
+    this.listeners.forEach(listener => listener(metric));
+  }
+
+  /**
+   * 生成性能报告（别名）
+   */
+  public getReport(): PerformanceReport {
+    return this.generateReport();
   }
 
   /**
@@ -458,7 +601,7 @@ export class PerformanceMonitor {
   /**
    * 销毁监控器
    */
-  public destroy(): void {
+  public dispose(): void {
     this.destroyFlag = true;
     if (this.reportTimer) {
       clearInterval(this.reportTimer);
@@ -582,7 +725,7 @@ export function mark(name: string, metadata?: Record<string, unknown>): void {
  * 测量标记之间的时间
  */
 export function measure(name: string): number | null {
-  return defaultInstance.measure(name);
+  return defaultInstance.measure(name) as number | null;
 }
 
 /**
@@ -627,7 +770,7 @@ export function clearPerformanceMetrics(options?: ClearOptions): void {
 export function resetPerformanceMonitor(): void {
   const instance = PerformanceMonitor.getInstance();
   if (instance) {
-    instance.destroy();
+    instance.dispose();
   }
   // 重新创建默认实例
   updateDefaultInstance();
@@ -646,6 +789,7 @@ export function getPerformanceMonitor(): PerformanceMonitor {
 export function disposePerformanceMonitor(): void {
   const instance = PerformanceMonitor.getInstance();
   if (instance) {
-    instance.destroy();
+    instance.dispose();
+    updateDefaultInstance();
   }
 }

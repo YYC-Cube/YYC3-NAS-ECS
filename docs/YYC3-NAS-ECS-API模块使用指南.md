@@ -2204,7 +2204,7 @@ const stats = await cachedAPICall(
 
 如有问题，请检查日志文件或联系系统管理员。
 
-- **服务器IP**: 8.152.195.33
+- **服务器IP**: SERVER_IP_PLACEHOLDER
 - **API服务**: <https://api.0379.email>
 - **部署时间**: 2026-01-25
 

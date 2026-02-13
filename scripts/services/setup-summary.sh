@@ -1,12 +1,12 @@
-cat > /opt/yyc3/scripts/setup-summary.sh << 'EOF'
+cat > /opt/nas-ecs/scripts/setup-summary.sh << 'EOF'
 #!/bin/bash
 
 # NAS SSH隧道脚本
 TUNNEL_PORTS="5000 5001 5002 5003 5005 9557"                                        
-LOG_FILE="/opt/yyc3/logs/nas-tunnel.log"
-PID_FILE="/opt/yyc3/run/nas-tunnel.pid"
+LOG_FILE="/opt/nas-ecs/logs/nas-tunnel.log"
+PID_FILE="/opt/nas-ecs/run/nas-tunnel.pid"
 
-mkdir -p /opt/yyc3/logs /opt/yyc3/run
+mkdir -p /opt/nas-ecs/logs /opt/nas-ecs/run
 
 start_tunnel() {
     echo "启动NAS隧道..."
@@ -61,7 +61,7 @@ case "$1" in
     status) status_tunnel ;;
     *) echo "用法: $0 {start|stop|restart|status}" ;;
 esac
-[root@yyc3-33 ~]# cat /opt/yyc3/scripts/setup-summary.sh
+[root@yyc3-33 ~]# cat /opt/nas-ecs/scripts/setup-summary.sh
 #!/bin/bash
 
 # NAS DDNS配置总结
@@ -71,12 +71,12 @@ echo "║                  NAS DDNS 配置完成总结                      ║"
 echo "╠══════════════════════════════════════════════════════════════╣"
 echo "║                                                              ║"
 echo "║  配置项目:                                                   ║"
-echo "║  ✅ 1. DDNS脚本已安装: /opt/yyc3/ddns/                      ║"
+echo "║  ✅ 1. DDNS脚本已安装: /opt/nas-ecs/ddns/                      ║"
 echo "║  ✅ 2. 阿里云CLI已配置                                      ║"
 echo "║  ✅ 3. Systemd定时服务已设置 (5分钟更新)                   ║"
 echo "║  ✅ 4. Nginx反向代理已配置: ddns.0379.email                 ║"
 echo "║  ✅ 5. 监控系统已安装 (10分钟检查)                         ║"
-echo "║  ✅ 6. 管理脚本已创建: /opt/yyc3/scripts/                  ║"
+echo "║  ✅ 6. 管理脚本已创建: /opt/nas-ecs/scripts/                  ║"
 echo "║                                                              ║"
 echo "║  访问信息:                                                   ║"
 echo "║  🌐 域名: ddns.0379.email                                    ║"
@@ -85,9 +85,9 @@ echo "║  🏠 本地NAS: 192.168.3.45                                   ║"
 echo "║  ⏰ DDNS更新间隔: 5分钟                                     ║"
 echo "║                                                              ║"
 echo "║  管理命令:                                                   ║"
-echo "║  📊 查看状态: /opt/yyc3/scripts/nas-manager.sh             ║"
-echo "║  🔍 监控检查: /opt/yyc3/scripts/monitor-nas.sh check       ║"
-echo "║  🛠  手动更新: /opt/yyc3/ddns/ddns-simple.sh              ║"
+echo "║  📊 查看状态: /opt/nas-ecs/scripts/nas-manager.sh             ║"
+echo "║  🔍 监控检查: /opt/nas-ecs/scripts/monitor-nas.sh check       ║"
+echo "║  🛠  手动更新: /opt/nas-ecs/ddns/ddns-simple.sh              ║"
 echo "║  📝 查看日志: journalctl -u yyc3-ddns.service              ║"
 echo "║                                                              ║"
 echo "║  服务状态:                                                   ║"
@@ -132,11 +132,11 @@ echo "╠═══════════════════════�
 echo "║                                                              ║"
 echo "║  1. 访问 http://ddns.0379.email 查看NAS门户                  ║"
 echo "║  2. 运行 nas-manager.sh 进行系统管理                        ║"
-echo "║  3. 检查 /opt/yyc3/logs/ 目录查看日志                       ║"
+echo "║  3. 检查 /opt/nas-ecs/logs/ 目录查看日志                       ║"
 echo "║  4. 配置本地NAS到云服务器的隧道（如果需要直接访问）        ║"
 echo "║  5. 设置警报通知（邮件/Telegram等）                         ║"
 echo "║                                                              ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 EOF
 
-chmod +x /opt/yyc3/scripts/setup-summary.sh
+chmod +x /opt/nas-ecs/scripts/setup-summary.sh

@@ -1,5 +1,5 @@
 # 首先，确保环境文件已加载
-source /opt/yyc3/config/env.sh
+source /opt/nas-ecs/config/env.sh
 
 # 创建必要的目录结构
 echo "=== 创建目录结构 ==="
@@ -13,8 +13,8 @@ create_dir "$NAS_BACKUP_DIR"
 
 # 备份现有的配置
 echo "=== 备份现有配置 ==="
-backup_file "/opt/yyc3/api/ddns/app.py"
-backup_file "/opt/yyc3/web/ddns/index.html"
+backup_file "/opt/nas-ecs/api/ddns/app.py"
+backup_file "/opt/nas-ecs/web/ddns/index.html"
 backup_file "/etc/systemd/system/ddns-api.service"
 backup_file "/etc/nginx/conf.d/ddns.conf"
 
@@ -24,7 +24,7 @@ cat > "$NAS_SCRIPTS_DIR/init-nas-system.sh" << 'EOF'
 # NAS系统初始化脚本
 
 # 加载环境配置
-source /opt/yyc3/config/env.sh
+source /opt/nas-ecs/config/env.sh
 
 echo "=== NAS DDNS系统初始化 ==="
 echo "系统版本: $NAS_DDNS_VERSION"
@@ -81,7 +81,7 @@ if [ -n "$ALIYUN_ACCESS_KEY_ID" ] && [ "$ALIYUN_ACCESS_KEY_ID" != "LTAI5t9mLFEzt
     fi
 else
     echo "  ⚠ 阿里云Access Key未配置或为默认值"
-    echo "  请编辑 /opt/yyc3/config/env.sh 配置真实的Access Key"
+    echo "  请编辑 /opt/nas-ecs/config/env.sh 配置真实的Access Key"
 fi
 echo ""
 
@@ -89,7 +89,7 @@ echo ""
 echo "5. 生成配置文件..."
 
 # 生成DDNS配置文件（兼容旧版本）
-cat > /opt/yyc3/config/ddns.conf << DDNS_CONF_EOF
+cat > /opt/nas-ecs/config/ddns.conf << DDNS_CONF_EOF
 # DDNS配置文件 - 从env.sh自动生成
 # 生成时间: $(date)
 
@@ -116,7 +116,7 @@ LOG_LEVEL="info"
 SERVER_IP="$NAS_SERVER_IP"
 DDNS_CONF_EOF
 
-echo "  ✓ DDNS配置文件已生成: /opt/yyc3/config/ddns.conf"
+echo "  ✓ DDNS配置文件已生成: /opt/nas-ecs/config/ddns.conf"
 echo ""
 
 # 6. 创建DDNS主脚本
@@ -127,7 +127,7 @@ cat > "$NAS_SCRIPTS_DIR/ddns.sh" << DDNS_SCRIPT_EOF
 # 使用环境变量配置
 
 # 加载环境配置
-source /opt/yyc3/config/env.sh
+source /opt/nas-ecs/config/env.sh
 
 # 日志函数
 log() {
@@ -256,7 +256,7 @@ cat > "$NAS_SCRIPTS_DIR/monitor.sh" << 'EOF'
 #!/bin/bash
 # NAS系统监控脚本
 
-source /opt/yyc3/config/env.sh
+source /opt/nas-ecs/config/env.sh
 
 # 监控日志文件
 MONITOR_LOG="$NAS_LOGS_DIR/monitor.log"
@@ -436,7 +436,7 @@ echo ""
 
 # 8. 创建API服务
 echo "8. 创建API服务..."
-cat > "/opt/yyc3/api/ddns/app.py" << 'EOF'
+cat > "/opt/nas-ecs/api/ddns/app.py" << 'EOF'
 #!/usr/bin/env python3
 """
 NAS DDNS API 服务
@@ -454,7 +454,7 @@ app = Flask(__name__)
 def load_env():
     env_vars = {}
     try:
-        with open('/opt/yyc3/config/env.sh', 'r') as f:
+        with open('/opt/nas-ecs/config/env.sh', 'r') as f:
             for line in f:
                 line = line.strip()
                 if line.startswith('export ') and '=' in line:
@@ -495,7 +495,7 @@ def health():
 def ddns_status():
     try:
         # 读取DDNS状态
-        status_file = '/opt/yyc3/run/status.json'
+        status_file = '/opt/nas-ecs/run/status.json'
         if os.path.exists(status_file):
             with open(status_file, 'r') as f:
                 ddns_status = json.load(f)
@@ -554,7 +554,7 @@ def ddns_config():
 def ddns_logs():
     try:
         lines = request.args.get('lines', default=50, type=int)
-        log_file = env.get('NAS_LOGS_DIR', '/opt/yyc3/logs') + '/ddns.log'
+        log_file = env.get('NAS_LOGS_DIR', '/opt/nas-ecs/logs') + '/ddns.log'
 
         logs = []
         if os.path.exists(log_file):
@@ -584,7 +584,7 @@ def ddns_logs():
 def monitor_status():
     try:
         # 读取监控状态
-        resources_file = '/opt/yyc3/run/resources.json'
+        resources_file = '/opt/nas-ecs/run/resources.json'
         if os.path.exists(resources_file):
             with open(resources_file, 'r') as f:
                 resources = json.load(f)
@@ -618,7 +618,7 @@ def monitor_status():
 def ddns_update():
     try:
         # 执行DDNS更新
-        result = subprocess.run(['/opt/yyc3/scripts/ddns.sh', 'run'],
+        result = subprocess.run(['/opt/nas-ecs/scripts/ddns.sh', 'run'],
                               capture_output=True, text=True, timeout=30)
 
         return jsonify({
@@ -639,8 +639,8 @@ if __name__ == '__main__':
     app.run(host='127.0.0.1', port=int(env.get('API_PORT', '8080')), debug=False)
 EOF
 
-chmod +x "/opt/yyc3/api/ddns/app.py"
-echo "  ✓ API服务已更新: /opt/yyc3/api/ddns/app.py"
+chmod +x "/opt/nas-ecs/api/ddns/app.py"
+echo "  ✓ API服务已更新: /opt/nas-ecs/api/ddns/app.py"
 echo ""
 
 # 9. 更新Systemd服务配置
@@ -654,9 +654,9 @@ Requires=network.target
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/opt/yyc3/api/ddns
-EnvironmentFile=/opt/yyc3/config/env.sh
-ExecStart=/opt/yyc3/api/ddns/venv/bin/python /opt/yyc3/api/ddns/app.py
+WorkingDirectory=/opt/nas-ecs/api/ddns
+EnvironmentFile=/opt/nas-ecs/config/env.sh
+ExecStart=/opt/nas-ecs/api/ddns/venv/bin/python /opt/nas-ecs/api/ddns/app.py
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -665,7 +665,7 @@ SyslogIdentifier=nas-ddns-api
 
 # 安全配置
 ProtectSystem=strict
-ReadWritePaths=/opt/yyc3/logs /opt/yyc3/run
+ReadWritePaths=/opt/nas-ecs/logs /opt/nas-ecs/run
 NoNewPrivileges=true
 
 [Install]
@@ -1032,7 +1032,7 @@ cat > "$NAS_WEB_DIR/index.html" << 'EOF'
 
                         <div class="alert alert-info mt-3">
                             <i class="bi bi-info-circle me-2"></i>
-                            配置文件: /opt/yyc3/config/env.sh
+                            配置文件: /opt/nas-ecs/config/env.sh
                         </div>
                     </div>
                 </div>
@@ -1316,7 +1316,7 @@ server {
     add_header Strict-Transport-Security "max-age=63072000; includeSubDomains; preload";
 
     # 根目录
-    root /opt/yyc3/web/nas;
+    root /opt/nas-ecs/web/nas;
     index index.html;
 
     # 静态文件缓存
@@ -1386,8 +1386,8 @@ After=network.target
 [Service]
 Type=oneshot
 User=root
-EnvironmentFile=/opt/yyc3/config/env.sh
-ExecStart=/bin/bash /opt/yyc3/scripts/monitor.sh run
+EnvironmentFile=/opt/nas-ecs/config/env.sh
+ExecStart=/bin/bash /opt/nas-ecs/scripts/monitor.sh run
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=nas-monitor
@@ -1426,7 +1426,7 @@ cat > "$NAS_SCRIPTS_DIR/manage.sh" << 'EOF'
 #!/bin/bash
 # NAS DDNS系统管理脚本
 
-source /opt/yyc3/config/env.sh
+source /opt/nas-ecs/config/env.sh
 
 show_help() {
     echo "NAS DDNS系统管理脚本"
@@ -1564,8 +1564,8 @@ run_backup() {
     mkdir -p "$backup_dir"
 
     # 备份重要文件
-    cp -r /opt/yyc3/config "$backup_dir/"
-    cp -r /opt/yyc3/scripts "$backup_dir/"
+    cp -r /opt/nas-ecs/config "$backup_dir/"
+    cp -r /opt/nas-ecs/scripts "$backup_dir/"
     cp /etc/systemd/system/ddns-api.service "$backup_dir/"
     cp /etc/systemd/system/nas-monitor.* "$backup_dir/"
     cp /etc/nginx/conf.d/ddns.0379.email.conf "$backup_dir/" 2>/dev/null
@@ -1661,7 +1661,7 @@ cat > "$NAS_SCRIPTS_DIR/daily-report.sh" << 'EOF'
 #!/bin/bash
 # NAS系统每日报告
 
-source /opt/yyc3/config/env.sh
+source /opt/nas-ecs/config/env.sh
 
 # 报告目录
 REPORT_DATE=$(date +%Y%m%d)
@@ -1870,8 +1870,8 @@ After=network.target
 [Service]
 Type=oneshot
 User=root
-EnvironmentFile=/opt/yyc3/config/env.sh
-ExecStart=/bin/bash /opt/yyc3/scripts/daily-report.sh
+EnvironmentFile=/opt/nas-ecs/config/env.sh
+ExecStart=/bin/bash /opt/nas-ecs/scripts/daily-report.sh
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=nas-daily-report
@@ -1893,7 +1893,7 @@ cat > "$NAS_SCRIPTS_DIR/cleanup.sh" << 'EOF'
 #!/bin/bash
 # NAS系统清理脚本
 
-source /opt/yyc3/config/env.sh
+source /opt/nas-ecs/config/env.sh
 
 echo "=== NAS系统清理 ==="
 echo "清理时间: $(date)"
@@ -1949,18 +1949,18 @@ echo ""
 echo "✅ NAS DDNS系统已基于环境变量配置完成部署！"
 echo ""
 echo "📁 目录结构:"
-echo "  /opt/yyc3/config/env.sh          - 主配置文件"
-echo "  /opt/yyc3/scripts/              - 脚本目录"
-echo "  /opt/yyc3/web/nas/              - Web界面"
-echo "  /opt/yyc3/logs/                 - 日志目录"
-echo "  /opt/yyc3/reports/              - 报告目录"
+echo "  /opt/nas-ecs/config/env.sh          - 主配置文件"
+echo "  /opt/nas-ecs/scripts/              - 脚本目录"
+echo "  /opt/nas-ecs/web/nas/              - Web界面"
+echo "  /opt/nas-ecs/logs/                 - 日志目录"
+echo "  /opt/nas-ecs/reports/              - 报告目录"
 echo ""
 echo "🔧 管理命令:"
-echo "  /opt/yyc3/scripts/manage.sh status    - 查看系统状态"
-echo "  /opt/yyc3/scripts/manage.sh start     - 启动所有服务"
-echo "  /opt/yyc3/scripts/manage.sh stop      - 停止所有服务"
-echo "  /opt/yyc3/scripts/manage.sh logs      - 查看日志"
-echo "  /opt/yyc3/scripts/manage.sh test      - 测试系统"
+echo "  /opt/nas-ecs/scripts/manage.sh status    - 查看系统状态"
+echo "  /opt/nas-ecs/scripts/manage.sh start     - 启动所有服务"
+echo "  /opt/nas-ecs/scripts/manage.sh stop      - 停止所有服务"
+echo "  /opt/nas-ecs/scripts/manage.sh logs      - 查看日志"
+echo "  /opt/nas-ecs/scripts/manage.sh test      - 测试系统"
 echo ""
 echo "🌐 访问地址:"
 echo "  Web管理界面: https://ddns.0379.email"
@@ -1979,23 +1979,23 @@ echo "  2. 配置SSL证书（如果需要HTTPS）"
 echo "  3. 配置防火墙规则"
 echo "  4. 配置通知功能（邮件/Telegram）"
 echo ""
-echo "💡 提示: 所有配置都集中在 /opt/yyc3/config/env.sh 文件中"
+echo "💡 提示: 所有配置都集中在 /opt/nas-ecs/config/env.sh 文件中"
 EOF
 
 # 设置脚本权限
-chmod +x /opt/yyc3/scripts/init-nas-system.sh
+chmod +x /opt/nas-ecs/scripts/init-nas-system.sh
 
-echo "初始化脚本已创建: /opt/yyc3/scripts/init-nas-system.sh"
+echo "初始化脚本已创建: /opt/nas-ecs/scripts/init-nas-system.sh"
 echo ""
 echo "现在运行初始化脚本以完成系统配置..."
-/opt/yyc3/scripts/init-nas-system.sh
+/opt/nas-ecs/scripts/init-nas-system.sh
 
 
 
 这个完整的配置脚本将根据您的 env.sh 配置文件重新构建整个DDNS系统。系统将具有以下特点：
 
 🎯 系统特性
-集中式配置 - 所有配置都在 /opt/yyc3/config/env.sh 中
+集中式配置 - 所有配置都在 /opt/nas-ecs/config/env.sh 中
 模块化脚本 - 各个功能分离为独立的脚本
 完整的监控 - 系统资源、服务状态、DNS解析监控
 自动化报告 - 每日自动生成HTML报告
@@ -2004,7 +2004,7 @@ Web管理界面 - 现代化的Bootstrap界面
 Systemd集成 - 完整的服务管理和定时任务
 备份恢复 - 自动备份和恢复功能
 📁 文件结构
-/opt/yyc3/
+/opt/nas-ecs/
 ├── config/
 │   └── env.sh                    # 主配置文件
 ├── scripts/
@@ -2026,16 +2026,16 @@ Systemd集成 - 完整的服务管理和定时任务
 运行初始化脚本后，您可以：
 
 # 查看系统状态
-/opt/yyc3/scripts/manage.sh status
+/opt/nas-ecs/scripts/manage.sh status
 
 # 测试系统功能
-/opt/yyc3/scripts/manage.sh test
+/opt/nas-ecs/scripts/manage.sh test
 
 # 查看服务日志
-/opt/yyc3/scripts/manage.sh logs ddns
+/opt/nas-ecs/scripts/manage.sh logs ddns
 
 # 手动更新DDNS
-/opt/yyc3/scripts/manage.sh update
+/opt/nas-ecs/scripts/manage.sh update
 🔧 配置说明
 您的 env.sh 文件已经包含了所有必要的配置，特别是：
 
@@ -2044,4 +2044,4 @@ Systemd集成 - 完整的服务管理和定时任务
 服务器配置 - 公网IP和内网IP
 路径配置 - 所有目录路径
 服务配置 - 检查间隔、监控阈值等
-系统现在可以正常运行了！如果您需要修改任何配置，只需编辑 /opt/yyc3/config/env.sh 文件，然后重启相关服务即可。
+系统现在可以正常运行了！如果您需要修改任何配置，只需编辑 /opt/nas-ecs/config/env.sh 文件，然后重启相关服务即可。

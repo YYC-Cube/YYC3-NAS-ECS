@@ -7,7 +7,7 @@
  * @created 2025-01-30
  */
 
-import { EventEmitter } from '@utils/EventEmitter';
+import { EventEmitter } from '@/utils/EventEmitter';
 
 export interface DragConfig {
   enabled?: boolean;
@@ -147,7 +147,7 @@ export class AdvancedDragSystem extends EventEmitter {
     }
 
     const targetElement = this.handleElement || element;
-    targetElement.style.cursor = this.config.cursor;
+    targetElement.style.cursor = this.config.enabled ? this.config.cursor : 'default';
     targetElement.style.userSelect = 'none';
 
     targetElement.addEventListener('mousedown', this.handleMouseDown);

@@ -13,13 +13,13 @@ sudo apt-get update
 sudo apt-get install -y curl dnsutils jq nginx
 ```
 
-## 2. 补充主管理面板脚本 `/opt/yyc3/scripts/nas-manager.sh`
+## 2. 补充主管理面板脚本 `/opt/nas-ecs/scripts/nas-manager.sh`
 
 ```bash
 #!/bin/bash
 # NAS DDNS 系统主管理面板
 
-source /opt/yyc3/config/env.sh
+source /opt/nas-ecs/config/env.sh
 
 show_menu() {
     clear
@@ -269,13 +269,13 @@ main() {
 main
 ```
 
-## 3. 补充系统信息脚本 `/opt/yyc3/scripts/system-info.sh`
+## 3. 补充系统信息脚本 `/opt/nas-ecs/scripts/system-info.sh`
 
 ```bash
 #!/bin/bash
 # 系统信息脚本
 
-source /opt/yyc3/config/env.sh
+source /opt/nas-ecs/config/env.sh
 
 show_system_info() {
     echo -e "${COLOR_CYAN}"
@@ -366,13 +366,13 @@ main() {
 main "$@"
 ```
 
-## 4. 补充测试脚本 `/opt/yyc3/scripts/test-all.sh`
+## 4. 补充测试脚本 `/opt/nas-ecs/scripts/test-all.sh`
 
 ```bash
 #!/bin/bash
 # 完整测试脚本
 
-source /opt/yyc3/config/env.sh
+source /opt/nas-ecs/config/env.sh
 
 log_test() {
     echo -e "[TEST] $(date '+%Y-%m-%d %H:%M:%S') - $1"
@@ -482,13 +482,13 @@ main() {
 main
 ```
 
-## 5. 补充监控脚本 `/opt/yyc3/scripts/monitor-nas.sh`
+## 5. 补充监控脚本 `/opt/nas-ecs/scripts/monitor-nas.sh`
 
 ```bash
 #!/bin/bash
 # NAS 监控脚本
 
-source /opt/yyc3/config/env.sh
+source /opt/nas-ecs/config/env.sh
 
 # 设置日志文件
 LOG_FILE="${NAS_LOGS_DIR}/monitor-$(date +%Y%m%d).log"
@@ -687,7 +687,7 @@ main() {
 main
 ```
 
-## 6. 补充Web页面的JavaScript文件 `/opt/yyc3/web/nas/assets/script.js`
+## 6. 补充Web页面的JavaScript文件 `/opt/nas-ecs/web/nas/assets/script.js`
 
 ```javascript
 // NAS DDNS 系统前端脚本
@@ -987,13 +987,13 @@ function loadAllStatus() {
 
 ## 7. 补充其他必要的脚本
 
-### `/opt/yyc3/scripts/fix-nginx.sh`
+### `/opt/nas-ecs/scripts/fix-nginx.sh`
 
 ```bash
 #!/bin/bash
 # Nginx修复脚本
 
-source /opt/yyc3/config/env.sh
+source /opt/nas-ecs/config/env.sh
 
 log_info "开始修复Nginx配置..."
 
@@ -1081,13 +1081,13 @@ else
 fi
 ```
 
-### `/opt/yyc3/ddns/ddns-update.sh`
+### `/opt/nas-ecs/ddns/ddns-update.sh`
 
 ```bash
 #!/bin/bash
 # DDNS更新脚本（被定时器调用）
 
-source /opt/yyc3/config/env.sh
+source /opt/nas-ecs/config/env.sh
 
 # 运行DDNS脚本
 "${NAS_DDNS_DIR}/ddns-simple.sh"
@@ -1096,13 +1096,13 @@ source /opt/yyc3/config/env.sh
 echo "$(date '+%Y-%m-%d %H:%M:%S') - DDNS更新完成" >> "${NAS_LOGS_DIR}/ddns-run.log"
 ```
 
-### `/opt/yyc3/scripts/daily-report.sh`
+### `/opt/nas-ecs/scripts/daily-report.sh`
 
 ```bash
 #!/bin/bash
 # 每日报告生成脚本
 
-source /opt/yyc3/config/env.sh
+source /opt/nas-ecs/config/env.sh
 
 generate_daily_report() {
     local report_date=$(date +%Y%m%d)
@@ -1206,13 +1206,13 @@ main() {
 main
 ```
 
-### `/opt/yyc3/scripts/nas-tunnel.sh`
+### `/opt/nas-ecs/scripts/nas-tunnel.sh`
 
 ```bash
 #!/bin/bash
 # NAS隧道脚本（用于内网穿透）
 
-source /opt/yyc3/config/env.sh
+source /opt/nas-ecs/config/env.sh
 
 show_tunnel_menu() {
     clear
@@ -1362,11 +1362,11 @@ main
 
 ```bash
 # 设置所有脚本可执行
-chmod +x /opt/yyc3/scripts/*.sh
-chmod +x /opt/yyc3/ddns/*.sh
+chmod +x /opt/nas-ecs/scripts/*.sh
+chmod +x /opt/nas-ecs/ddns/*.sh
 
 # 运行初始化脚本
-/opt/yyc3/scripts/init-system.sh
+/opt/nas-ecs/scripts/init-system.sh
 
 # 配置阿里云CLI（需要您提供AccessKey）
 aliyun configure set \
@@ -1377,7 +1377,7 @@ aliyun configure set \
   --access-key-secret ${ALIYUN_ACCESS_KEY_SECRET}
 
 # 测试系统
-/opt/yyc3/scripts/test-all.sh
+/opt/nas-ecs/scripts/test-all.sh
 ```
 
 ## 9. 配置自动启动

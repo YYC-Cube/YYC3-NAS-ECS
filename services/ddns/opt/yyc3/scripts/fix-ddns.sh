@@ -9,7 +9,7 @@ systemctl stop ddns-api.service 2>/dev/null
 
 # 2. 检查Python环境
 echo "2. 检查Python环境..."
-cd /opt/yyc3/api/ddns
+cd /opt/nas-ecs/api/ddns
 if [ ! -f "venv/bin/python" ]; then
     echo "  创建虚拟环境..."
     python3 -m venv venv
@@ -37,7 +37,7 @@ from flask import Flask, jsonify
 app = Flask(__name__)
 
 # 确保日志目录存在
-os.makedirs('/opt/yyc3/logs', exist_ok=True)
+os.makedirs('/opt/nas-ecs/logs', exist_ok=True)
 
 @app.route('/')
 def index():
@@ -106,7 +106,7 @@ def status():
 def logs_recent():
     try:
         lines = 50
-        log_file = '/opt/yyc3/logs/ddns.log'
+        log_file = '/opt/nas-ecs/logs/ddns.log'
         
         logs = []
         if os.path.exists(log_file):
@@ -173,9 +173,9 @@ After=network.target
 [Service]
 Type=simple
 User=root
-WorkingDirectory=/opt/yyc3/api/ddns
-Environment="PATH=/opt/yyc3/api/ddns/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
-ExecStart=/opt/yyc3/api/ddns/venv/bin/python /opt/yyc3/api/ddns/app.py
+WorkingDirectory=/opt/nas-ecs/api/ddns
+Environment="PATH=/opt/nas-ecs/api/ddns/venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+ExecStart=/opt/nas-ecs/api/ddns/venv/bin/python /opt/nas-ecs/api/ddns/app.py
 Restart=always
 RestartSec=10
 StandardOutput=journal
@@ -193,14 +193,14 @@ systemctl daemon-reload
 
 # 6. 创建日志文件
 echo "6. 创建日志文件..."
-mkdir -p /opt/yyc3/logs
-if [ ! -f "/opt/yyc3/logs/ddns.log" ]; then
-    echo "DDNS服务日志已创建" > /opt/yyc3/logs/ddns.log
+mkdir -p /opt/nas-ecs/logs
+if [ ! -f "/opt/nas-ecs/logs/ddns.log" ]; then
+    echo "DDNS服务日志已创建" > /opt/nas-ecs/logs/ddns.log
 fi
-if [ ! -f "/opt/yyc3/logs/ddns_api.log" ]; then
-    echo "API服务日志已创建" > /opt/yyc3/logs/ddns_api.log
+if [ ! -f "/opt/nas-ecs/logs/ddns_api.log" ]; then
+    echo "API服务日志已创建" > /opt/nas-ecs/logs/ddns_api.log
 fi
-chmod 644 /opt/yyc3/logs/*.log
+chmod 644 /opt/nas-ecs/logs/*.log
 
 # 7. 启动服务
 echo "7. 启动API服务..."

@@ -108,7 +108,7 @@
 **frpc.toml 配置验证**:
 
 ```toml
-serverAddr = "8.152.195.33"
+serverAddr = "SERVER_IP_PLACEHOLDER"
 serverPort = 7001
 auth.method = "token"
 auth.token = "yyc3_nas"
@@ -125,7 +125,7 @@ subdomain = "api"
 name = "nas-0379"
 type = "http"
 localIP = "127.0.0.1"
-localPort = 6004  # ✅ 使用 6000 系列端口
+localPort = 6009  # ✅ 使用 6000 系列端口
 subdomain = "nas"
 
 [[proxies]]
@@ -223,7 +223,7 @@ LLM_SERVICE_PORT=6002  # ✅ 6000 系列
 REDIS_API_PORT=6379  # ✅ 标准 Redis 端口
 
 # NAS服务
-NAS_SERVICE_PORT=6004  # ✅ 6000 系列
+NAS_SERVICE_PORT=6009  # ✅ 6000 系列
 
 # 管理服务
 ADMIN_SERVICE_PORT=6001  # ✅ 6000 系列
@@ -244,7 +244,7 @@ VITE_MAIL_API_URL=http://localhost:6003  # ✅ 6000 系列
 VITE_LLM_API_URL=http://localhost:6002  # ✅ 6000 系列
 VITE_REDIS_API_URL=http://localhost:6379  # ✅ 标准 Redis 端口
 VITE_DDNS_API_URL=http://localhost:6007  # ✅ 6000 系列
-VITE_FRP_API_URL=http://localhost:6004  # ✅ 6000 系列
+VITE_FRP_API_URL=http://localhost:6009  # ✅ 6000 系列
 VITE_NAS_API_URL=http://localhost:6006  # ✅ 6000 系列
 
 VITE_WS_URL=ws://localhost:6000  # ✅ 6000 系列
@@ -422,7 +422,7 @@ localPort = 6000  # API 服务
 localPort = 6001  # 管理服务
 localPort = 6002  # LLM 服务
 localPort = 6003  # 邮件服务
-localPort = 6004  # NAS 服务
+localPort = 6009  # NAS 服务
 localPort = 6006  # 监控服务
 localPort = 6007  # DDNS 服务
 
@@ -827,7 +827,7 @@ echo "=== FRP 配置验证完成 ==="
 6001
 6002
 6003
-6004
+6009
 6006
 6007
 服务器配置端口范围:
@@ -1161,7 +1161,7 @@ docs/YYC3-NAS-ECS-部署操作指导/部署操作指导.md:API_SERVICE_PORT=6000
 | 管理服务 | 6001 | 管理后台服务端口 |
 | LLM 服务 | 6002 | LLM AI 服务端口 |
 | 邮件服务 | 6003 | 邮件服务端口 |
-| NAS 服务 | 6004 | NAS 服务端口 |
+| NAS 服务 | 6009 | NAS 服务端口 |
 | Redis 服务 | 6379 | Redis 缓存服务端口（标准端口） |
 | 监控服务 | 6006 | 监控服务端口 |
 | DDNS 服务 | 6007 | DDNS 服务端口 |
@@ -1178,7 +1178,7 @@ docs/YYC3-NAS-ECS-部署操作指导/部署操作指导.md:API_SERVICE_PORT=6000
 | MAIL_SERVICE_PORT | 6003 | 邮件服务端口 |
 | LLM_SERVICE_PORT | 6002 | LLM 服务端口 |
 | REDIS_API_PORT | 6379 | Redis 服务端口 |
-| NAS_SERVICE_PORT | 6004 | NAS 服务端口 |
+| NAS_SERVICE_PORT | 6009 | NAS 服务端口 |
 | ADMIN_SERVICE_PORT | 6001 | 管理服务端口 |
 | MONITOR_SERVICE_PORT | 6006 | 监控服务端口 |
 | DDNS_SERVICE_PORT | 6007 | DDNS 服务端口 |
@@ -1193,7 +1193,7 @@ FRP 服务器 (7001)
 │   ├── Redis 服务 (6379)
 │   └── LLM 服务 (6002)
 ├── 邮件服务 (6003)
-├── NAS 服务 (6004)
+├── NAS 服务 (6009)
 ├── 管理服务 (6001)
 ├── 监控服务 (6006)
 └── DDNS 服务 (6007)

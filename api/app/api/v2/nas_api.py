@@ -13,7 +13,7 @@ from flask_cors import cross_origin
 nas_bp = Blueprint('nas', __name__)
 
 # NAS API配置
-NAS_API_URL = os.getenv('NAS_API_URL', 'http://localhost:6004')
+NAS_API_URL = os.getenv('NAS_API_URL', 'http://localhost:6009')
 NAS_API_KEY = os.getenv('NAS_API_KEY', '')
 
 

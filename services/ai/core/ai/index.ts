@@ -38,15 +38,18 @@ export class AgentSystem {
       return;
     }
 
-    this.manager.on('agent:registered', (data) => {
+    this.manager.on('agent:registered', (...args: unknown[]) => {
+      const data = args[0] as { agentId: string };
       console.log(`[AgentSystem] 智能体已注册: ${data.agentId}`);
     });
 
-    this.manager.on('message:sent', (data) => {
+    this.manager.on('message:sent', (...args: unknown[]) => {
+      const data = args[0] as { message: { id: string; to: string } };
       console.log(`[AgentSystem] 消息已发送: ${data.message.id} -> ${data.message.to}`);
     });
 
-    this.manager.on('message:failed', (data) => {
+    this.manager.on('message:failed', (...args: unknown[]) => {
+      const data = args[0] as { message: { id: string }; error: unknown };
       console.error(`[AgentSystem] 消息发送失败: ${data.message.id}`, data.error);
     });
 

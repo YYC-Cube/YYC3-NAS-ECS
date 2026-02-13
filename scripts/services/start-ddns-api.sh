@@ -2,10 +2,10 @@
 # DDNS API启动脚本 - 初始化和启动API服务
 
 # 确保日志目录存在
-mkdir -p /opt/yyc3/logs
+mkdir -p /opt/nas-ecs/logs
 
 # 进入API目录
-cd /opt/yyc3/api/ddns
+cd /opt/nas-ecs/api/ddns
 
 # 检查Python版本
 PYTHON_VERSION=$(python3 --version 2>&1 | grep -oP '(?<=Python )\d+\.\d+')
@@ -47,8 +47,8 @@ bind = '0.0.0.0:5000'
 workers = 4
 worker_class = 'gevent'
 timeout = 120
-accesslog = '/opt/yyc3/logs/gunicorn_access.log'
-errorlog = '/opt/yyc3/logs/gunicorn_error.log'
+accesslog = '/opt/nas-ecs/logs/gunicorn_access.log'
+errorlog = '/opt/nas-ecs/logs/gunicorn_error.log'
 loglevel = 'info'
 EOF
 fi

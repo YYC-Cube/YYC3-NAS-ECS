@@ -50,7 +50,7 @@ log_info() {
 # 开始报告
 echo "# YYC³ NAS-ECS ECS服务器部署现状审查报告" > "$REPORT_FILE"
 echo "**生成时间**: $(date '+%Y-%m-%d %H:%M:%S')" >> "$REPORT_FILE"
-echo "**服务器IP**: 8.152.195.33" >> "$REPORT_FILE"
+echo "**服务器IP**: SERVER_IP_PLACEHOLDER" >> "$REPORT_FILE"
 echo "**审查脚本版本**: 1.0.6" >> "$REPORT_FILE"
 echo "" >> "$REPORT_FILE"
 
@@ -253,7 +253,7 @@ ports_to_check=(
     "6001:管理服务"
     "6002:LLM服务"
     "6003:邮件服务"
-    "6004:NAS服务"
+    "6009:NAS服务"
     "6006:监控服务"
     "6007:DDNS服务"
     "5173:前端服务"
@@ -365,7 +365,7 @@ echo "" >> "$REPORT_FILE"
 echo "**公网服务测试（需要DNS解析）**: " >> "$REPORT_FILE"
 echo '```bash' >> "$REPORT_FILE"
 echo "注意：以下测试需要域名解析到当前服务器IP" >> "$REPORT_FILE"
-echo "当前服务器IP: 8.152.195.33" >> "$REPORT_FILE"
+echo "当前服务器IP: SERVER_IP_PLACEHOLDER" >> "$REPORT_FILE"
 echo '```' >> "$REPORT_FILE"
 
 echo "" >> "$REPORT_FILE"

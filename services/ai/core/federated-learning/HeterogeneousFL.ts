@@ -306,7 +306,7 @@ export class HeterogeneousFL {
     };
   }
 
-  async implementModelPersonalization(clientId: string, globalModel: ModelArchitecture, localData: number[][]): Promise<{
+  async implementModelPersonalization(clientId: string, globalModel: ModelArchitecture, _localData: number[][]): Promise<{
     personalizationMethod: string;
     personalizationLayers: number[];
     personalizationAccuracy: number;
@@ -408,7 +408,7 @@ export class HeterogeneousFL {
     };
   }
 
-  private calculateDistribution(data: number[][]): number[] {
+  private calculateDistribution(_data: number[][]): number[] {
     const distribution: number[] = [];
     for (let i = 0; i < 10; i++) {
       distribution.push(Math.random());

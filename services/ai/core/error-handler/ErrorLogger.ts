@@ -1,4 +1,4 @@
-import { EventEmitter } from '@utils/EventEmitter';
+import { EventEmitter } from '@/utils/EventEmitter';
 import { YYC3Error, ErrorSeverity, ErrorCategory } from './ErrorTypes';
 import { ErrorReport } from './ErrorHandler';
 

@@ -24,7 +24,7 @@ import {
   LogOut
 } from 'lucide-react';
 import { EmailList } from './app/components/EmailList';
-import { ThemeProvider, useTheme } from './ThemeContext';
+import { ThemeProvider, useTheme, ModuleTheme } from './ThemeContext';
 
 /* ==================== 子组件 ==================== */
 
@@ -32,8 +32,8 @@ import { ThemeProvider, useTheme } from './ThemeContext';
  * 主题切换器组件
  */
 interface ThemeSwitcherProps {
-  currentTheme: string;
-  setTheme: (theme: string) => void;
+  currentTheme: ModuleTheme;
+  setTheme: (theme: ModuleTheme) => void;
 }
 
 const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ currentTheme, setTheme }) => (

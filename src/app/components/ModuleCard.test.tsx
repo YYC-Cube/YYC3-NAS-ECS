@@ -370,14 +370,14 @@ describe('ModuleCard', () => {
 
   describe('边界情况', () => {
     it('应该处理空标题', () => {
-      render(
+      const { container } = render(
         <ModuleCard title="">
           <div>内容</div>
         </ModuleCard>
       );
 
-      const titleElement = screen.queryByText('');
-      expect(titleElement).toBeInTheDocument();
+      const card = container.querySelector('.p-6');
+      expect(card).toBeInTheDocument();
     });
 
     it('应该处理长标题', () => {

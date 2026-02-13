@@ -5,7 +5,7 @@ interface ModuleCardProps {
   title: string;
   children: ReactNode;
   level?: 1 | 2; // 层级1: 内容卡片, 层级2: 数据卡片
-  onClick?: () => void;
+  onClick?: (e?: React.MouseEvent) => void;
   className?: string;
 }
 
@@ -19,14 +19,14 @@ export const ModuleCard: React.FC<ModuleCardProps> = ({
   const [isHovered, setIsHovered] = useState(false);
   const [isClicked, setIsClicked] = useState(false);
 
-  const handleClick = (_e: React.MouseEvent) => {
+  const handleClick = (e: React.MouseEvent) => {
     setIsClicked(true);
-    onClick?.();
+    onClick?.(e);
     setTimeout(() => setIsClicked(false), 200);
   };
 
   const shadowWidth = isClicked ? '5px' : '4px';
-  
+
   return (
     <motion.div
       className={`p-6 rounded-lg transition-all duration-300 relative overflow-hidden ${className || ''}`}
@@ -34,15 +34,16 @@ export const ModuleCard: React.FC<ModuleCardProps> = ({
         /* 增强边框系统 */
         border: '1px solid rgba(var(--module-primary), 0.15)',
         borderLeft: `${shadowWidth} solid var(--module-shadow)`,
-        backgroundColor: level === 1 
+        backgroundColor: level === 1
           ? 'rgba(var(--module-light-rgb), 0.14)'
           : 'linear-gradient(to bottom, rgba(var(--module-light-rgb), 0.18), rgba(var(--module-light-rgb), 0.08))',
-        boxShadow: isHovered 
+        boxShadow: isHovered
           ? `0 20px 50px rgba(var(--module-primary), 0.20), 0 8px 25px rgba(var(--module-primary), 0.15), 0 4px 15px rgba(var(--module-primary), 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.9)`
           : `0 10px 28px rgba(var(--module-primary), 0.15), 0 4px 12px rgba(var(--module-primary), 0.10), 0 2px 6px rgba(var(--module-primary), 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8)`,
         backdropFilter: 'blur(15px)',
         borderRadius: '16px',
         transition: 'all 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
+        cursor: onClick ? 'pointer' : 'default',
       }}
       initial={{ opacity: 0, y: 15, boxShadow: '0 0 0 rgba(var(--module-primary), 0.0)' }}
       animate={{ opacity: 1, y: 0 }}

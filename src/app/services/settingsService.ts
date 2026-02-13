@@ -506,30 +506,30 @@ class SettingsService {
   private loadConfig(): void {
     this.config = {
       general: {
-        systemName: this.getSettingValue('system.name'),
+        systemName: this.getSettingValueWithDefault('system.name', 'YYC³ NAS-ECS'),
         systemDescription: 'YYC³ NAS-ECS 企业级智能管理平台',
-        timezone: this.getSettingValue('system.timezone'),
-        language: this.getSettingValue('system.language'),
+        timezone: this.getSettingValueWithDefault('system.timezone', 'Asia/Shanghai'),
+        language: this.getSettingValueWithDefault('system.language', 'zh-CN'),
         dateFormat: 'YYYY-MM-DD',
         timeFormat: 'HH:mm:ss'
       },
       security: {
-        sessionTimeout: this.getSettingValue('security.sessionTimeout'),
-        maxLoginAttempts: this.getSettingValue('security.maxLoginAttempts'),
-        passwordMinLength: this.getSettingValue('security.passwordMinLength'),
+        sessionTimeout: this.getSettingValueWithDefault('security.sessionTimeout', 3600),
+        maxLoginAttempts: this.getSettingValueWithDefault('security.maxLoginAttempts', 5),
+        passwordMinLength: this.getSettingValueWithDefault('security.passwordMinLength', 8),
         passwordRequireUppercase: true,
         passwordRequireLowercase: true,
         passwordRequireNumbers: true,
         passwordRequireSpecialChars: false,
-        twoFactorAuth: this.getSettingValue('security.twoFactorAuth'),
+        twoFactorAuth: this.getSettingValueWithDefault('security.twoFactorAuth', false),
         ipWhitelist: []
       },
       notification: {
-        emailEnabled: this.getSettingValue('notification.emailEnabled'),
-        emailSmtpHost: this.getSettingValue('notification.emailSmtpHost'),
-        emailSmtpPort: this.getSettingValue('notification.emailSmtpPort'),
-        emailSmtpUsername: this.getSettingValue('notification.emailSmtpUsername'),
-        emailSmtpPassword: this.getSettingValue('notification.emailSmtpPassword'),
+        emailEnabled: this.getSettingValueWithDefault('notification.emailEnabled', false),
+        emailSmtpHost: this.getSettingValueWithDefault('notification.emailSmtpHost', ''),
+        emailSmtpPort: this.getSettingValueWithDefault('notification.emailSmtpPort', 587),
+        emailSmtpUsername: this.getSettingValueWithDefault('notification.emailSmtpUsername', ''),
+        emailSmtpPassword: this.getSettingValueWithDefault('notification.emailSmtpPassword', ''),
         emailFromAddress: 'noreply@0379.email',
         webhookEnabled: false,
         webhookUrl: '',
@@ -537,15 +537,15 @@ class SettingsService {
         slackWebhookUrl: ''
       },
       appearance: {
-        theme: this.getSettingValue('appearance.theme'),
-        primaryColor: this.getSettingValue('appearance.primaryColor'),
+        theme: this.getSettingValueWithDefault('appearance.theme', 'light' as const),
+        primaryColor: this.getSettingValueWithDefault('appearance.primaryColor', '#1976d2'),
         fontSize: 'medium',
         density: 'comfortable',
         animations: true
       },
       network: {
-        httpPort: this.getSettingValue('network.httpPort'),
-        httpsPort: this.getSettingValue('network.httpsPort'),
+        httpPort: this.getSettingValueWithDefault('network.httpPort', 80),
+        httpsPort: this.getSettingValueWithDefault('network.httpsPort', 443),
         maxConnections: 1000,
         timeout: 30,
         proxyEnabled: false,
@@ -553,39 +553,39 @@ class SettingsService {
         proxyPort: 0
       },
       storage: {
-        dataPath: this.getSettingValue('storage.dataPath'),
+        dataPath: this.getSettingValueWithDefault('storage.dataPath', '/data'),
         logPath: '/logs',
-        backupPath: this.getSettingValue('storage.backupPath'),
+        backupPath: this.getSettingValueWithDefault('storage.backupPath', '/backup'),
         tempPath: '/tmp',
         maxStorageSize: 10737418240,
         cleanupEnabled: true,
         cleanupDays: 7
       },
       performance: {
-        maxWorkers: this.getSettingValue('performance.maxWorkers'),
-        cacheEnabled: this.getSettingValue('performance.cacheEnabled'),
+        maxWorkers: this.getSettingValueWithDefault('performance.maxWorkers', 4),
+        cacheEnabled: this.getSettingValueWithDefault('performance.cacheEnabled', true),
         cacheSize: 1073741824,
         cacheTtl: 3600,
         compressionEnabled: true,
         compressionLevel: 6
       },
       logging: {
-        logLevel: this.getSettingValue('logging.logLevel'),
+        logLevel: this.getSettingValueWithDefault('logging.logLevel', 'INFO' as const),
         logToFile: true,
         logToDatabase: true,
         maxLogSize: 104857600,
-        logRetentionDays: this.getSettingValue('logging.logRetentionDays')
+        logRetentionDays: this.getSettingValueWithDefault('logging.logRetentionDays', 7)
       },
       backup: {
-        autoBackupEnabled: this.getSettingValue('backup.autoBackupEnabled'),
-        backupSchedule: this.getSettingValue('backup.backupSchedule'),
+        autoBackupEnabled: this.getSettingValueWithDefault('backup.autoBackupEnabled', true),
+        backupSchedule: this.getSettingValueWithDefault('backup.backupSchedule', '0 2 * * *'),
         backupRetentionDays: 30,
         compressionEnabled: true,
         encryptionEnabled: false
       },
       api: {
-        apiEnabled: this.getSettingValue('api.apiEnabled'),
-        apiRateLimit: this.getSettingValue('api.apiRateLimit'),
+        apiEnabled: this.getSettingValueWithDefault('api.apiEnabled', true),
+        apiRateLimit: this.getSettingValueWithDefault('api.apiRateLimit', 1000),
         apiRateWindow: 60,
         corsEnabled: true,
         corsOrigins: ['*'],
@@ -612,6 +612,12 @@ class SettingsService {
   getSettingValue(key: string): SettingValue | undefined {
     const setting = this.getSettingByKey(key);
     return setting ? setting.value : undefined;
+  }
+
+  getSettingValueWithDefault<T extends SettingValue>(key: string, defaultValue: T): T {
+    const setting = this.getSettingByKey(key);
+    const value = setting ? setting.value : undefined;
+    return (value !== undefined ? value : defaultValue) as T;
   }
 
   updateSetting(id: string, value: SettingValue, updatedBy: string = 'current-user'): SystemSetting | null {

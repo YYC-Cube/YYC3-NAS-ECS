@@ -3,7 +3,6 @@ import {
   AIWidgetInstance,
   AIWidgetConfig,
   AITool,
-  AIToolConfig,
   createAutonomousAIWidget,
   createAITool
 } from './AITypes';
@@ -484,14 +483,14 @@ export class BusinessManagementAI {
     };
   }
 
-  private async analyzeKPI(kpiData: any, params: any): Promise<any> {
+  private async analyzeKPI(kpiData: any, _params: any): Promise<any> {
     return {
       kpiData,
       analysis: 'analysis_result'
     };
   }
 
-  private async generateKPIRecommendations(analysis: any): Promise<string[]> {
+  private async generateKPIRecommendations(_analysis: any): Promise<string[]> {
     return ['recommendation_1', 'recommendation_2'];
   }
 

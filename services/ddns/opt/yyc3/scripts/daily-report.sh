@@ -1,6 +1,6 @@
 #!/bin/bash
 
-REPORT_DIR="/opt/yyc3/reports"
+REPORT_DIR="/opt/nas-ecs/reports"
 mkdir -p "$REPORT_DIR"
 
 REPORT_FILE="$REPORT_DIR/daily-report-$(date +%Y%m%d).txt"

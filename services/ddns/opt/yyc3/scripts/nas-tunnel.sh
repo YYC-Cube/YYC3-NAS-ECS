@@ -2,10 +2,10 @@
 
 # NAS SSH隧道脚本
 TUNNEL_PORTS="5000 5001 5002 5003 5005 9557"                                        
-LOG_FILE="/opt/yyc3/logs/nas-tunnel.log"
-PID_FILE="/opt/yyc3/run/nas-tunnel.pid"
+LOG_FILE="/opt/nas-ecs/logs/nas-tunnel.log"
+PID_FILE="/opt/nas-ecs/run/nas-tunnel.pid"
 
-mkdir -p /opt/yyc3/logs /opt/yyc3/run
+mkdir -p /opt/nas-ecs/logs /opt/nas-ecs/run
 
 start_tunnel() {
     echo "启动NAS隧道..."

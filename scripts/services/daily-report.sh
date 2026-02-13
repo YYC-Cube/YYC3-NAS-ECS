@@ -1,7 +1,7 @@
-cat > /opt/yyc3/scripts/daily-report.sh << 'EOF'
+cat > /opt/nas-ecs/scripts/daily-report.sh << 'EOF'
 #!/bin/bash
 
-REPORT_DIR="/opt/yyc3/reports"
+REPORT_DIR="/opt/nas-ecs/reports"
 mkdir -p "$REPORT_DIR"
 
 REPORT_FILE="$REPORT_DIR/daily-report-$(date +%Y%m%d).txt"
@@ -69,4 +69,4 @@ echo "每日报告已生成: $REPORT_FILE"
 find "$REPORT_DIR" -name "daily-report-*.txt" -mtime +7 -delete
 EOF
 
-chmod +x /opt/yyc3/scripts/daily-report.sh
+chmod +x /opt/nas-ecs/scripts/daily-report.sh

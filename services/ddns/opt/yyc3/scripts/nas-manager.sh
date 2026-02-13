@@ -7,7 +7,7 @@
 DOMAIN="nas.0379.email"
 CLOUD_IP="8.152.195.33"
 LOCAL_NAS_IP="192.168.3.45"
-DDNS_SCRIPT="/opt/yyc3/ddns/ddns-simple.sh"
+DDNS_SCRIPT="/opt/nas-ecs/ddns/ddns-simple.sh"
 NGINX_CONFIG="/etc/nginx/sites-available/nas.0379.email"
 
 # 颜色定义

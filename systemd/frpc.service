@@ -1,0 +1,27 @@
+[Unit]
+Description=YYC3 NAS-ECS FRP Client Service
+Documentation=https://github.com/fatedier/frp
+After=network.target network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+
+WorkingDirectory=/opt/nas-ecs
+
+ExecStart=/usr/local/bin/frpc -c /opt/nas-ecs/frpc/frpc.toml
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MAINPID
+Restart=always
+RestartSec=5s
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=frpc
+
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

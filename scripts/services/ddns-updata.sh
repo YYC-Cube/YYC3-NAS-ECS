@@ -1,7 +1,7 @@
 #!/bin/bash
 # DDNS 更新脚本 - 支持 ddns.0379.email
 
-source /opt/yyc3/config/env.sh
+source /opt/nas-ecs/config/env.sh
 
 # 日志函数
 log() {

@@ -1,0 +1,160 @@
+# 📦 docker-compose.prod.yml - 生产环境编排
+version: '3.8'
+
+services:
+  # ================== 反向代理 (Nginx) ==================
+  gateway:
+    image: nginx:alpine
+    container_name: yyc3-gateway
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.prod.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/ssl:/etc/nginx/ssl:ro
+      - ./logs/nginx:/var/log/nginx
+    depends_on:
+      - api
+      - widget
+    restart: always
+
+  # ================== 后端 API 服务 ==================
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+      target: runner
+    container_name: yyc3-api-prod
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info
+      - REDIS_URL=redis://redis:6379
+      - MONGO_URL=mongodb://mongo:27017/yyc3_prod
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - JWT_SECRET=${JWT_SECRET}
+    restart: always
+    depends_on:
+      - redis
+      - mongo
+    healthcheck:
+      test: ["CMD", "bun", "run", "scripts/health-check.ts"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - internal
+
+  # ================== 前端 Widget 服务 ==================
+  widget:
+    build:
+      context: .
+      dockerfile: Dockerfile.frontend
+      target: runner
+      args:
+        VITE_APP_TITLE: YYC³ AI
+        VITE_API_BASE_URL: https://api.yourdomain.com
+    container_name: yyc3-widget-prod
+    restart: always
+    depends_on:
+      - gateway
+    networks:
+      - internal
+
+  # ================== 基础设施服务 ==================
+
+  redis:
+    image: redis:7-alpine
+    container_name: yyc3-redis-prod
+    restart: always
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - internal
+
+  mongo:
+    image: mongo:6
+    container_name: yyc3-mongo-prod
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: yyc3_prod
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - internal
+
+  # ================== 监控服务 ==================
+
+  prometheus:
+    image: prom/prometheus
+    container_name: yyc3-prometheus-prod
+    restart: always
+    volumes:
+      - ./monitoring/prometheus.prod.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - internal
+
+  grafana:
+    image: grafana/grafana
+    container_name: yyc3-grafana-prod
+    restart: always
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    ports:
+      - "3001:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - internal
+
+  # ================== 日志服务 ==================
+
+  loki:
+    image: grafana/loki
+    container_name: yyc3-loki-prod
+    restart: always
+    volumes:
+      - loki_data:/loki
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - internal
+
+  promtail:
+    image: grafana/promtail
+    container_name: yyc3-promtail-prod
+    restart: always
+    volumes:
+      - ./monitoring/promtail.yml:/etc/promtail/config.yml:ro
+      - /var/log:/var/log:ro
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      - internal
+
+volumes:
+  redis_data:
+  mongo_data:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+
+networks:
+  internal:
+    name: yyc3-prod-network

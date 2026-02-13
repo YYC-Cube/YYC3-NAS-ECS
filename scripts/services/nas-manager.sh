@@ -1,4 +1,4 @@
-cat > /opt/yyc3/scripts/nas-manager.sh << 'EOF'
+cat > /opt/nas-ecs/scripts/nas-manager.sh << 'EOF'
 #!/bin/bash
 
 # NAS访问管理系统
@@ -8,7 +8,7 @@ cat > /opt/yyc3/scripts/nas-manager.sh << 'EOF'
 DOMAIN="ddns.0379.email"
 CLOUD_IP="8.152.195.33"
 LOCAL_NAS_IP="192.168.3.45"
-DDNS_SCRIPT="/opt/yyc3/ddns/ddns-simple.sh"
+DDNS_SCRIPT="/opt/nas-ecs/ddns/ddns-simple.sh"
 NGINX_CONFIG="/etc/nginx/sites-available/ddns.0379.email"
 
 # 颜色定义
@@ -216,4 +216,4 @@ main() {
 main
 EOF
 
-chmod +x /opt/yyc3/scripts/nas-manager.sh
+chmod +x /opt/nas-ecs/scripts/nas-manager.sh

@@ -1209,7 +1209,7 @@ class LogArchiver {
 
 // 使用示例
 const logArchiver = new LogArchiver({
-  exportPath: '/opt/yyc3/archives/logs',
+  exportPath: '/opt/nas-ecs/archives/logs',
   exportFormat: 'json',
   retentionDays: 30,
   compress: true

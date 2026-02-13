@@ -7,7 +7,7 @@
  * @created 2025-01-19
  */
 
-import { EventEmitter } from '@utils/EventEmitter';
+import { EventEmitter } from '@/utils/EventEmitter';
 import OpenAI from 'openai';
 import Anthropic from '@anthropic-ai/sdk';
 

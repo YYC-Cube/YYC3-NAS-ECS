@@ -12,7 +12,7 @@ from flask import Flask, jsonify
 app = Flask(__name__)
 
 # 确保日志目录存在
-os.makedirs('/opt/yyc3/logs', exist_ok=True)
+os.makedirs('/opt/nas-ecs/logs', exist_ok=True)
 
 @app.route('/')
 def index():
@@ -81,7 +81,7 @@ def status():
 def logs_recent():
     try:
         lines = 50
-        log_file = '/opt/yyc3/logs/ddns.log'
+        log_file = '/opt/nas-ecs/logs/ddns.log'
         
         logs = []
         if os.path.exists(log_file):

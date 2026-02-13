@@ -193,7 +193,7 @@
 | 管理服务 | 6001 | - | admin.0379.email | ✅ |
 | LLM 服务 | 6002 | - | llm.0379.email | ✅ |
 | 邮件服务 | 6003 | - | mail.0379.email | ✅ |
-| NAS 服务 | 6004 | - | nas.0379.email | ✅ |
+| NAS 服务 | 6009 | - | nas.0379.email | ✅ |
 | 监控服务 | 6006 | - | monitor.0379.email | ✅ |
 | DDNS 服务 | 6007 | - | ddns.0379.email | ✅ |
 | Redis | 6379 | - | - | ✅ |
@@ -207,7 +207,7 @@
 **frpc.toml 审核**:
 
 ```toml
-serverAddr = "8.152.195.33"
+serverAddr = "SERVER_IP_PLACEHOLDER"
 serverPort = 7001
 auth.method = "token"
 auth.token = "yyc3_nas"
@@ -340,7 +340,7 @@ services:
 
 ```
 ┌─────────────────────────────────────────────────┐
-│              阿里云 ECS (8.152.195.33)        │
+│              阿里云 ECS (SERVER_IP_PLACEHOLDER)        │
 │  ┌─────────────────────────────────────────┐  │
 │  │  FRP Server (frps)        Port: 7001   │  │
 │  └─────────────────────────────────────────┘  │
@@ -360,7 +360,7 @@ services:
 │  │  - API (6000)                          │  │
 │  │  - Mail (6003)                          │  │
 │  │  - LLM (6002)                          │  │
-│  │  - NAS (6004)                          │  │
+│  │  - NAS (6009)                          │  │
 │  │  - DDNS (6007)                         │  │
 │  └─────────────────────────────────────────┘  │
 └─────────────────────────────────────────────────┘
@@ -376,7 +376,7 @@ services:
 | admin.0379.email | 管理服务 | 6001 | ✅ |
 | llm.0379.email | LLM 服务 | 6002 | ✅ |
 | mail.0379.email | 邮件服务 | 6003 | ✅ |
-| nas.0379.email | NAS 服务 | 6004 | ✅ |
+| nas.0379.email | NAS 服务 | 6009 | ✅ |
 | monitor.0379.email | 监控服务 | 6006 | ✅ |
 | ddns.0379.email | DDNS 服务 | 6007 | ✅ |
 

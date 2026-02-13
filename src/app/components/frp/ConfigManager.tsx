@@ -57,7 +57,7 @@ export const ConfigManager: React.FC = () => {
     { name: 'api-0379', content: '[api-0379]\ntype = http\nlocalIP = 127.0.0.1\nlocalPort = 6000\nsubdomain = api' },
     { name: 'mail-0379', content: '[mail-0379]\ntype = http\nlocalIP = 127.0.0.1\nlocalPort = 6003\nsubdomain = mail' },
     { name: 'llm-0379', content: '[llm-0379]\ntype = http\nlocalIP = 127.0.0.1\nlocalPort = 6002\nsubdomain = llm' },
-    { name: 'nas-0379', content: '[nas-0379]\ntype = http\nlocalIP = 127.0.0.1\nlocalPort = 6004\nsubdomain = nas' },
+    { name: 'nas-0379', content: '[nas-0379]\ntype = http\nlocalIP = 127.0.0.1\nlocalPort = 6009\nsubdomain = nas' },
     { name: 'admin-0379', content: '[admin-0379]\ntype = http\nlocalIP = 127.0.0.1\nlocalPort = 6001\nsubdomain = admin' },
     { name: 'monitor-0379', content: '[monitor-0379]\ntype = http\nlocalIP = 127.0.0.1\nlocalPort = 6006\nsubdomain = monitor' },
     { name: 'ddns-0379', content: '[ddns-0379]\ntype = http\nlocalIP = 127.0.0.1\nlocalPort = 6007\nsubdomain = ddns' },

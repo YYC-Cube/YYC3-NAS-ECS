@@ -110,6 +110,14 @@ export class XSSProtection {
   }
 
   sanitizeObject<T extends Record<string, any>>(obj: T, options: XSSSanitizeOptions = {}): T {
+    if (obj === null || obj === undefined) {
+      return obj;
+    }
+
+    if (Array.isArray(obj)) {
+      return this.sanitizeArray(obj as any[], options) as unknown as T;
+    }
+
     const sanitized: Record<string, any> = {};
 
     for (const key in obj) {
@@ -138,7 +146,7 @@ export class XSSProtection {
       } else if (typeof item === 'object' && item !== null) {
         return this.sanitizeObject(item as Record<string, any>, options) as T;
       } else if (Array.isArray(item)) {
-        return this.sanitizeArray(item, options) as T;
+        return this.sanitizeArray(item as T[], options) as T;
       }
       return item;
     });
@@ -186,7 +194,7 @@ export class XSSProtection {
 
     return input.replace(tagPattern, (match, tagName, attributes) => {
       const lowerTag = tagName.toLowerCase();
-      
+
       if (!allowedTags.includes(lowerTag)) {
         return '';
       }
@@ -196,7 +204,7 @@ export class XSSProtection {
         const sanitizedAttrs = attributes.replace(attrPattern, (attrMatch: string, attrName: string) => {
           return allowedAttrs.includes(attrName.toLowerCase()) ? attrMatch : '';
         });
-        
+
         return match.replace(attributes, sanitizedAttrs);
       }
 
@@ -220,7 +228,7 @@ export class RateLimiter {
   check(identifier: string): RateLimitResult {
     const now = Date.now();
     const windowStart = now - this.config.windowMs;
-    
+
     if (!this.requests.has(identifier)) {
       this.requests.set(identifier, []);
     }
@@ -228,15 +236,14 @@ export class RateLimiter {
     const timestamps = this.requests.get(identifier)!;
     const validRequests = timestamps.filter(time => time > windowStart);
 
-    this.requests.set(identifier, validRequests);
-
-    const remaining = Math.max(0, this.config.maxRequests - validRequests.length);
-    const success = remaining > 0;
+    const success = validRequests.length < this.config.maxRequests;
 
     if (success) {
       validRequests.push(now);
       this.requests.set(identifier, validRequests);
     }
+
+    const remaining = Math.max(0, this.config.maxRequests - validRequests.length);
 
     return {
       success,
@@ -260,7 +267,7 @@ export class RateLimiter {
 
     for (const [identifier, timestamps] of this.requests.entries()) {
       const validRequests = timestamps.filter(time => time > windowStart);
-      
+
       if (validRequests.length === 0) {
         this.requests.delete(identifier);
       } else {

@@ -2,13 +2,13 @@
 # DDNS服务重启脚本 - 完整重启DDNS相关服务
 
 # 设置变量
-LOG_FILE="/opt/yyc3/logs/restart-ddns.log"
+LOG_FILE="/opt/nas-ecs/logs/restart-ddns.log"
 DDNS_SERVICE="ddns-api.service"
 NGINX_SERVICE="nginx.service"
 HEALTH_CHECK_URL="http://127.0.0.1:5000/health"
 
 # 确保日志目录存在
-mkdir -p /opt/yyc3/logs
+mkdir -p /opt/nas-ecs/logs
 
 # 记录开始时间
 echo "=======================================" >> $LOG_FILE

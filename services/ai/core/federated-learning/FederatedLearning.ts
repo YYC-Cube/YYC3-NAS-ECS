@@ -90,17 +90,17 @@ export interface ClientModel {
 }
 
 export class FederatedLearning {
-  private federatedOptimization: FederatedOptimization;
-  private privacyPreservation: PrivacyPreservation;
-  private heterogeneousFL: HeterogeneousFL;
+  private _federatedOptimization: FederatedOptimization;
+  private _privacyPreservation: PrivacyPreservation;
+  private _heterogeneousFL: HeterogeneousFL;
   private globalModel: GlobalModel;
   private clients: Map<string, ClientInfo>;
   private selectedClients: Set<string>;
 
   constructor() {
-    this.federatedOptimization = new FederatedOptimization();
-    this.privacyPreservation = new PrivacyPreservation();
-    this.heterogeneousFL = new HeterogeneousFL();
+    this._federatedOptimization = new FederatedOptimization();
+    this._privacyPreservation = new PrivacyPreservation();
+    this._heterogeneousFL = new HeterogeneousFL();
     
     this.globalModel = {
       weights: [],
@@ -587,7 +587,7 @@ export class FederatedLearning {
     const memoryCapabilities: number[] = [];
     const networkCapabilities: number[] = [];
 
-    for (const clientId of this.clients.keys()) {
+    for (const _clientId of this.clients.keys()) {
       cpuCapabilities.push(Math.random() * 100);
       memoryCapabilities.push(Math.random() * 16);
       networkCapabilities.push(Math.random() * 100);

@@ -1,4 +1,4 @@
-import { EventEmitter } from '@utils/EventEmitter';
+import { EventEmitter } from '@/utils/EventEmitter';
 import { SemanticUnderstandingEngine, SemanticAnalysis } from './SemanticUnderstandingEngine';
 
 export interface DialogueTurn {
