@@ -1,5 +1,13 @@
 # YYC³ NAS-ECS 文档映射目录
 
+> ***YanYuCloudCube***
+> 言启象限 | 语枢未来
+> ***Words Initiate Quadrants, Language Serves as Core for the Future***
+> 万象归元于云枢 | 深栈智启新纪元
+> ***All things converge in the cloud pivot; Deep stacks ignite a new era of intelligence***
+
+---
+
 > **创建日期**: 2026-01-25
 > **作者**: YYC³ Team
 > **版本**: 2.1.0

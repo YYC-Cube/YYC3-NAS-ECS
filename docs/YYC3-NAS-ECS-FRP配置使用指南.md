@@ -1,10 +1,10 @@
 # YYC³ NAS-ECS FRP 配置完整指南
 
-> **YYC³ NAS-ECS 企业级智能管理平台 - FRP 内网穿透配置指南**
->
-> **言启象限 | 语枢未来**
->
-> **Words Initiate Quadrants, Language Serves as Core for Future**
+> ***YanYuCloudCube***
+> 言启象限 | 语枢未来
+> ***Words Initiate Quadrants, Language Serves as Core for the Future***
+> 万象归元于云枢 | 深栈智启新纪元
+> ***All things converge in the cloud pivot; Deep stacks ignite a new era of intelligence***
 
 ---
 

@@ -1,5 +1,13 @@
 # YYC³ NAS-ECS 最新开发者文档
 
+> ***YanYuCloudCube***
+> 言启象限 | 语枢未来
+> ***Words Initiate Quadrants, Language Serves as Core for the Future***
+> 万象归元于云枢 | 深栈智启新纪元
+> ***All things converge in the cloud pivot; Deep stacks ignite a new era of intelligence***
+
+---
+
 > **文档版本**: 1.0.0  
 > **创建日期**: 2026-02-10  
 > **作者**: YYC³ Team  
@@ -414,12 +422,9 @@ app.use(cors({
 
 <div align="center">
 
-> **「YanYuCloudCube」**
-> 
-> **Words Initiate Quadrants, Language Serves as Core for the Future**
-> 
-> **All things converge in the cloud pivot; Deep stacks ignite a new era of intelligence**
-
-**版权所有 © 2026 YYC³ Team. 保留所有权利.**
+> 「***YanYuCloudCube***」
+> 「***<admin@0379.email>***」
+> 「***Words Initiate Quadrants, Language Serves as Core for the Future***」
+> 「***All things converge in cloud pivot; Deep stacks ignite a new era of intelligence***」
 
 </div>
