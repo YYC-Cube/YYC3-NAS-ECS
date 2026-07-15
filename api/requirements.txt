@@ -3,22 +3,22 @@
 # ======================
 # Web 核心框架
 # ======================
-Flask==3.0.0
-Flask-CORS==4.0.0
+Flask==3.1.3
+Flask-CORS==6.0.0
 Flask-SQLAlchemy==3.1.1
 Flask-Migrate==4.0.5
 Flask-JWT-Extended==4.5.3
 Flask-Limiter==3.5.0
 Flask-Caching==2.1.0
-Werkzeug==3.0.1
+Werkzeug==3.1.6
 Flask-Login==0.6.3
 
 # ======================
 # 异步与 WebSocket
 # ======================
 Flask-SocketIO==5.3.5
-python-socketio==5.10.0
-eventlet==0.33.3
+python-socketio==5.16.2
+eventlet==0.41.1
 gevent==23.9.1
 greenlet==3.0.1
 
@@ -39,17 +39,17 @@ alembic==1.13.1
 # ======================
 prometheus-flask-exporter==0.23.0
 prometheus-client==0.19.0
-sentry-sdk[flask]==1.39.1
+sentry-sdk[flask]==1.45.1
 python-json-logger==2.0.7
 
 # ======================
 # 工具库
 # ======================
-requests==2.31.0
-cryptography==41.0.7
+requests==2.33.0
+cryptography==48.0.1
 pydantic==2.5.2
-python-dotenv==1.0.0
-gunicorn==21.2.0
+python-dotenv==1.2.2
+gunicorn==22.0.0
 
 # ======================
 # 阿里云 SDK (DDNS)
@@ -63,12 +63,12 @@ alibabacloud-endpoint-util==0.0.3
 # 系统监控
 # ======================
 psutil==5.9.6
-dnspython==2.4.2
+dnspython==2.8.0
 pyyaml==6.0.1
 
 # ======================
 # 其他
 # ======================
-dnspython==2.4.2
+dnspython==2.8.0
 email-validator==2.1.0
 toml==0.10.2
