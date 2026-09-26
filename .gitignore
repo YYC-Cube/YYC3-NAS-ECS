@@ -313,3 +313,10 @@ pnpm-lock.yaml
 # 曾导致 ai-integration.ts / LogViewer.tsx / ai-components 未入库而 Pages 构建断链
 !src/**/logs/
 !src/**/lib/
+
+# ==================== 生产机配置镜像（含真实凭据） ====================
+# docs/frps 与 docs/frpc 为从生产端（ECS yyc3-33 / NAS yyc3-45）手工下载的配置镜像，
+# 含 FRP token、dashboard 密码、SSH 密码等真实凭据，禁止入库；
+# 新凭据统一由 config/secrets/frp.env（gitignored）管理
+docs/frps/
+docs/frpc/
