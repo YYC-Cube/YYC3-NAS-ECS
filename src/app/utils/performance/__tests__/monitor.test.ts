@@ -1,17 +1,17 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
-  PerformanceMonitor,
-  ReactPerformanceTracker,
-  performanceMonitor,
-  recordMetric,
+  clearPerformanceMetrics,
+  getPerformanceReport,
   mark,
   measure,
-  measureRender,
   measureAPICall,
   measureMemory,
-  getPerformanceReport,
-  clearPerformanceMetrics,
+  measureRender,
   PerformanceMetric,
+  PerformanceMonitor,
+  performanceMonitor,
+  ReactPerformanceTracker,
+  recordMetric,
 } from '../monitor';
 
 describe('PerformanceMonitor', () => {

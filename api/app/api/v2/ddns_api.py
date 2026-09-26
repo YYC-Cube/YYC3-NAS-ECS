@@ -111,23 +111,23 @@ MOCK_DDNS_DOMAINS = [
 def get_ddns_status():
     """
     获取DDNS服务状态
-
+    
     返回:
         JSON: DDNS服务状态信息
     """
     try:
         # 检查DDNS服务是否运行（容器环境使用模拟数据）
         is_running = True
-
+        
         # 获取当前公网IP
         try:
             current_ip = requests.get('https://api.ipify.org', timeout=5).text
         except:
             current_ip = NAS_SERVER_IP
-
+        
         # 获取最后更新时间
         last_update = datetime.now()
-
+        
         # 构建状态响应
         status = {
             'running': is_running,
@@ -142,12 +142,12 @@ def get_ddns_status():
             'status': 'success' if current_ip == NAS_SERVER_IP else 'warning',
             'message': 'DDNS运行正常' if current_ip == NAS_SERVER_IP else f'IP不匹配: {current_ip} != {NAS_SERVER_IP}'
         }
-
+        
         return jsonify({
             'success': True,
             'data': status
         }), 200
-
+        
     except Exception as e:
         return jsonify({
             'success': False,
@@ -160,7 +160,7 @@ def get_ddns_status():
 def get_ddns_domains():
     """
     获取DDNS域名列表
-
+    
     返回:
         JSON: DDNS域名列表
     """
@@ -169,7 +169,7 @@ def get_ddns_domains():
             'success': True,
             'data': MOCK_DDNS_DOMAINS
         }), 200
-
+        
     except Exception as e:
         return jsonify({
             'success': False,
@@ -182,7 +182,7 @@ def get_ddns_domains():
 def start_ddns():
     """
     启动DDNS服务
-
+    
     返回:
         JSON: 操作结果
     """
@@ -192,7 +192,7 @@ def start_ddns():
             'success': True,
             'message': 'DDNS服务启动成功'
         }), 200
-
+            
     except Exception as e:
         return jsonify({
             'success': False,
@@ -205,7 +205,7 @@ def start_ddns():
 def stop_ddns():
     """
     停止DDNS服务
-
+    
     返回:
         JSON: 操作结果
     """
@@ -215,7 +215,7 @@ def stop_ddns():
             'success': True,
             'message': 'DDNS服务已停止'
         }), 200
-
+            
     except Exception as e:
         return jsonify({
             'success': False,
@@ -228,7 +228,7 @@ def stop_ddns():
 def restart_ddns():
     """
     重启DDNS服务
-
+    
     返回:
         JSON: 操作结果
     """
@@ -238,7 +238,7 @@ def restart_ddns():
             'success': True,
             'message': 'DDNS服务重启成功'
         }), 200
-
+            
     except Exception as e:
         return jsonify({
             'success': False,
@@ -253,7 +253,7 @@ def restart_ddns():
 def update_ddns():
     """
     手动触发DDNS更新
-
+    
     返回:
         JSON: 操作结果
     """
@@ -263,10 +263,10 @@ def update_ddns():
             current_ip = requests.get('https://api.ipify.org', timeout=5).text
         except:
             current_ip = NAS_SERVER_IP
-
+        
         # 模拟阿里云API调用
         # 实际项目中应该调用真实的阿里云DNS API
-
+        
         # 记录日志
         log_message = f"[{datetime.now().isoformat()}] DDNS更新: {ALIYUN_SUB_DOMAIN}.{ALIYUN_DOMAIN} -> {current_ip}"
         try:
@@ -274,7 +274,7 @@ def update_ddns():
                 f.write(log_message + '\n')
         except:
             pass
-
+        
         return jsonify({
             'success': True,
             'message': 'DDNS更新成功',
@@ -286,7 +286,7 @@ def update_ddns():
                 'timestamp': datetime.now().isoformat()
             }
         }), 200
-
+        
     except Exception as e:
         return jsonify({
             'success': False,
@@ -301,21 +301,21 @@ def update_ddns():
 def get_ddns_history():
     """
     获取DDNS更新历史记录
-
+    
     查询参数:
         limit: 返回的记录数量，默认20
-
+        
     返回:
         JSON: DDNS历史记录列表
     """
     try:
         limit = request.args.get('limit', 20, type=int)
-
+        
         # 尝试读取日志文件
         if os.path.exists(DDNS_LOG_PATH):
             with open(DDNS_LOG_PATH, 'r') as f:
                 log_lines = f.readlines()
-
+            
             # 解析日志行
             history = []
             for i, line in enumerate(reversed(log_lines[-limit:])):
@@ -327,7 +327,7 @@ def get_ddns_history():
                         domain_ip = parts[1].strip().split('->')
                         domain = domain_ip[0].strip()
                         ip = domain_ip[1].strip()
-
+                        
                         history.append({
                             'id': str(len(log_lines) - i),
                             'timestamp': timestamp,
@@ -337,7 +337,7 @@ def get_ddns_history():
                         })
                 except:
                     continue
-
+            
             return jsonify({
                 'success': True,
                 'data': history,
@@ -350,7 +350,7 @@ def get_ddns_history():
                 'data': MOCK_DDNS_HISTORY[:limit],
                 'total': len(MOCK_DDNS_HISTORY)
             }), 200
-
+        
     except Exception as e:
         return jsonify({
             'success': False,
@@ -365,7 +365,7 @@ def get_ddns_history():
 def get_ddns_config():
     """
     获取DDNS配置
-
+    
     返回:
         JSON: DDNS配置信息
     """
@@ -382,18 +382,18 @@ def get_ddns_config():
             'enabled': True,
             'autoUpdate': True
         }
-
+        
         # 隐藏密钥
         if ALIYUN_ACCESS_KEY_ID:
             config['accessKeyId'] = ALIYUN_ACCESS_KEY_ID[:4] + '***' + ALIYUN_ACCESS_KEY_ID[-4:]
         else:
             config['accessKeyId'] = ''
-
+        
         return jsonify({
             'success': True,
             'data': config
         }), 200
-
+        
     except Exception as e:
         return jsonify({
             'success': False,
@@ -406,16 +406,16 @@ def get_ddns_config():
 def update_ddns_config():
     """
     更新DDNS配置
-
+    
     请求体:
         JSON: DDNS配置
-
+        
     返回:
         JSON: 操作结果
     """
     try:
         data = request.get_json()
-
+        
         # 验证必填字段
         required_fields = ['domain', 'subdomain']
         for field in required_fields:
@@ -424,16 +424,16 @@ def update_ddns_config():
                     'success': False,
                     'error': f'Missing required field: {field}'
                 }), 400
-
+        
         # 模拟更新配置
         # 实际项目中应该更新配置文件并重启服务
-
+        
         return jsonify({
             'success': True,
             'message': 'DDNS配置更新成功',
             'data': data
         }), 200
-
+        
     except Exception as e:
         return jsonify({
             'success': False,
@@ -448,24 +448,24 @@ def update_ddns_config():
 def get_ddns_logs():
     """
     获取DDNS日志
-
+    
     查询参数:
         lines: 返回的日志行数，默认100
-
+        
     返回:
         JSON: DDNS日志
     """
     try:
         lines = request.args.get('lines', 100, type=int)
-
+        
         # 读取日志文件
         if os.path.exists(DDNS_LOG_PATH):
             with open(DDNS_LOG_PATH, 'r') as f:
                 log_lines = f.readlines()
-
+            
             # 返回最后N行
             logs = log_lines[-lines:] if len(log_lines) > lines else log_lines
-
+            
             return jsonify({
                 'success': True,
                 'data': {
@@ -484,7 +484,7 @@ def get_ddns_logs():
                 },
                 'message': 'Log file not found'
             }), 200
-
+        
     except Exception as e:
         return jsonify({
             'success': False,

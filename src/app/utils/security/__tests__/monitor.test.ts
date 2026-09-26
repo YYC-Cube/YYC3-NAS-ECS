@@ -7,12 +7,12 @@
  * @created 2026-02-03
  */
 
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
-  PerformanceMonitor,
-  getPerformanceMonitor,
   disposePerformanceMonitor,
+  getPerformanceMonitor,
   PerformanceMetric,
+  PerformanceMonitor,
   PerformanceReport,
 } from '../../performance/monitor';
 
@@ -20,7 +20,7 @@ describe('PerformanceMonitor', () => {
   let monitor: PerformanceMonitor;
 
   beforeEach(() => {
-    monitor = new PerformanceMonitor(100);
+    monitor = PerformanceMonitor.getInstance({ maxEntries: 100 });
   });
 
   afterEach(() => {
@@ -35,7 +35,7 @@ describe('PerformanceMonitor', () => {
     });
 
     it('should initialize with custom maxEntries', () => {
-      const customMonitor = new PerformanceMonitor(50);
+      const customMonitor = PerformanceMonitor.getInstance({ maxEntries: 50 });
       expect(customMonitor.isEnabled()).toBe(true);
       customMonitor.dispose();
     });
@@ -307,7 +307,7 @@ describe('PerformanceMonitor', () => {
 
   describe('trimEntries', () => {
     it('should trim entries when exceeding maxEntries', () => {
-      const smallMonitor = new PerformanceMonitor({ maxEntries: 5 });
+      const smallMonitor = PerformanceMonitor.getInstance({ maxEntries: 5 });
       for (let i = 0; i < 10; i++) {
         smallMonitor.startEntry(`entry-${i}`);
       }

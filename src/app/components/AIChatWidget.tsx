@@ -230,8 +230,8 @@ export const AIChatWidget: React.FC<AIChatWidgetProps> = ({
 
     voiceState.current.isSupported = true;
     
-    recognitionRef.current = new SpeechRecognition();
-    const recognition = recognitionRef.current;
+    const recognition = new SpeechRecognition();
+    recognitionRef.current = recognition;
     recognition.continuous = voiceConfig.continuous;
     recognition.interimResults = voiceConfig.interimResults;
     recognition.lang = voiceConfig.language;

@@ -7,23 +7,23 @@
  * @created 2026-01-31
  */
 
-import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  FileText, 
-  AlertCircle, 
-  CheckCircle2, 
-  TrendingUp, 
-  TrendingDown, 
-  Clock,
-  Target,
+import {
   Activity,
+  AlertCircle,
   BarChart3,
-  PieChart
+  CheckCircle2,
+  Clock,
+  FileText,
+  PieChart,
+  Target,
+  TrendingDown,
+  TrendingUp
 } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { Badge } from './ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Progress } from './ui/progress';
+import { Tabs, TabsList, TabsTrigger } from './ui/tabs';
 
 export interface QualityMetrics {
   overallScore: number;
@@ -123,7 +123,7 @@ export const DocQualityDashboard: React.FC<DocQualityDashboardProps> = ({
             最后更新: {lastCheckTime.toLocaleString('zh-CN')}
           </p>
         </div>
-        <Tabs value={selectedPeriod} onValueChange={(v) => setSelectedPeriod(v as any)}>
+        <Tabs value={selectedPeriod} onValueChange={(v) => setSelectedPeriod(v as '7d' | '30d' | '90d')}>
           <TabsList>
             <TabsTrigger value="7d">近7天</TabsTrigger>
             <TabsTrigger value="30d">近30天</TabsTrigger>
@@ -330,9 +330,9 @@ export const DocQualityDashboard: React.FC<DocQualityDashboardProps> = ({
           <div className="h-64 flex items-end justify-between gap-2">
             {filteredTrends.map((trend, index) => (
               <div key={index} className="flex-1 flex flex-col items-center">
-                <div 
+                <div
                   className="w-full bg-blue-500 rounded-t transition-all hover:bg-blue-600"
-                  style={{ 
+                  style={{
                     height: `${(trend.score / 100) * 200}px`,
                     opacity: index === filteredTrends.length - 1 ? 1 : 0.7
                   }}

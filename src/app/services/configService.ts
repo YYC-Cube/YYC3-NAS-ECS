@@ -66,13 +66,13 @@ export class ConfigManager {
     // Merge both import.meta.env and process.env to support test environment
     const metaEnv = typeof import.meta !== 'undefined' && import.meta.env ? import.meta.env : {};
     const processEnv = process.env || {};
-    const env = { ...metaEnv, ...processEnv };
+    const env: Record<string, unknown> = { ...metaEnv, ...processEnv };
 
     const config: Record<string, string> = {};
 
     Object.keys(env).forEach(key => {
       if (key.startsWith('VITE_')) {
-        config[key] = env[key];
+        config[key] = String(env[key] ?? '');
       }
     });
 

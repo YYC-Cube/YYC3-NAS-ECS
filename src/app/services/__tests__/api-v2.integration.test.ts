@@ -76,7 +76,9 @@ describe.skip('API模块集成测试', () => {
       const updated = await api.ddns.updateConfig({
         provider: 'cloudflare',
         domain: 'test.example.com',
-        token: 'test-token'
+        username: 'test-user',
+        password: 'test-token',
+        updateInterval: 300
       });
 
       expect(updated).toBeDefined();

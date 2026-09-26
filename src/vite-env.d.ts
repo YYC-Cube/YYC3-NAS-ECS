@@ -11,22 +11,23 @@ interface ImportMetaEnv {
   readonly VITE_FRP_API_URL: string
   readonly VITE_NAS_API_URL: string
   readonly VITE_WS_URL: string
-  readonly VITE_ENABLE_MOCK_DATA: boolean
-  readonly VITE_ENABLE_DEBUG: boolean
-  readonly VITE_ENABLE_PERFORMANCE_MONITORING: boolean
-  readonly VITE_ENABLE_ERROR_TRACKING: boolean
+  // Vite 环境变量运行时始终为 string（布尔的语义判断用 === 'true'）
+  readonly VITE_ENABLE_MOCK_DATA: string
+  readonly VITE_ENABLE_DEBUG: string
+  readonly VITE_ENABLE_PERFORMANCE_MONITORING: string
+  readonly VITE_ENABLE_ERROR_TRACKING: string
   readonly VITE_LOG_LEVEL: string
-  readonly VITE_LOG_TO_CONSOLE: boolean
-  readonly VITE_LOG_TO_SERVER: boolean
-  readonly VITE_CACHE_ENABLED: boolean
-  readonly VITE_CACHE_TTL: number
-  readonly VITE_DEBOUNCE_DELAY: number
+  readonly VITE_LOG_TO_CONSOLE: string
+  readonly VITE_LOG_TO_SERVER: string
+  readonly VITE_CACHE_ENABLED: string
+  readonly VITE_CACHE_TTL: string
+  readonly VITE_DEBOUNCE_DELAY: string
   readonly VITE_THEME: string
   readonly VITE_LANGUAGE: string
   readonly VITE_TIMEZONE: string
-  readonly VITE_ENABLE_DEVTOOLS: boolean
-  readonly VITE_ENABLE_HOT_RELOAD: boolean
-  readonly VITE_SOURCE_MAP: boolean
+  readonly VITE_ENABLE_DEVTOOLS: string
+  readonly VITE_ENABLE_HOT_RELOAD: string
+  readonly VITE_SOURCE_MAP: string
 }
 
 interface ImportMeta {

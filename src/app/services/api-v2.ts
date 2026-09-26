@@ -7,19 +7,30 @@
  * @created 2026-01-03
  */
 
-import {
-  User,
-  SystemStats,
-  FrpConfig,
-  LogEntry,
-  Email,
-  LLMMessage,
-  NasFile,
-  ApiService
-} from '../types';
 import { envConfig } from '../config/env';
+import {
+  ApiService,
+  DdnsConfig,
+  DdnsStatus,
+  DetailedSystemStats,
+  DnsUpdateRecord,
+  Email,
+  EmailDraft,
+  FrpConfig,
+  FrpStatus,
+  LLMMessage,
+  LogEntry,
+  NasFile,
+  NasShare,
+  NasStatus,
+  NasVolume,
+  ProcessInfo,
+  ScheduledEmail,
+  SystemStats,
+  User
+} from '../types';
 import { logger } from '../utils/logger';
-import { sanitizeObject, RateLimiter } from '../utils/security/xss-protection';
+import { RateLimiter, sanitizeObject } from '../utils/security/xss-protection';
 
 class ApiClient {
   private baseUrl: string;
@@ -40,7 +51,7 @@ class ApiClient {
     options: RequestInit = {}
   ): Promise<T> {
     const rateLimitResult = this.rateLimiter.check('api-client');
-    
+
     if (!rateLimitResult.success) {
       throw new Error(
         `Rate limit exceeded. Please wait ${Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000)} seconds before retrying.`
@@ -168,7 +179,7 @@ class MockDataService {
       await new Promise(resolve => setTimeout(resolve, 500));
       return { id: '1', username, role: 'admin', avatar: 'https://github.com/shadcn.png' };
     },
-    logout: async () => {},
+    logout: async () => { },
   };
 
   public system = {
@@ -177,35 +188,31 @@ class MockDataService {
       return this.generateSystemStats();
     },
 
-    getDetailedStats: async () => {
+    getDetailedStats: async (): Promise<DetailedSystemStats> => {
       await new Promise(resolve => setTimeout(resolve, 200));
       return {
-        cpu: { usage: 12.5, cores: 4 },
-        memory: { usage: 45.3, total: 16, used: 7.25 },
-        disk: { usage: 35.5, total: 1000, used: 355 },
-        network: { in: 1024, out: 512 },
-        system: { uptime: '15天 3小时 45分钟', hostname: 'nas-0379' }
+        ...this.generateSystemStats(),
+        processes: Array.from({ length: 5 }).map((_, i) => ({
+          pid: 1000 + i,
+          name: ['nginx', 'python', 'postgres', 'redis', 'node'][i],
+          cpu: Math.random() * 10,
+          memory: Math.random() * 5,
+        })),
+        diskIO: { readBytes: 1024 * 1024, writeBytes: 512 * 1024 },
+        networkConnections: 42,
       };
     },
   };
 
   public frp = {
-    getStatus: async () => {
+    getStatus: async (): Promise<FrpStatus> => {
       await new Promise(resolve => setTimeout(resolve, 500));
       return {
-        success: true,
-        data: {
-          client: {
-            running: true,
-            connected: true,
-            serverAddr: '203.0.113.1',
-            serverPort: 7001,
-            proxyCount: 5,
-            uptime: '15天 3小时 45分钟'
-          },
-          proxies: this.generateFrpConfigs(),
-          timestamp: new Date().toISOString()
-        }
+        running: true,
+        uptime: 1300000,
+        connections: 12,
+        bytesIn: 1073741824,
+        bytesOut: 536870912,
       };
     },
     getConfigs: async (): Promise<FrpConfig[]> => {
@@ -229,128 +236,85 @@ class MockDataService {
   };
 
   public ddns = {
-    getStatus: async () => {
+    getStatus: async (): Promise<DdnsStatus> => {
       await new Promise(resolve => setTimeout(resolve, 500));
       return {
-        success: true,
-        data: {
-          running: true,
-          enabled: true,
-          provider: 'aliyun',
-          domain: 'ddns.0379.email',
-          currentIP: '203.0.113.1',
-          expectedIP: '203.0.113.1',
-          lastUpdate: new Date().toISOString(),
-          nextUpdate: Date.now() + 300,
-          updateInterval: 300,
-          status: 'success',
-          message: 'DDNS运行正常'
-        }
+        enabled: true,
+        currentIp: '203.0.113.1',
+        domain: 'ddns.0379.email',
+        lastUpdate: new Date().toISOString(),
+        status: 'success',
       };
     },
-    updateConfig: async (config: any) => {
+    updateConfig: async (config: DdnsConfig): Promise<DdnsConfig> => {
       await new Promise(resolve => setTimeout(resolve, 300));
-      return { success: true, data: config };
+      return config;
     },
     updateDDNS: async () => {
       await new Promise(resolve => setTimeout(resolve, 500));
     },
-    getHistory: async (_limit?: number) => {
+    getHistory: async (_limit?: number): Promise<DnsUpdateRecord[]> => {
       await new Promise(resolve => setTimeout(resolve, 300));
       return [
         {
-          id: '1',
           timestamp: new Date().toISOString(),
-          oldIP: '8.152.195.32',
-          newIP: '203.0.113.1',
-          status: 'success'
+          previousIp: '203.0.113.2',
+          newIp: '203.0.113.1',
+          success: true
         }
       ];
     }
   };
 
   public nas = {
-    getStatus: async () => {
+    getStatus: async (): Promise<NasStatus> => {
       await new Promise(resolve => setTimeout(resolve, 500));
       return {
-        success: true,
-        data: {
-          system: {
-            uptime: '15天 3小时 45分钟',
-            cpuUsage: 25.5,
-            memoryUsage: 45.2,
-            temperature: '45°C'
-          },
-          volumes: [
-            {
-              id: 'vol-1',
-              name: 'Data Volume 1',
-              type: 'ext4',
-              capacity: '2 TB',
-              used: '800 GB',
-              available: '1.2 TB',
-              usagePercent: 40,
-              status: 'healthy'
-            },
-            {
-              id: 'vol-2',
-              name: 'Data Volume 2',
-              type: 'ext4',
-              capacity: '4 TB',
-              used: '3.2 TB',
-              available: '800 GB',
-              usagePercent: 80,
-              status: 'healthy'
-            }
-          ],
-          services: [
-            { name: 'SMB Service', status: 'running', uptime: '15天 3小时 45分钟' },
-            { name: 'FTP Service', status: 'running', uptime: '15天 3小时 45分钟' },
-            { name: 'NFS Service', status: 'running', uptime: '15天 3小时 45分钟' },
-            { name: 'WebDAV Service', status: 'stopped', uptime: '0天 0小时 0分钟' }
-          ]
-        }
+        running: true,
+        uptime: 1298400,
+        activeConnections: 8,
+        totalStorage: 6 * 1024 ** 3,
+        usedStorage: Math.floor(6 * 1024 ** 3 * 0.52)
       };
     },
-    getVolumes: async () => {
+    getVolumes: async (): Promise<NasVolume[]> => {
       await new Promise(resolve => setTimeout(resolve, 300));
-      return {
-        success: true,
-        data: [
-          {
-            id: 'vol-1',
-            name: 'Data Volume 1',
-            type: 'ext4',
-            capacity: '2 TB',
-            used: '800 GB',
-            available: '1.2 TB',
-            usagePercent: 40,
-            status: 'healthy'
-          },
-          {
-            id: 'vol-2',
-            name: 'Data Volume 2',
-            type: 'ext4',
-            capacity: '4 TB',
-            used: '3.2 TB',
-            available: '800 GB',
-            usagePercent: 80,
-            status: 'healthy'
-          }
-        ]
-      };
+      return [
+        {
+          id: 'vol-1',
+          name: 'Data Volume 1',
+          type: 'ext4',
+          total: 2 * 1024 ** 3,
+          used: Math.floor(2 * 1024 ** 3 * 0.4),
+          available: Math.ceil(2 * 1024 ** 3 * 0.6),
+          health: 'healthy',
+          mountPoint: '/data/vol1'
+        },
+        {
+          id: 'vol-2',
+          name: 'Data Volume 2',
+          type: 'ext4',
+          total: 4 * 1024 ** 3,
+          used: Math.floor(4 * 1024 ** 3 * 0.8),
+          available: Math.ceil(4 * 1024 ** 3 * 0.2),
+          health: 'healthy',
+          mountPoint: '/data/vol2'
+        }
+      ];
     },
     getFiles: async (parentId?: string): Promise<NasFile[]> => {
       await new Promise(resolve => setTimeout(resolve, 300));
       return this.generateNasFiles(parentId);
     },
-    getShares: async (): Promise<any[]> => {
+    getShares: async (): Promise<NasShare[]> => {
       await new Promise(resolve => setTimeout(resolve, 300));
       return [
         {
           id: 'share-1',
           name: 'Documents',
           path: '/data/documents',
+          type: 'smb',
+          enabled: true,
           permissions: 'read-write',
           users: ['admin', 'user1'],
           status: 'active'
@@ -359,6 +323,8 @@ class MockDataService {
           id: 'share-2',
           name: 'Media',
           path: '/data/media',
+          type: 'smb',
+          enabled: true,
           permissions: 'read-only',
           users: ['admin', 'user1', 'user2'],
           status: 'active'
@@ -377,56 +343,25 @@ class MockDataService {
   };
 
   public monitoring = {
-    getStats: async () => {
+    getStats: async (): Promise<SystemStats> => {
       await new Promise(resolve => setTimeout(resolve, 300));
-      return {
-        success: true,
-        data: {
-          cpu: {
-            usage: 25.5,
-            cores: 8,
-            model: 'Intel(R) Xeon(R) CPU E5-2680 v4'
-          },
-          memory: {
-            total: 32768,
-            used: 14800,
-            available: 17968,
-            percent: 45.2
-          },
-          disk: {
-            total: 6291456,
-            used: 3276800,
-            available: 3014656,
-            percent: 52.1
-          },
-          network: {
-            bytesSent: 1073741824,
-            bytesRecv: 2147483648,
-            packetsSent: 1000000,
-            packetsRecv: 2000000
-          },
-          loadAverage: [0.5, 0.8, 1.2],
-          uptime: 1298400
-        }
-      };
+      return this.generateSystemStats();
     },
-    getProcesses: async (limit: number = 20, sortBy: string = 'cpu') => {
+    getProcesses: async (limit: number = 20, sortBy: string = 'cpu'): Promise<ProcessInfo[]> => {
       await new Promise(resolve => setTimeout(resolve, 300));
-      const processes = Array.from({ length: limit }).map((_, i) => ({
+      const processes: ProcessInfo[] = Array.from({ length: limit }).map((_, i) => ({
         pid: 1000 + i,
         name: ['nginx', 'python', 'postgres', 'redis', 'node'][i % 5],
-        username: 'root',
-        cpu_percent: Math.random() * 10,
-        memory_percent: Math.random() * 5
+        cpu: Math.random() * 10,
+        memory: Math.random() * 5,
+        user: 'root',
+        status: 'running',
+        uptime: 3600 * (i + 1)
       }));
-      processes.sort((a, b) => b[sortBy === 'cpu' ? 'cpu_percent' : 'memory_percent'] - a[sortBy === 'cpu' ? 'cpu_percent' : 'memory_percent']);
-      return {
-        success: true,
-        data: {
-          processes: processes,
-          total: limit
-        }
-      };
+      processes.sort((a, b) =>
+        b[sortBy === 'cpu' ? 'cpu' : 'memory'] - a[sortBy === 'cpu' ? 'cpu' : 'memory']
+      );
+      return processes;
     }
   };
 
@@ -444,7 +379,7 @@ class MockDataService {
     getEmails: async (folder: string = 'inbox'): Promise<Email[]> => {
       await new Promise(resolve => setTimeout(resolve, 400));
       const emails = this.generateEmails();
-      return emails.map(e => ({...e, folder: folder as any}));
+      return emails.map(e => ({ ...e, folder: folder as any }));
     },
     sendEmail: async (to: string, subject: string, body: string, cc?: string[], bcc?: string[], attachments?: File[]): Promise<void> => {
       await new Promise(resolve => setTimeout(resolve, 800));
@@ -493,7 +428,7 @@ class MockDataService {
         logger.debug(`[Mock] Deleting email ${emailId}`);
       }
     },
-    saveDraft: async (draft: { to: string[]; cc: string[]; bcc: string[]; subject: string; body: string; attachments: File[]; priority: string }): Promise<void> => {
+    saveDraft: async (draft: EmailDraft): Promise<void> => {
       await new Promise(resolve => setTimeout(resolve, 500));
       if (envConfig.isDebugEnabled()) {
         logger.debug(`[Mock] Saving draft`);
@@ -502,7 +437,7 @@ class MockDataService {
         logger.debug(`[Mock] Priority: ${draft.priority}`);
       }
     },
-    scheduleEmail: async (email: { to: string[]; cc: string[]; bcc: string[]; subject: string; body: string; attachments: File[]; priority: string; scheduledTime: string }): Promise<void> => {
+    scheduleEmail: async (email: ScheduledEmail): Promise<void> => {
       await new Promise(resolve => setTimeout(resolve, 500));
       if (envConfig.isDebugEnabled()) {
         logger.debug(`[Mock] Scheduling email`);
@@ -609,14 +544,14 @@ class RealApiService {
       return this.client.get<SystemStats>('/system/stats');
     },
 
-    getDetailedStats: async () => {
-      return this.client.get('/api/v2/monitoring/stats');
+    getDetailedStats: async (): Promise<DetailedSystemStats> => {
+      return this.client.get<DetailedSystemStats>('/api/v2/monitoring/stats');
     },
   };
 
   public frp = {
-    getStatus: async () => {
-      return this.client.get('/api/v2/frp/status');
+    getStatus: async (): Promise<FrpStatus> => {
+      return this.client.get<FrpStatus>('/api/v2/frp/status');
     },
     getConfigs: async (): Promise<FrpConfig[]> => {
       return this.client.get<FrpConfig[]>('/api/v2/frp/configs');
@@ -635,27 +570,27 @@ class RealApiService {
   };
 
   public ddns = {
-    getStatus: async () => {
-      return this.client.get('/api/v2/ddns/status');
+    getStatus: async (): Promise<DdnsStatus> => {
+      return this.client.get<DdnsStatus>('/api/v2/ddns/status');
     },
-    updateConfig: async (config: any) => {
-      return this.client.post('/api/v2/ddns/config', config);
+    updateConfig: async (config: DdnsConfig): Promise<DdnsConfig> => {
+      return this.client.post<DdnsConfig>('/api/v2/ddns/config', config);
     },
     updateDDNS: async (): Promise<void> => {
       await this.client.post('/api/v2/ddns/update', {});
     },
-    getHistory: async (limit?: number): Promise<any[]> => {
+    getHistory: async (limit?: number): Promise<DnsUpdateRecord[]> => {
       const params = limit ? `?limit=${limit}` : '';
-      return this.client.get(`/api/v2/ddns/history${params}`);
+      return this.client.get<DnsUpdateRecord[]>(`/api/v2/ddns/history${params}`);
     }
   };
 
   public nas = {
-    getStatus: async () => {
-      return this.client.get('/api/v2/nas/info');
+    getStatus: async (): Promise<NasStatus> => {
+      return this.client.get<NasStatus>('/api/v2/nas/info');
     },
-    getVolumes: async () => {
-      return this.client.get('/api/v2/nas/volumes');
+    getVolumes: async (): Promise<NasVolume[]> => {
+      return this.client.get<NasVolume[]>('/api/v2/nas/volumes');
     },
     getFiles: async (parentId?: string): Promise<NasFile[]> => {
       const params = parentId ? `?parentId=${parentId}` : '';
@@ -676,11 +611,11 @@ class RealApiService {
   };
 
   public monitoring = {
-    getStats: async () => {
-      return this.client.get('/api/v2/monitoring/stats');
+    getStats: async (): Promise<SystemStats> => {
+      return this.client.get<SystemStats>('/api/v2/monitoring/stats');
     },
-    getProcesses: async (limit: number = 20, sortBy: string = 'cpu') => {
-      return this.client.get(`/api/v2/monitoring/processes?limit=${limit}&sort_by=${sortBy}`);
+    getProcesses: async (limit: number = 20, sortBy: string = 'cpu'): Promise<ProcessInfo[]> => {
+      return this.client.get<ProcessInfo[]>(`/api/v2/monitoring/processes?limit=${limit}&sort_by=${sortBy}`);
     }
   };
 
@@ -715,10 +650,10 @@ class RealApiService {
     deleteEmail: async (emailId: string): Promise<void> => {
       return this.client.delete<void>(`/mail/emails/${emailId}`);
     },
-    saveDraft: async (draft: { to: string[]; cc: string[]; bcc: string[]; subject: string; body: string; attachments: File[]; priority: string }): Promise<void> => {
+    saveDraft: async (draft: EmailDraft): Promise<void> => {
       return this.client.post<void>('/mail/drafts', draft);
     },
-    scheduleEmail: async (email: { to: string[]; cc: string[]; bcc: string[]; subject: string; body: string; attachments: File[]; priority: string; scheduledTime: string }): Promise<void> => {
+    scheduleEmail: async (email: ScheduledEmail): Promise<void> => {
       return this.client.post<void>('/mail/schedule', email);
     },
     archiveEmail: async (emailId: string): Promise<void> => {
@@ -788,4 +723,4 @@ class ApiServiceFactory {
 
 export const api: ApiService = ApiServiceFactory.getInstance();
 
-export { ApiClient, MockDataService, RealApiService, ApiServiceFactory };
+export { ApiClient, ApiServiceFactory, MockDataService, RealApiService };

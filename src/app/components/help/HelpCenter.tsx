@@ -66,7 +66,9 @@ export const HelpCenter: React.FC = () => {
       category: '技术问题',
       priority: 'medium'
     });
-    loadData();
+    setFaqs(helpService.getFAQs());
+    setGuides(helpService.getGuides());
+    setTickets(helpService.getTickets());
   };
 
   const getDifficultyColor = (difficulty: string): string => {

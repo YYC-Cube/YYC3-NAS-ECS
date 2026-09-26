@@ -671,10 +671,11 @@ export const apiV2: ApiService = {
         return config;
       }
 
-      return await request<{ success: boolean; data: DdnsConfig }>('/api/v2/ddns/config', {
+      const response = await request<{ success: boolean; data: DdnsConfig }>('/api/v2/ddns/config', {
         method: 'POST',
         body: JSON.stringify(config),
       });
+      return response.data;
     },
 
     updateDDNS: async () => {

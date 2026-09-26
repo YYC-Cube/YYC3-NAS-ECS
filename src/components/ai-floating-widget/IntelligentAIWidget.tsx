@@ -250,10 +250,40 @@ export function IntelligentAIWidget({ className = '' }: IntelligentAIWidgetProps
   );
 }
 
-export function AIWidgetTrigger({ toggleWidget, className = '' }: { toggleWidget: () => void; className?: string }) {
+export function AIWidgetTrigger({
+  toggleWidget,
+  className = '',
+  variant = 'button',
+}: {
+  toggleWidget?: () => void;
+  className?: string;
+  variant?: 'button' | 'icon';
+}) {
+  const handleToggle = () => {
+    if (toggleWidget) {
+      toggleWidget();
+    } else {
+      // 无外部控制器时，通过全局事件通知 AIWidgetProvider（其内部监听该事件）
+      window.dispatchEvent(new CustomEvent('toggle-ai-widget'));
+    }
+  };
+
+  if (variant === 'icon') {
+    // 头部内联图标变体：不使用 fixed 定位
+    return (
+      <button
+        onClick={handleToggle}
+        aria-label="切换 AI 助手"
+        className={`p-2 rounded-full text-gray-600 hover:text-blue-600 hover:bg-blue-50 dark:text-gray-300 dark:hover:bg-blue-500/10 transition-colors ${className}`}
+      >
+        <Sparkles className="w-5 h-5" />
+      </button>
+    );
+  }
+
   return (
     <button
-      onClick={toggleWidget}
+      onClick={handleToggle}
       className={`fixed bottom-6 right-6 z-50 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white px-4 py-3 rounded-full shadow-lg flex items-center gap-2 transition-all hover:scale-105 ${className}`}
     >
       <Sparkles className="w-5 h-5" />

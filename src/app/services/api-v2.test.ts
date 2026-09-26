@@ -7,15 +7,16 @@
  * @created 2025-01-30
  */
 
-import { describe, it, expect, beforeEach, afterEach, beforeAll, afterAll, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { envConfig } from '../config/env';
+import type { DdnsConfig, EmailDraft, ScheduledEmail } from '../types';
 import {
   ApiClient,
+  ApiServiceFactory,
   MockDataService,
   RealApiService,
-  ApiServiceFactory,
   api
 } from './api-v2';
-import { envConfig } from '../config/env';
 
 describe('ApiClient', () => {
   let apiClient: ApiClient;
@@ -233,7 +234,7 @@ describe('MockDataService', () => {
     });
 
     it('应该保存草稿', async () => {
-      const draft = {
+      const draft: EmailDraft = {
         to: ['test@example.com'],
         cc: [],
         bcc: [],
@@ -247,7 +248,7 @@ describe('MockDataService', () => {
     });
 
     it('应该计划发送邮件', async () => {
-      const email = {
+      const email: ScheduledEmail = {
         to: ['test@example.com'],
         cc: [],
         bcc: [],
@@ -338,17 +339,16 @@ describe('MockDataService', () => {
 
     it('应该返回NAS状态', async () => {
       const status = await mockService.nas.getStatus();
-      expect(status).toHaveProperty('success', true);
-      expect(status.data).toHaveProperty('system');
-      expect(status.data).toHaveProperty('volumes');
-      expect(status.data).toHaveProperty('services');
+      expect(status).toHaveProperty('running', true);
+      expect(status).toHaveProperty('uptime');
+      expect(status).toHaveProperty('totalStorage');
+      expect(status).toHaveProperty('usedStorage');
     });
 
     it('应该返回卷列表', async () => {
       const volumes = await mockService.nas.getVolumes();
-      expect(volumes).toHaveProperty('success', true);
-      expect(Array.isArray(volumes.data)).toBe(true);
-      expect(volumes.data.length).toBeGreaterThan(0);
+      expect(Array.isArray(volumes)).toBe(true);
+      expect(volumes.length).toBeGreaterThan(0);
     });
 
     it('应该返回共享列表', async () => {
@@ -379,21 +379,22 @@ describe('MockDataService', () => {
   describe('DDNS服务', () => {
     it('应该返回DDNS状态', async () => {
       const status = await mockService.ddns.getStatus();
-      expect(status).toHaveProperty('success', true);
-      expect(status.data).toHaveProperty('running');
-      expect(status.data).toHaveProperty('enabled');
-      expect(status.data).toHaveProperty('provider');
-      expect(status.data).toHaveProperty('domain');
+      expect(status).toHaveProperty('enabled');
+      expect(status).toHaveProperty('currentIp');
+      expect(status).toHaveProperty('domain');
+      expect(status).toHaveProperty('status');
     });
 
     it('应该更新DDNS配置', async () => {
-      const config = {
+      const config: DdnsConfig = {
         provider: 'aliyun',
-        domain: 'test.0379.email'
+        domain: 'test.0379.email',
+        username: 'test-user',
+        password: 'test-token',
+        updateInterval: 300
       };
       const result = await mockService.ddns.updateConfig(config);
-      expect(result).toHaveProperty('success', true);
-      expect(result.data).toEqual(config);
+      expect(result).toEqual(config);
     });
 
     it('应该更新DDNS', async () => {
@@ -405,29 +406,28 @@ describe('MockDataService', () => {
       const history = await mockService.ddns.getHistory(10);
       expect(Array.isArray(history)).toBe(true);
       expect(history.length).toBeGreaterThan(0);
-      expect(history[0]).toHaveProperty('id');
       expect(history[0]).toHaveProperty('timestamp');
-      expect(history[0]).toHaveProperty('oldIP');
-      expect(history[0]).toHaveProperty('newIP');
+      expect(history[0]).toHaveProperty('previousIp');
+      expect(history[0]).toHaveProperty('newIp');
+      expect(history[0]).toHaveProperty('success');
     });
   });
 
   describe('监控服务', () => {
     it('应该返回监控统计', async () => {
       const stats = await mockService.monitoring.getStats();
-      expect(stats).toHaveProperty('success', true);
-      expect(stats.data).toHaveProperty('cpu');
-      expect(stats.data).toHaveProperty('memory');
-      expect(stats.data).toHaveProperty('disk');
-      expect(stats.data).toHaveProperty('network');
+      expect(stats).toHaveProperty('cpuUsage');
+      expect(stats).toHaveProperty('memoryUsage');
+      expect(stats).toHaveProperty('diskUsage');
+      expect(stats).toHaveProperty('uptime');
     });
 
     it('应该返回进程列表', async () => {
       const processes = await mockService.monitoring.getProcesses(20, 'cpu');
-      expect(processes).toHaveProperty('success', true);
-      expect(processes.data).toHaveProperty('processes');
-      expect(Array.isArray(processes.data.processes)).toBe(true);
-      expect(processes.data.total).toBe(20);
+      expect(Array.isArray(processes)).toBe(true);
+      expect(processes.length).toBeGreaterThan(0);
+      expect(processes[0]).toHaveProperty('pid');
+      expect(processes[0]).toHaveProperty('cpu');
     });
   });
 });
@@ -618,7 +618,13 @@ describe('RealApiService', () => {
     });
 
     it('应该调用DDNS更新配置API', async () => {
-      const mockConfig = { provider: 'aliyun', domain: 'test.0379.email' };
+      const mockConfig: DdnsConfig = {
+        provider: 'aliyun',
+        domain: 'test.0379.email',
+        username: 'test-user',
+        password: 'test-token',
+        updateInterval: 300
+      };
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => ({ success: true, data: mockConfig }),
@@ -985,7 +991,7 @@ describe('RealApiService', () => {
     });
 
     it('应该调用保存草稿API', async () => {
-      const draft = {
+      const draft: EmailDraft = {
         to: ['test@example.com'],
         cc: [],
         bcc: [],
@@ -1010,7 +1016,7 @@ describe('RealApiService', () => {
     });
 
     it('应该调用计划邮件API', async () => {
-      const email = {
+      const email: ScheduledEmail = {
         to: ['test@example.com'],
         cc: [],
         bcc: [],
@@ -1183,7 +1189,7 @@ describe('ApiServiceFactory', () => {
 
   describe.skip('调试日志', () => {
     it('应该在调试模式下输出服务选择信息', () => {
-      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+      const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => { });
 
       ApiServiceFactory.resetInstance();
       ApiServiceFactory.getInstance();
@@ -1299,7 +1305,7 @@ describe('边界情况测试', () => {
   describe('网络错误处理', () => {
     it('应该处理连接超时', async () => {
       mockFetch.mockImplementation(
-        () => new Promise((_, reject) => 
+        () => new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Connection timeout')), 35000)
         )
       );
@@ -1569,7 +1575,7 @@ describe('性能测试', () => {
     }
 
     const startTime = Date.now();
-    const requests = Array.from({ length: 10 }, (_, i) => 
+    const requests = Array.from({ length: 10 }, (_, i) =>
       apiClient.get(`/test${i}`)
     );
     await Promise.all(requests);

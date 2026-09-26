@@ -3,29 +3,29 @@
  * @description 集成完整企业邮箱系统与监控Dashboard功能
  */
 
-import React, { useState } from 'react';
-import { motion } from 'motion/react';
 import {
-  Mail,
-  Send,
+  AlertCircle,
   Archive,
+  CheckCircle,
+  Clock,
+  FileText,
+  Inbox,
+  LayoutDashboard,
+  Mail,
+  Plus,
+  Search,
+  Send,
+  Settings,
+  Sparkles,
   Star,
   Trash2,
-  Settings,
-  Search,
-  Plus,
-  Inbox,
-  FileText,
-  Clock,
-  Sparkles,
-  User,
-  LayoutDashboard,
-  CheckCircle,
-  AlertCircle
+  User
 } from 'lucide-react';
+import { motion } from 'motion/react';
+import React, { useState } from 'react';
 import { toast } from 'sonner';
+import { ModuleTheme, useTheme } from '../../contexts/ThemeContext';
 import { EmailList } from '../EmailList';
-import { useTheme } from '../../contexts/ThemeContext';
 import { ModuleCard } from '../ModuleCard';
 
 /* ==================== 子组件 ==================== */
@@ -34,8 +34,8 @@ import { ModuleCard } from '../ModuleCard';
  * 主题切换器组件
  */
 interface ThemeSwitcherProps {
-  currentTheme: string;
-  setTheme: (theme: string) => void;
+  currentTheme: ModuleTheme;
+  setTheme: (theme: ModuleTheme) => void;
 }
 
 const ThemeSwitcher: React.FC<ThemeSwitcherProps> = ({ currentTheme, setTheme }) => (
@@ -393,9 +393,9 @@ export const EmailService: React.FC = () => {
                 </h2>
                 <p className="text-sm mt-1 text-gray-500">
                   {activeMenu === 'inbox' ? '您有 12 封未读邮件' :
-                   activeMenu === 'dashboard' ? '邮件服务运行状态概览' :
-                   activeMenu === 'ai-assistant' ? 'AI驱动的智能邮件管理助手' :
-                   '邮件管理'}
+                    activeMenu === 'dashboard' ? '邮件服务运行状态概览' :
+                      activeMenu === 'ai-assistant' ? 'AI驱动的智能邮件管理助手' :
+                        '邮件管理'}
                 </p>
               </div>
             </div>
@@ -405,7 +405,7 @@ export const EmailService: React.FC = () => {
             {/* Dashboard View */}
             {activeMenu === 'dashboard' && (
               <div className="space-y-6">
-                 <ModuleCard title="邮件队列状态" level={1}>
+                <ModuleCard title="邮件队列状态" level={1}>
                   <div className="flex gap-8 justify-around p-4">
                     <div className="text-center">
                       <div className="text-3xl font-bold text-blue-600 flex items-center justify-center gap-2">
@@ -439,7 +439,7 @@ export const EmailService: React.FC = () => {
                         id="email-to"
                         type="email"
                         value={emailForm.to}
-                        onChange={(e) => setEmailForm({...emailForm, to: e.target.value})}
+                        onChange={(e) => setEmailForm({ ...emailForm, to: e.target.value })}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         required
                         placeholder="user@example.com"
@@ -450,7 +450,7 @@ export const EmailService: React.FC = () => {
                       <select
                         id="email-template"
                         value={emailForm.template}
-                        onChange={(e) => setEmailForm({...emailForm, template: e.target.value})}
+                        onChange={(e) => setEmailForm({ ...emailForm, template: e.target.value })}
                         className="w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
                       >
                         <option value="welcome">用户欢迎 (User Welcome)</option>
