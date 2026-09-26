@@ -1,21 +1,77 @@
-# Security Policy
+# 安全政策 / Security Policy
 
-## Supported Versions
+> YYC³ NAS-ECS 智能私有云管理系统 —— 安全披露与支持政策
 
-Use this section to tell people about which versions of your project are
-currently being supported with security updates.
+## 支持的版本
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 5.1.x   | :white_check_mark: |
-| 5.0.x   | :x:                |
-| 4.0.x   | :white_check_mark: |
-| < 4.0   | :x:                |
+我们仅为下列版本提供安全更新：
 
-## Reporting a Vulnerability
+| 版本  | 支持状态           |
+| ----- | ------------------ |
+| 1.0.x | :white_check_mark: |
+| < 1.0 | :x:                |
 
-Use this section to tell people how to report a vulnerability.
+## 报告漏洞
 
-Tell them where to go, how often they can expect to get an update on a
-reported vulnerability, what to expect if the vulnerability is accepted or
-declined, etc.
+**请勿通过公开 Issue 披露安全漏洞。**
+
+请通过以下私密渠道报告：
+
+| 项目     | 说明                                     |
+| -------- | ---------------------------------------- |
+| 邮箱     | [admin@0379.email](mailto:admin@0379.email) |
+| 主题格式 | `[SECURITY] YYC3-NAS-ECS: <简述>`        |
+
+### 报告内容建议
+
+为帮助我们快速定位和修复问题，请在报告中尽量包含：
+
+1. **漏洞类型**（如：认证绕过 / XSS / SSRF / 信息泄露 / 注入）
+2. **受影响组件与版本**（前端 `src/` 或后端 `api/`，commit hash）
+3. **复现步骤**（含最小化 PoC，如有）
+4. **影响评估**（可能造成的最坏后果）
+5. **修复建议**（可选，但非常欢迎）
+
+### 响应时效承诺
+
+| 阶段                     | 目标时效         |
+| ------------------------ | ---------------- |
+| 首次确认收到报告         | 72 小时内        |
+| 初步评估与严重程度定级   | 7 天内           |
+| 修复发布（高危漏洞）     | 30 天内          |
+| 修复发布（中低危漏洞）   | 下一个常规版本   |
+
+### 披露流程
+
+```
+报告提交 → 72h 内确认 → 评估定级 (CVSS) → 修复开发
+   → 发布安全补丁 → CHANGELOG Security 段记录 → 公开披露（经报告者同意）
+```
+
+我们遵循**负责任披露**原则：在修复版本发布前，恳请报告者不要公开漏洞细节。经确认的有效报告，我们会在 CHANGELOG 与致谢名单中注明贡献者（可要求匿名）。
+
+## 安全基线说明
+
+本项目已内置以下安全机制，报告前可参考：
+
+- **生产启动守卫（fail-fast）**：`SECRET_KEY` / `JWT_SECRET_KEY` 弱密钥黑名单 + 长度校验（≥32 字符），`CORS_ORIGINS` 通配符 `*` 禁止，见 `api/app/__init__.py`
+- **前端零密钥基线**：前端不持有任何 JWT 签名密钥，密钥校验由后端 `api/config/env_validator.py` 负责
+- **密钥扫描**：CI 中通过 gitleaks 对每次提交进行敏感信息扫描（见 `.github/workflows/security-scan.yml`）
+- **依赖审计**：`bun pm audit` 周期性扫描已知漏洞
+
+### 部署者安全责任清单
+
+自部署用户请注意（详见 `.env.example` 注释）：
+
+- [ ] 通过 `python -c "import secrets; print(secrets.token_urlsafe(48))"` 生成强密钥
+- [ ] `CORS_ORIGINS` 显式配置为可信来源列表（禁止 `*`）
+- [ ] 不要将 `.env*`、部署包（`nas-ecs-*.tar.gz`）提交到版本库
+- [ ] 定期轮换 JWT 密钥与 FRP token
+
+## 历史安全通告
+
+- **2026-09**：`CHANGELOG.md` Unreleased / Security 段记录了历史版本中 `.env.example` 与部署包曾包含真实密钥/IP 的问题。**如你曾检出旧版本，请立即轮换所有 JWT 密钥与 FRP token。**
+
+---
+
+**安全联系**: admin@0379.email · **政策版本**: v1.0 · **最近更新**: 2026-09-26

@@ -1,0 +1,49 @@
+name: ✨ 功能建议 (Feature Request)
+description: 提出新功能或改进建议
+title: "[Feat]: "
+labels: ["enhancement", "triage"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 问题背景
+      description: 这个功能建议与什么问题/场景相关？
+      placeholder: 我希望……当前……
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: 期望方案
+      description: 你期望的实现方式。
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 备选方案
+      description: 是否考虑过其他替代方案？
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: 相关模块
+      options:
+        - 前端 (src/)
+        - 后端 API (api/)
+        - AI 服务 (services/ai/)
+        - DDNS / FRP / 邮件 / Redis 服务 (services/)
+        - 部署 / CI
+        - 文档
+        - 其他
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: willingness
+    attributes:
+      label: 贡献意愿
+      options:
+        - label: 我愿意提交 PR 实现该功能

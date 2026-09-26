@@ -14,9 +14,15 @@
 [![License](./public/badges/license.svg)](LICENSE)
 [![React](./public/badges/react.svg)](https://reactjs.org/)
 [![TypeScript](./public/badges/typescript.svg)](https://www.typescriptlang.org/)
+[![CI/CD](https://img.shields.io/github/actions/workflow/status/YYC-Cube/YYC3-NAS-ECS/YYC3-NAS-ECS%20CI%2FCD%20Pipeline?branch=main&label=CI%2FCD&logo=githubactions&logoColor=white)](https://github.com/YYC-Cube/YYC3-NAS-ECS/actions/workflows/ci-cd.yml)
+[![Pages](https://img.shields.io/github/actions/workflow/status/YYC-Cube/YYC3-NAS-ECS/Deploy%20to%20GitHub%20Pages?branch=main&label=Pages%20Deploy&logo=github&logoColor=white)](https://cloud.yyc3.top)
+[![CodeQL](https://img.shields.io/github/actions/workflow/status/YYC-Cube/YYC3-NAS-ECS/Security%20Scan?branch=main&label=Security&logo=github&logoColor=white)](https://github.com/YYC-Cube/YYC3-NAS-ECS/actions/workflows/security-scan.yml)
+[![gitleaks](https://img.shields.io/badge/gitleaks-protected-4c1?logo=shield&logoColor=white)](https://github.com/YYC-Cube/YYC3-NAS-ECS/actions/workflows/gitleaks.yml)
+[![Bun](https://img.shields.io/badge/bun-%3E%3D1.1-f472b6?logo=bun&logoColor=white)](https://bun.sh)
 [![Stars](https://img.shields.io/github/stars/YYC-Cube/YYC3-NAS-ECS?style=social)](https://github.com/YYC-Cube/YYC3-NAS-ECS/stargazers)
 [![Forks](https://img.shields.io/github/forks/YYC-Cube/YYC3-NAS-ECS?style=social)](https://github.com/YYC-Cube/YYC3-NAS-ECS/network/members)
 [![Issues](https://img.shields.io/github/issues/YYC-Cube/YYC3-NAS-ECS)](https://github.com/YYC-Cube/YYC3-NAS-ECS/issues)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen)](CONTRIBUTING.md)
 
 </div>
 
@@ -42,10 +48,10 @@ YYC³ NAS-ECS 是一个基于云原生架构的企业级智能管理平台，提
 ```mermaid
 graph TB
     subgraph "前端层 Frontend"
-        A1[React 18.3.1]
-        A2[TypeScript 5.x]
+        A1[React 18.3]
+        A2[TypeScript 5.x strict]
         A3[Vite 6.4]
-        A4[TailwindCSS 3.x]
+        A4[TailwindCSS 4.1]
         A1 --> A2
         A1 --> A3
         A1 --> A4
@@ -53,9 +59,9 @@ graph TB
 
     subgraph "后端层 Backend"
         B1[Python 3.11]
-        B2[Flask 2.x]
-        B3[Gunicorn 21.x]
-        B4[JWT Auth]
+        B2[Flask 3.0]
+        B3[Gunicorn + Gevent]
+        B4[JWT Auth + RBAC]
         B1 --> B2
         B2 --> B3
         B2 --> B4
@@ -128,8 +134,8 @@ vim .env
 #### 3. 安装依赖
 
 ```bash
-# 前端依赖
-npm install
+# 前端依赖（项目统一使用 Bun）
+bun install
 
 # 后端依赖（如需独立运行后端）
 cd api
@@ -139,17 +145,15 @@ pip install -r requirements.txt
 #### 4. 启动开发环境
 
 ```bash
-# 启动前端开发服务器
-npm run dev
-
-# 前端将在 http://localhost:5173 启动
+# 启动前端开发服务器（端口 3030 起）
+bun run dev
 ```
 
 #### 5. 构建生产版本
 
 ```bash
 # 构建前端
-npm run build
+bun run build
 
 # 构建输出到 dist/ 目录
 ```
@@ -406,19 +410,69 @@ sequenceDiagram
 
 ## 📚 文档导航
 
+### 文档架构体系总览
+
+```
+📚 docs/ 文档架构体系
+│
+├── 🚀 快速启动 ──── YYC3-NAS-ECS-快速启动/
+│   ├── 📧 QUICK_START_EMAIL.md
+│   └── 📖 README-快速启动.md
+│
+├── 🚢 部署指导 ──── YYC3-NAS-ECS-部署指导/
+│   ├── 👥 非技术人士部署指南.md
+│   ├── 🗓️ 总体执行计划.md
+│   └── 🎨 用户体验优化方案.md
+│
+├── 👨‍💻 开发指导 ──── YYC3-NAS-ECS-开发指导/
+│   └── 📘 开发指导.md
+│
+├── 🛡️ 审核报告 ──── YYC3-NAS-ECS-审核报告/
+│   ├── 📊 综合审核报告.md
+│   ├── 🔒 安全审计报告.md
+│   ├── ⚡ 性能基准测试报告.md
+│   ├── 🧪 测试报告.md
+│   └── 🗄️ archive/（历史报告归档）
+│
+├── 🧪 测试体系 ──── YYC3-NAS-ECS-测试体系/
+│   ├── 📋 测试策略 / 测试计划 / 测试用例规范
+│   └── 🐞 缺陷管理流程 / 测试环境配置
+│
+├── 🏷️ 类型定义 ──── YYC3-NAS-ECS-类型定义/
+│   └── 🔗 类型关系图谱 / 定义索引 / 规范
+│
+├── 🤖 智能浮窗 ──── YYC3-NAS-ECS-智能浮窗/
+├── 📮 邮箱系统 ──── YYC3-NAS-ECS-邮箱系统/
+├── 📐 模版文档 ──── YYC3-NAS-ECS-模版文档/
+├── 🗂️ 团队规范 ──── YYC3-团队资产-标准规范/
+│   ├── 🏛️ 架构总纲 / 编码规范
+│   └── 🔐 安全合规 / 部署运维 / 测试策略
+│
+└── 📄 根级专题文档
+    ├── 🌐 系统架构图.md / architecture.md
+    ├── 🔌 API 完整文档 / API 模块使用指南
+    ├── 📡 DDNS / FRP / LLM / NAS / 邮件 服务指南
+    ├── 🎛️ 监控面板 / 日志服务 / 权限管理 技术文档
+    └── ⚙️ 环境变量配置指导 / PWA / 国际化
+```
+
 ### 核心文档
 
-| 文档 | 说明 | 链接 |
-| ------ | ------ | ------ |
-| **技术架构文档** | 完整的系统架构、数据流、部署架构 | [docs/architecture.md](./docs/architecture.md) |
-| **开发者指南** | 占位符完整说明、安全最佳实践 | [docs/开发者指南-敏感信息占位符使用说明.md](./docs/开发者指南-敏感信息占位符使用说明.md) |
-| **FRP 配置指南** | FRP 内网穿透详细配置 | [docs/YYC3-NAS-ECS-FRP配置使用指南.md](./docs/YYC3-NAS-ECS-FRP配置使用指南.md) |
-| **非技术部署指南** | 简化部署流程、快速上手 | [YYC3-NAS-ECS-非技术人士部署指南.md](./YYC3-NAS-ECS-非技术人士部署指南.md) |
-| **安全策略** | 安全策略与最佳实践 | [SECURITY.md](./SECURITY.md) |
+| 图标 | 文档 | 说明 | 链接 |
+| :--: | ------ | ------ | ------ |
+| 🏛️ | 技术架构文档 | 完整的系统架构、数据流、部署架构 | [docs/architecture.md](./docs/architecture.md) |
+| 🗺️ | 文档中心导航 | 全量文档索引与分类规范 | [docs/README.md](./docs/README.md) |
+| 👨‍💻 | 开发者指南 | 占位符完整说明、安全最佳实践 | [docs/开发者指南-敏感信息占位符使用说明.md](./docs/开发者指南-敏感信息占位符使用说明.md) |
+| 🌐 | FRP 配置指南 | FRP 内网穿透详细配置 | [docs/YYC3-NAS-ECS-FRP配置使用指南.md](./docs/YYC3-NAS-ECS-FRP配置使用指南.md) |
+| 👥 | 非技术部署指南 | 简化部署流程、快速上手 | [docs/YYC3-NAS-ECS-部署指导/YYC3-NAS-ECS-非技术人士部署指南.md](./docs/YYC3-NAS-ECS-部署指导/YYC3-NAS-ECS-非技术人士部署指南.md) |
+| 🛡️ | 安全策略 | 安全策略与漏洞披露流程 | [SECURITY.md](./SECURITY.md) |
+| 🤝 | 贡献指南 | 环境搭建、提交规范、PR 流程 | [CONTRIBUTING.md](./CONTRIBUTING.md) |
+| 📜 | 更新日志 | 版本变更历史 | [CHANGELOG.md](./CHANGELOG.md) |
+| ⚖️ | 行为准则 | 社区参与规范 | [CODE_OF_CONDUCT.md](./CODE_OF_CONDUCT.md) |
 
 ### 快速链接
 
-- 🚀 [在线演示](https://nas-ecs.0379.email)
+- 🚀 [在线演示](https://cloud.yyc3.top)
 - 📖 [API 文档](https://api.0379.email/docs)
 - 📧 [技术支持](mailto:admin@0379.email)
 - 🐛 [问题反馈](https://github.com/YYC-Cube/YYC3-NAS-ECS/issues)
@@ -426,6 +480,8 @@ sequenceDiagram
 ---
 
 ## 🤝 贡献指南
+
+完整的贡献流程请参阅 [CONTRIBUTING.md](./CONTRIBUTING.md)。
 
 ### 开发流程
 

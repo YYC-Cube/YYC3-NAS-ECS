@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 安全漏洞披露
+    url: https://github.com/YYC-Cube/YYC3-NAS-ECS/blob/main/SECURITY.md
+    about: 请勿公开披露安全漏洞，按 SECURITY.md 流程私下报告
+  - name: 💬 讨论与问答
+    url: https://github.com/YYC-Cube/YYC3-NAS-ECS/discussions
+    about: 使用问题、方案讨论与想法交流

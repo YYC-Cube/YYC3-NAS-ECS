@@ -1,0 +1,71 @@
+name: 🐛 缺陷报告 (Bug Report)
+description: 报告一个问题以帮助我们改进
+title: "[Bug]: "
+labels: ["bug", "triage"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈！请尽量填写完整信息，以便快速定位问题。
+        **安全问题请勿在此公开披露**，参见 [SECURITY.md](../../SECURITY.md)。
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      description: 清晰简洁地描述遇到的问题。
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1. 进入 '...'
+        2. 点击 '...'
+        3. 出现错误
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望行为
+      description: 你期望发生什么？
+    validations:
+      required: true
+
+  - type: dropdown
+    id: component
+    attributes:
+      label: 影响组件
+      options:
+        - 前端 (src/)
+        - 后端 API (api/)
+        - AI 服务 (services/ai/)
+        - DDNS / FRP / 邮件 / Redis 服务 (services/)
+        - 部署 / CI
+        - 文档
+        - 其他
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 日志与截图
+      description: 相关报错日志或截图（**注意脱敏，勿贴密钥/IP**）。
+      render: shell
+
+  - type: textarea
+    id: env
+    attributes:
+      label: 运行环境
+      placeholder: |
+        - OS: [例如 macOS 15, Ubuntu 22.04]
+        - Browser: [例如 Chrome 130]
+        - Bun/Node 版本:
+        - 部署方式: [本地 dev / Docker / Pages]
+    validations:
+      required: true
