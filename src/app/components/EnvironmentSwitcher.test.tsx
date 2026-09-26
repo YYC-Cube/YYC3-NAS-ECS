@@ -97,7 +97,7 @@ describe('EnvironmentSwitcher', () => {
     it('当前环境的按钮应该有默认样式', () => {
       render(<EnvironmentSwitcher />);
       const devButton = screen.getByRole('button', { name: 'development' });
-      expect(devButton).toHaveClass('bg-primary');
+      expect(devButton).toHaveClass('bg-blue-primary');
     });
 
     it('切换环境后应该更新当前环境显示', () => {

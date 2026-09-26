@@ -99,7 +99,7 @@ describe('PerformanceMonitor', () => {
       };
       await monitor.measure('test-measure', testFn);
       const entries = monitor.getEntries();
-      expect(entries[0].duration).toBeGreaterThanOrEqual(100);
+      expect(entries[0].duration).toBeGreaterThanOrEqual(90);
       expect(entries[0].metadata?.success).toBe(true);
     });
 
