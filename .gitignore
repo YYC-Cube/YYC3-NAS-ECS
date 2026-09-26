@@ -307,3 +307,9 @@ docs/tmp/
 package-lock.json
 yarn.lock
 pnpm-lock.yaml
+
+# ==================== Frontend Source Exemptions ====================
+# 裸 logs/（Node 模板）与 lib/（Python 模板）规则会误伤 src/ 下同名源码目录，
+# 曾导致 ai-integration.ts / LogViewer.tsx / ai-components 未入库而 Pages 构建断链
+!src/**/logs/
+!src/**/lib/
