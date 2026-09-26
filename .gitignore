@@ -146,6 +146,11 @@ secrets/
 credentials/
 .secrets/
 
+# ==================== Deployment Artifacts ====================
+# 部署包可能包含环境变量文件（.env.ports 等），禁止入库；交付时按需本地打包
+nas-ecs-*.tar.gz
+nas-ecs-*.checksum.txt
+
 # Sensitive configuration files
 **/config/production.*
 **/config/staging.*
