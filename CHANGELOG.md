@@ -34,6 +34,11 @@
 - `.env.example` 泄漏的真实 JWT 密钥替换为占位符（**该密钥已进 git 历史，必须轮换**）
 - `nas-ecs-1.0.0.tar.gz` 部署包（内含 .env 敏感文件）移出版本库
 - gitleaks 全分支密钥扫描守护
+- `black` 23.12.1 → 26.3.1：修复 ReDoS（moderate）与缓存文件名任意写入（high）两条 Dependabot 告警，仅影响 dev 依赖
+
+### Fixed 修复
+
+- `.gitignore` 裸 `logs/`、`lib/` 规则误伤 `src/` 同名源码目录，导致 `ai-integration.ts`/`LogViewer.tsx`/`ai-components` 未入库、远程 Pages 构建断链；追加 `!src/**/logs/`、`!src/**/lib/` 豁免并补齐 4 个源文件，Pages 部署恢复绿色
 
 ## [1.0.0] - 2026-02-13
 
