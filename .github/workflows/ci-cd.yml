@@ -2,13 +2,13 @@ name: YYC3-NAS-ECS CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 env:
-  NODE_VERSION: '18'
-  PYTHON_VERSION: '3.11'
+  NODE_VERSION: "18"
+  PYTHON_VERSION: "3.11"
 
 jobs:
   # ================== 代码质量检查 ==================
@@ -35,8 +35,6 @@ jobs:
 
       - name: 运行类型检查
         run: bun run type-check
-        # P0-2b 遗留：src 尚余约 46 个历史 TS 错误，修复完成后移除此开关
-        continue-on-error: true
 
   # ================== 单元测试 ==================
   unit-test:
@@ -63,7 +61,7 @@ jobs:
       - name: 上传覆盖率报告到 Codecov
         uses: codecov/codecov-action@v4
         with:
-          token: ${{ secrets.CODECOV_TOKEN }}
+          # 公共仓库无需 token 即可上传；如需私有仓库上传，添加 token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage/coverage-final.json
           flags: unittests
           name: codecov-umbrella

@@ -31,22 +31,23 @@ jobs:
       - name: 运行依赖审计
         run: bun pm audit --audit-level=moderate || true
 
-      - name: 运行 Snyk 扫描（可选，需配置 SNYK_TOKEN）
-        uses: snyk/actions/node@master
-        env:
-          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        with:
-          args: --severity-threshold=high --json-file-output=snyk-results.json
-        continue-on-error: true
-
-      - name: 上传 Snyk 结果
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: snyk-results
-          path: snyk-results.json
-          retention-days: 30
-          if-no-files-found: ignore
+      # 可选增强：在仓库 Secrets 中配置 SNYK_TOKEN 后取消注释启用
+      # - name: 运行 Snyk 扫描
+      #   uses: snyk/actions/node@master
+      #   env:
+      #     SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      #   with:
+      #     args: --severity-threshold=high --json-file-output=snyk-results.json
+      #   continue-on-error: true
+      #
+      # - name: 上传 Snyk 结果
+      #   uses: actions/upload-artifact@v4
+      #   if: always()
+      #   with:
+      #     name: snyk-results
+      #     path: snyk-results.json
+      #     retention-days: 30
+      #     if-no-files-found: ignore
 
   # ================== 代码安全扫描 ==================
   code-scan:
