@@ -2,12 +2,14 @@ bindAddr = "0.0.0.0"
 bindPort = 7001
 
 auth.method = "token"
-auth.token = "yyc3_nas"
+# 通过环境变量注入真实 token（frp Go template 展开），禁止将真实值写入本文件
+auth.token = "{{ .Envs.FRP_AUTH_TOKEN }}"
 
 webServer.addr = "0.0.0.0"
 webServer.port = 7500
 webServer.user = "yyc3"
-webServer.password = "my151001"
+# 通过环境变量注入真实密码，禁止将真实值写入本文件
+webServer.password = "{{ .Envs.FRP_DASHBOARD_PASSWORD }}"
 
 vhostHTTPPort = 18080
 vhostHTTPSPort = 4443

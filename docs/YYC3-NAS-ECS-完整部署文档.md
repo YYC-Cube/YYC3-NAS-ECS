@@ -455,9 +455,12 @@ ALIYUN_ACCESS_KEY_SECRET=your_aliyun_access_key_secret
 EOF
 
 cat > config/secrets/frp.env << 'EOF'
-FRP_AUTH_TOKEN=ChangeMe_V3ry_S3cur3_FRP_T0k3n_F0r_Auth3nticati0n_2026!
+# token 与密码请用以下命令生成，禁止使用文档中的示例值
+# openssl rand -base64 32  # FRP_AUTH_TOKEN
+# openssl rand -base64 18  # FRP_DASHBOARD_PASSWORD
+FRP_AUTH_TOKEN=<用 openssl rand -base64 32 生成>
 FRP_DASHBOARD_USERNAME=yyc3
-FRP_DASHBOARD_PASSWORD=ChangeMe_FRP_D@shb04rd_P@ssw0rd_2026!
+FRP_DASHBOARD_PASSWORD=<用 openssl rand -base64 18 生成>
 FRP_TLS_ENABLED=true
 FRP_TLS_CERT_FILE=/etc/letsencrypt/live/0379.email/fullchain.pem
 FRP_TLS_KEY_FILE=/etc/letsencrypt/live/0379.email/privkey.pem
