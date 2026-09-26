@@ -1,7 +1,7 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { LogCategory, LogLevel } from '../../types/logs';
 import { ConfigManager, Environment } from '../configService';
 import { logService } from '../logService';
-import { LogCategory, LogLevel } from '../../types/logs';
 
 describe('ConfigManager', () => {
   let configManager: ConfigManager;
@@ -144,20 +144,10 @@ describe('ConfigManager', () => {
       configManager.set('VITE_API_BASE_URL', 'invalid-url');
       const result = configManager.validate();
       expect(result.isValid).toBe(false);
-      const hasUrlError = result.errors.some(error => 
+      const hasUrlError = result.errors.some(error =>
         error.key === 'VITE_API_BASE_URL' && error.message.includes('URL')
       );
       expect(hasUrlError).toBe(true);
-    });
-
-    it('应该检测过短的JWT密钥', () => {
-      configManager.set('VITE_AUTH_JWT_SECRET', 'short');
-      const result = configManager.validate();
-      expect(result.isValid).toBe(false);
-      const hasSecretError = result.errors.some(error => 
-        error.key === 'VITE_AUTH_JWT_SECRET' && error.message.includes('32')
-      );
-      expect(hasSecretError).toBe(true);
     });
   });
 
@@ -178,9 +168,15 @@ describe('ConfigManager', () => {
       expect(exported).toContain('VITE_API_BASE_URL');
     });
 
-    it('应该隐藏敏感配置', () => {
+    it('应该隐藏敏感配置（前端零密钥安全基线）', () => {
+      // 安全基线：JWT 等密钥仅存在于服务端，前端配置分类不应包含任何敏感字段
+      const categories = configManager.getConfigCategories();
+      const secretFields = categories
+        .flatMap(category => Object.values(category.configs))
+        .filter(config => config.isSecret);
+      expect(secretFields.length).toBe(0);
       const exported = configManager.export();
-      expect(exported).toContain('***');
+      expect(exported).not.toContain('***');
     });
   });
 
@@ -490,7 +486,6 @@ describe('ConfigManager', () => {
   describe('validate', () => {
     it('应该验证配置并返回有效结果', () => {
       configManager.set('VITE_API_BASE_URL', 'http://localhost:6000');
-      configManager.set('VITE_AUTH_JWT_SECRET', 'a'.repeat(32));
       configManager.set('VITE_APP_ENV', 'development');
       const result = configManager.validate();
       expect(result).toBeDefined();
@@ -509,25 +504,14 @@ describe('ConfigManager', () => {
       configManager.set('VITE_API_BASE_URL', 'invalid-url');
       const result = configManager.validate();
       expect(result.isValid).toBe(false);
-      const hasUrlError = result.errors.some(error => 
+      const hasUrlError = result.errors.some(error =>
         error.key === 'VITE_API_BASE_URL' && error.message.includes('URL')
       );
       expect(hasUrlError).toBe(true);
     });
 
-    it('应该检测过短的JWT密钥', () => {
-      configManager.set('VITE_AUTH_JWT_SECRET', 'short');
-      const result = configManager.validate();
-      expect(result.isValid).toBe(false);
-      const hasSecretError = result.errors.some(error => 
-        error.key === 'VITE_AUTH_JWT_SECRET' && error.message.includes('32')
-      );
-      expect(hasSecretError).toBe(true);
-    });
-
     it('应该通过验证当所有必需配置都存在且有效时', () => {
       configManager.set('VITE_API_BASE_URL', 'http://localhost:6000');
-      configManager.set('VITE_AUTH_JWT_SECRET', 'a'.repeat(32));
       configManager.set('VITE_APP_ENV', 'development');
       const result = configManager.validate();
       expect(result.isValid).toBe(true);
@@ -536,7 +520,7 @@ describe('ConfigManager', () => {
 
     it('应该检测多个配置错误', () => {
       configManager.set('VITE_API_BASE_URL', 'invalid-url');
-      configManager.set('VITE_AUTH_JWT_SECRET', 'short');
+      configManager.set('VITE_APP_ENV', '');
       const result = configManager.validate();
       expect(result.isValid).toBe(false);
       expect(result.errors.length).toBeGreaterThan(1);
@@ -560,9 +544,15 @@ describe('ConfigManager', () => {
       expect(exported).toContain('VITE_API_BASE_URL');
     });
 
-    it('应该隐藏敏感配置', () => {
+    it('应该隐藏敏感配置（前端零密钥安全基线）', () => {
+      // 安全基线：JWT 等密钥仅存在于服务端，前端配置分类不应包含任何敏感字段
+      const categories = configManager.getConfigCategories();
+      const secretFields = categories
+        .flatMap(category => Object.values(category.configs))
+        .filter(config => config.isSecret);
+      expect(secretFields.length).toBe(0);
       const exported = configManager.export();
-      expect(exported).toContain('***');
+      expect(exported).not.toContain('***');
     });
 
     it('应该包含导出时间', () => {
@@ -979,7 +969,7 @@ describe('ConfigManager', () => {
         service: 'config'
       });
 
-      const envChangeLogs = logs.filter(log => 
+      const envChangeLogs = logs.filter(log =>
         log.message.includes('环境切换成功')
       );
       expect(envChangeLogs.length).toBeGreaterThan(0);
@@ -1011,7 +1001,7 @@ describe('ConfigManager', () => {
         service: 'config'
       });
 
-      const updateLogs = logs.filter(log => 
+      const updateLogs = logs.filter(log =>
         log.message.includes('Configuration changed')
       );
       expect(updateLogs.length).toBeGreaterThan(0);
@@ -1027,11 +1017,11 @@ describe('ConfigManager', () => {
         service: 'config'
       });
 
-      const updateLogs = logs.filter(log => 
+      const updateLogs = logs.filter(log =>
         log.message.includes('Configuration changed: VITE_TEST_CONFIG')
       );
       expect(updateLogs.length).toBeGreaterThan(0);
-      
+
       const updateLog = updateLogs[updateLogs.length - 1];
       expect(updateLog).toBeDefined();
       expect(updateLog?.details).toHaveProperty('key', 'VITE_TEST_CONFIG');
@@ -1041,7 +1031,6 @@ describe('ConfigManager', () => {
   describe('配置验证', () => {
     it('验证通过时应该记录INFO日志', () => {
       configManager.set('VITE_API_BASE_URL', 'http://localhost:6000');
-      configManager.set('VITE_AUTH_JWT_SECRET', 'a'.repeat(32));
       configManager.set('VITE_APP_ENV', 'development');
 
       configManager.validate();
@@ -1052,7 +1041,7 @@ describe('ConfigManager', () => {
         service: 'config'
       });
 
-      const validationLogs = logs.filter(log => 
+      const validationLogs = logs.filter(log =>
         log.message.includes('配置验证通过')
       );
       expect(validationLogs.length).toBeGreaterThan(0);
@@ -1060,7 +1049,6 @@ describe('ConfigManager', () => {
 
     it('验证失败时应该记录ERROR日志', () => {
       configManager.set('VITE_API_BASE_URL', 'invalid-url');
-      configManager.set('VITE_AUTH_JWT_SECRET', 'short');
 
       configManager.validate();
 
@@ -1070,7 +1058,7 @@ describe('ConfigManager', () => {
         service: 'config'
       });
 
-      const validationLogs = logs.filter(log => 
+      const validationLogs = logs.filter(log =>
         log.message.includes('配置验证失败')
       );
       expect(validationLogs.length).toBeGreaterThan(0);
@@ -1086,7 +1074,7 @@ describe('ConfigManager', () => {
         service: 'config'
       });
 
-      const validationLog = logs.find(log => 
+      const validationLog = logs.find(log =>
         log.message.includes('配置验证失败')
       );
       expect(validationLog).toBeDefined();
@@ -1139,7 +1127,7 @@ describe('ConfigManager', () => {
 
   describe('并发测试', () => {
     it('应该正确处理并发读取', async () => {
-      const promises = Array.from({ length: 100 }, () => 
+      const promises = Array.from({ length: 100 }, () =>
         Promise.resolve(configManager.get('VITE_API_BASE_URL'))
       );
 
@@ -1151,7 +1139,7 @@ describe('ConfigManager', () => {
     });
 
     it('应该正确处理并发写入', async () => {
-      const promises = Array.from({ length: 100 }, (_, i) => 
+      const promises = Array.from({ length: 100 }, (_, i) =>
         Promise.resolve(configManager.set(`VITE_TEST_CONFIG_${i}`, `value-${i}`))
       );
 
@@ -1183,11 +1171,11 @@ describe('ConfigManager', () => {
     it('应用配置应该包含所有必需字段', () => {
       const categories = configManager.getConfigCategories();
       const appConfig = categories.find(cat => cat.name === '应用配置');
-      
+
       expect(appConfig).toBeDefined();
       expect(appConfig?.configs).toHaveProperty('NODE_ENV');
       expect(appConfig?.configs).toHaveProperty('VITE_APP_ENV');
-      
+
       Object.values(appConfig?.configs || {}).forEach(config => {
         expect(config).toHaveProperty('value');
         expect(config).toHaveProperty('isSecret');
@@ -1200,7 +1188,7 @@ describe('ConfigManager', () => {
     it('API配置应该包含所有必需字段', () => {
       const categories = configManager.getConfigCategories();
       const apiConfig = categories.find(cat => cat.name === 'API配置');
-      
+
       expect(apiConfig).toBeDefined();
       expect(apiConfig?.configs).toHaveProperty('VITE_API_BASE_URL');
       expect(apiConfig?.configs).toHaveProperty('VITE_API_TIMEOUT');
@@ -1210,9 +1198,9 @@ describe('ConfigManager', () => {
     it('认证配置应该包含所有必需字段', () => {
       const categories = configManager.getConfigCategories();
       const authConfig = categories.find(cat => cat.name === '认证配置');
-      
+
       expect(authConfig).toBeDefined();
-      expect(authConfig?.configs).toHaveProperty('VITE_AUTH_JWT_SECRET');
+      // 安全基线：前端不持有 JWT 密钥，认证配置分类不再包含 VITE_AUTH_JWT_SECRET
       expect(authConfig?.configs).toHaveProperty('VITE_AUTH_TOKEN_STORAGE');
       expect(authConfig?.configs).toHaveProperty('VITE_AUTH_REFRESH_TOKEN_ENABLED');
     });
@@ -1220,7 +1208,7 @@ describe('ConfigManager', () => {
     it('功能开关配置应该包含所有必需字段', () => {
       const categories = configManager.getConfigCategories();
       const featureConfig = categories.find(cat => cat.name === '功能开关');
-      
+
       expect(featureConfig).toBeDefined();
       expect(featureConfig?.configs).toHaveProperty('VITE_ENABLE_MOCK_DATA');
       expect(featureConfig?.configs).toHaveProperty('VITE_ENABLE_DEBUG');
@@ -1231,7 +1219,7 @@ describe('ConfigManager', () => {
     it('日志配置应该包含所有必需字段', () => {
       const categories = configManager.getConfigCategories();
       const logConfig = categories.find(cat => cat.name === '日志配置');
-      
+
       expect(logConfig).toBeDefined();
       expect(logConfig?.configs).toHaveProperty('VITE_LOG_LEVEL');
       expect(logConfig?.configs).toHaveProperty('VITE_LOG_TO_CONSOLE');
@@ -1241,7 +1229,7 @@ describe('ConfigManager', () => {
     it('性能配置应该包含所有必需字段', () => {
       const categories = configManager.getConfigCategories();
       const perfConfig = categories.find(cat => cat.name === '性能配置');
-      
+
       expect(perfConfig).toBeDefined();
       expect(perfConfig?.configs).toHaveProperty('VITE_CACHE_ENABLED');
       expect(perfConfig?.configs).toHaveProperty('VITE_CACHE_TTL');
@@ -1251,7 +1239,7 @@ describe('ConfigManager', () => {
     it('UI配置应该包含所有必需字段', () => {
       const categories = configManager.getConfigCategories();
       const uiConfig = categories.find(cat => cat.name === 'UI配置');
-      
+
       expect(uiConfig).toBeDefined();
       expect(uiConfig?.configs).toHaveProperty('VITE_THEME');
       expect(uiConfig?.configs).toHaveProperty('VITE_LANGUAGE');

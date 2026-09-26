@@ -654,7 +654,7 @@ export const apiV2: ApiService = {
       if (envConfig.shouldUseMockData()) {
         return {
           enabled: true,
-          currentIp: '8.152.195.33',
+          currentIp: '203.0.113.1',
           domain: 'ddns.0379.email',
           lastUpdate: new Date().toISOString(),
           status: 'success',
@@ -690,8 +690,8 @@ export const apiV2: ApiService = {
       if (envConfig.shouldUseMockData()) {
         return Array.from({ length: limit }).map((_, i) => ({
           timestamp: new Date(Date.now() - i * 300000).toISOString(),
-          previousIp: '8.152.195.33',
-          newIp: '8.152.195.33',
+          previousIp: '203.0.113.1',
+          newIp: '203.0.113.1',
           success: true,
           errorMessage: undefined,
         }));

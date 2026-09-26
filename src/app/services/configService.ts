@@ -1,5 +1,5 @@
-import { logService } from './logService';
 import { LogCategory, LogLevel } from '../types/logs';
+import { logService } from './logService';
 
 export enum Environment {
   DEVELOPMENT = 'development',
@@ -157,7 +157,6 @@ export class ConfigManager {
 
     const requiredConfigs = [
       'VITE_API_BASE_URL',
-      'VITE_AUTH_JWT_SECRET',
       'VITE_APP_ENV'
     ];
 
@@ -181,12 +180,7 @@ export class ConfigManager {
       }
     }
 
-    if (config['VITE_AUTH_JWT_SECRET'] && config['VITE_AUTH_JWT_SECRET'].length < 32) {
-      errors.push({
-        key: 'VITE_AUTH_JWT_SECRET',
-        message: 'VITE_AUTH_JWT_SECRET 长度必须至少为32个字符'
-      });
-    }
+    // 安全基线：前端不持有 JWT 签名密钥，密钥校验由后端 env_validator 负责
 
     const isValid = errors.length === 0;
 
@@ -314,13 +308,7 @@ export class ConfigManager {
         name: '认证配置',
         description: '用户认证相关配置',
         configs: {
-          VITE_AUTH_JWT_SECRET: {
-            value: this.get('VITE_AUTH_JWT_SECRET') || '',
-            isSecret: true,
-            description: 'JWT密钥',
-            required: true,
-            type: 'string'
-          },
+          // 安全基线：JWT 签名密钥仅在服务端（后端 env_validator 强制校验），前端不持有
           VITE_AUTH_TOKEN_STORAGE: {
             value: this.get('VITE_AUTH_TOKEN_STORAGE') || 'localStorage',
             isSecret: false,

@@ -130,9 +130,8 @@ class EnvironmentValidator:
             'default': 'info',
         },
         'CORS_ORIGINS': {
-            'description': 'Allowed CORS origins',
+            'description': 'Allowed CORS origins (production must NOT use "*")',
             'example': 'http://localhost:3000,https://yourdomain.com',
-            'default': '*',
         },
     }
 

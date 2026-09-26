@@ -528,7 +528,7 @@ describe('RealApiService', () => {
           client: {
             running: true,
             connected: true,
-            serverAddr: '8.152.195.33',
+            serverAddr: '203.0.113.1',
             serverPort: 7001,
             proxyCount: 5,
             uptime: '15天 3小时 45分钟'
@@ -647,7 +647,7 @@ describe('RealApiService', () => {
           id: '1',
           timestamp: new Date().toISOString(),
           oldIP: '8.152.195.32',
-          newIP: '8.152.195.33',
+          newIP: '203.0.113.1',
           status: 'success'
         }
       ];

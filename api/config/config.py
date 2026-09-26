@@ -45,13 +45,17 @@ class Config:
     # 其他设置
     # ======================
     LOG_LEVEL = os.environ.get('LOG_LEVEL', 'INFO')
-    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '*')
+    # 开发默认仅允许本地源；生产环境必须在 ProductionConfig 中显式配置（禁用 '*'）
+    CORS_ORIGINS = os.environ.get(
+        'CORS_ORIGINS', 'http://localhost:3030,http://localhost:5173'
+    )
     ENVIRONMENT = os.environ.get('ENVIRONMENT', 'development')
 
     # ======================
     # 服务器配置
     # ======================
-    NAS_SERVER_IP = os.environ.get('NAS_SERVER_IP', '8.152.195.33')
+    # 安全基线：不提供任何真实 IP 默认值，必须通过环境变量注入
+    NAS_SERVER_IP = os.environ.get('NAS_SERVER_IP', '')
     NAS_DOMAIN = os.environ.get('NAS_DOMAIN', 'ddns.0379.email')
 
     # ======================
@@ -73,6 +77,9 @@ class ProductionConfig(Config):
     """生产环境配置"""
     DEBUG = False
     TESTING = False
+
+    # 生产环境 CORS 必须显式配置，默认留空由 create_app 启动守卫强制校验
+    CORS_ORIGINS = os.environ.get('CORS_ORIGINS', '')
 
     # 生产环境强制 HTTPS
     SESSION_COOKIE_SECURE = True

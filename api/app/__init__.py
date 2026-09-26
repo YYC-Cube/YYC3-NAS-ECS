@@ -52,6 +52,28 @@ def create_app(config_name=None):
         except SystemExit:
             logger.error("Environment validation failed, cannot start application")
             raise
+
+        # 生产环境安全守卫：强制强密钥 + 显式 CORS（fail-fast）
+        _KNOWN_WEAK_SECRETS = {
+            'dev-secret-key-please-change',
+            'jwt-secret-key-change-me',
+            'your-secret-key-here-change-in-production',
+            'your-jwt-secret-key-here-change-in-production',
+        }
+        for key_name in ('SECRET_KEY', 'JWT_SECRET_KEY'):
+            value = app.config.get(key_name) or ''
+            if value in _KNOWN_WEAK_SECRETS or len(value) < 32:
+                raise RuntimeError(
+                    f"Production startup aborted: {key_name} is missing, too short "
+                    f"(< 32 chars) or a known default. Generate one via: "
+                    f"`python -c \"import secrets; print(secrets.token_urlsafe(48))\"`"
+                )
+        cors_value = (app.config.get('CORS_ORIGINS') or '').strip()
+        if not cors_value or cors_value == '*':
+            raise RuntimeError(
+                "Production startup aborted: CORS_ORIGINS must be explicitly set "
+                "to a comma-separated list of trusted origins (wildcard '*' is forbidden)"
+            )
     else:
         try:
             from config.env_validator import get_validation_report
@@ -68,10 +90,13 @@ def create_app(config_name=None):
     # 初始化 JWT
     jwt_auth.init_app(app)
 
-    # 初始化 CORS
+    # 初始化 CORS（支持逗号分隔字符串，统一转为精确来源列表，避免宽泛通配）
+    cors_origins = app.config['CORS_ORIGINS']
+    if isinstance(cors_origins, str):
+        cors_origins = [o.strip() for o in cors_origins.split(',') if o.strip()]
     CORS(app, resources={
         r"/api/*": {
-            "origins": app.config['CORS_ORIGINS'],
+            "origins": cors_origins,
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type", "Authorization", "X-API-Key"]
         }

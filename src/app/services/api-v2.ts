@@ -198,7 +198,7 @@ class MockDataService {
           client: {
             running: true,
             connected: true,
-            serverAddr: '8.152.195.33',
+            serverAddr: '203.0.113.1',
             serverPort: 7001,
             proxyCount: 5,
             uptime: '15天 3小时 45分钟'
@@ -238,8 +238,8 @@ class MockDataService {
           enabled: true,
           provider: 'aliyun',
           domain: 'ddns.0379.email',
-          currentIP: '8.152.195.33',
-          expectedIP: '8.152.195.33',
+          currentIP: '203.0.113.1',
+          expectedIP: '203.0.113.1',
           lastUpdate: new Date().toISOString(),
           nextUpdate: Date.now() + 300,
           updateInterval: 300,
@@ -262,7 +262,7 @@ class MockDataService {
           id: '1',
           timestamp: new Date().toISOString(),
           oldIP: '8.152.195.32',
-          newIP: '8.152.195.33',
+          newIP: '203.0.113.1',
           status: 'success'
         }
       ];

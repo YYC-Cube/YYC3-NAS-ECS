@@ -127,7 +127,7 @@ export const DDNSService: React.FC = () => {
         serviceStatus: { active: true, enabled: true, lastTriggered: '2025-01-30 10:15:30' },
         timerStatus: { active: true, enabled: true, lastTriggered: '2025-01-30 10:15:30', nextTrigger: '2025-01-30 10:20:30' },
         domain: 'nas.0379.email',
-        ip: '8.152.195.33'
+        ip: '203.0.113.1'
       });
 
       setMonitorStatus({
@@ -161,13 +161,13 @@ export const DDNSService: React.FC = () => {
     } catch (_error) {
       // 模拟日志数据
       setLogs([
-        { timestamp: '2025-01-30 10:15:30', level: 'success', message: 'DDNS update successful: nas.0379.email -> 8.152.195.33', service: 'ddns' },
+        { timestamp: '2025-01-30 10:15:30', level: 'success', message: 'DDNS update successful: nas.0379.email -> 203.0.113.1', service: 'ddns' },
         { timestamp: '2025-01-30 10:00:00', level: 'info', message: 'Monitor check passed: DNS resolution, HTTP service, system resources', service: 'monitor' },
-        { timestamp: '2025-01-30 09:50:30', level: 'success', message: 'DDNS update successful: nas.0379.email -> 8.152.195.33', service: 'ddns' },
-        { timestamp: '2025-01-30 09:40:30', level: 'success', message: 'DDNS update successful: nas.0379.email -> 8.152.195.33', service: 'ddns' },
-        { timestamp: '2025-01-30 09:30:30', level: 'success', message: 'DDNS update successful: nas.0379.email -> 8.152.195.33', service: 'ddns' },
+        { timestamp: '2025-01-30 09:50:30', level: 'success', message: 'DDNS update successful: nas.0379.email -> 203.0.113.1', service: 'ddns' },
+        { timestamp: '2025-01-30 09:40:30', level: 'success', message: 'DDNS update successful: nas.0379.email -> 203.0.113.1', service: 'ddns' },
+        { timestamp: '2025-01-30 09:30:30', level: 'success', message: 'DDNS update successful: nas.0379.email -> 203.0.113.1', service: 'ddns' },
         { timestamp: '2025-01-30 09:20:00', level: 'info', message: 'Monitor check passed: DNS resolution, HTTP service, system resources', service: 'monitor' },
-        { timestamp: '2025-01-30 09:20:30', level: 'success', message: 'DDNS update successful: nas.0379.email -> 8.152.195.33', service: 'ddns' },
+        { timestamp: '2025-01-30 09:20:30', level: 'success', message: 'DDNS update successful: nas.0379.email -> 203.0.113.1', service: 'ddns' },
         { timestamp: '2025-01-30 00:00:00', level: 'info', message: 'Daily report generated and sent', service: 'report' },
       ]);
     }

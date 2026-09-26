@@ -11,7 +11,6 @@ interface ImportMetaEnv {
   readonly VITE_FRP_API_URL: string
   readonly VITE_NAS_API_URL: string
   readonly VITE_WS_URL: string
-  readonly VITE_AUTH_JWT_SECRET: string
   readonly VITE_ENABLE_MOCK_DATA: boolean
   readonly VITE_ENABLE_DEBUG: boolean
   readonly VITE_ENABLE_PERFORMANCE_MONITORING: boolean

@@ -32,7 +32,7 @@ x-api-environment: &api-environment
   
   # CORS 配置
   CORS_ENABLED: ${CORS_ENABLED:-true}
-  CORS_ORIGINS: ${CORS_ORIGINS:-*}
+  CORS_ORIGINS: ${CORS_ORIGINS:-https://cloud.yyc3.top,https://ddns.0379.email}
   CORS_METHODS: ${CORS_METHODS:-GET,POST,PUT,DELETE,OPTIONS}
   CORS_HEADERS: ${CORS_HEADERS:-Content-Type,Authorization,X-API-Key}
   
@@ -107,7 +107,7 @@ x-api-full: &api-full
     
     # CORS 配置
     CORS_ENABLED: ${CORS_ENABLED:-true}
-    CORS_ORIGINS: ${CORS_ORIGINS:-*}
+    CORS_ORIGINS: ${CORS_ORIGINS:-https://cloud.yyc3.top,https://ddns.0379.email}
     CORS_METHODS: ${CORS_METHODS:-GET,POST,PUT,DELETE,OPTIONS}
     CORS_HEADERS: ${CORS_HEADERS:-Content-Type,Authorization,X-API-Key}
     

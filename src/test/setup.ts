@@ -1,6 +1,6 @@
-import { afterEach, vi, beforeAll, beforeEach } from 'vitest';
-import { cleanup } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import { cleanup } from '@testing-library/react';
+import { afterEach, beforeAll, beforeEach, vi } from 'vitest';
 
 afterEach(() => {
   cleanup();
@@ -70,7 +70,6 @@ function setupEnvironmentVariables() {
     VITE_LOG_LEVEL: 'debug',
     VITE_API_BASE_URL: 'http://localhost:6000',
     VITE_API_TIMEOUT: '30000',
-    VITE_AUTH_JWT_SECRET: 'test-jwt-secret-for-testing-only',
     VITE_AUTH_TOKEN_STORAGE: 'localStorage',
     VITE_AUTH_REFRESH_TOKEN_ENABLED: 'true',
     VITE_ENABLE_PERFORMANCE_MONITORING: 'true',
@@ -100,7 +99,6 @@ function setupEnvironmentVariables() {
         VITE_LOG_LEVEL: 'debug',
         VITE_API_BASE_URL: 'http://localhost:6000',
         VITE_API_TIMEOUT: '30000',
-        VITE_AUTH_JWT_SECRET: 'test-jwt-secret-for-testing-only',
         VITE_AUTH_TOKEN_STORAGE: 'localStorage',
         VITE_AUTH_REFRESH_TOKEN_ENABLED: 'true',
         VITE_ENABLE_PERFORMANCE_MONITORING: 'true',

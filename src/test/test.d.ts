@@ -29,7 +29,6 @@ declare const global: {
         VITE_LOG_LEVEL: string;
         VITE_API_BASE_URL: string;
         VITE_API_TIMEOUT: string;
-        VITE_AUTH_JWT_SECRET: string;
         VITE_AUTH_TOKEN_STORAGE: string;
         VITE_AUTH_REFRESH_TOKEN_ENABLED: string;
         VITE_ENABLE_PERFORMANCE_MONITORING: string;

@@ -691,7 +691,7 @@ export const apiV2: ApiService = {
           enabled: true,
           provider: 'aliyun',
           domain: 'ddns.0379.email',
-          currentIP: '8.152.195.33',
+          currentIP: '203.0.113.1',
           lastUpdate: new Date().toISOString(),
           status: 'success',
         };
@@ -732,8 +732,8 @@ export const apiV2: ApiService = {
         return Array.from({ length: limit }).map((_, i) => ({
           id: String(i),
           timestamp: new Date(Date.now() - i * 300000).toISOString(),
-          oldIP: '8.152.195.33',
-          newIP: '8.152.195.33',
+          oldIP: '203.0.113.1',
+          newIP: '203.0.113.1',
           status: 'success',
           message: 'IP未变化，无需更新',
         }));

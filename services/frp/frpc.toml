@@ -1,7 +1,9 @@
-serverAddr = "8.152.195.33"
+# YYC³ FRP 客户端配置模板
+# 安全基线：仓库中不存放真实服务器 IP 与 token，部署时复制为 frpc.local.toml 并填入真实值
+serverAddr = "YOUR_FRP_SERVER_IP"
 serverPort = 7001
 auth.method = "token"
-auth.token = "yyc3_nas"
+auth.token = "YOUR_FRP_TOKEN"
 
 log.to = "/Volume1/www/frpc/logs/frpc.log"
 log.level = "debug"

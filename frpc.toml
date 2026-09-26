@@ -1,7 +1,8 @@
 serverAddr = "SERVER_IP_PLACEHOLDER"
 serverPort = 7001
 auth.method = "token"
-auth.token = "yyc3_nas"
+# 安全基线：真实 token 只存在于部署环境，不入库
+auth.token = "YOUR_FRP_TOKEN"
 
 log.to = "/Volume1/www/frpc/logs/frpc.log"
 log.level = "debug"
