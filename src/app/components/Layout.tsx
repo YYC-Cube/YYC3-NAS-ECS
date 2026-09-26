@@ -182,9 +182,9 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPath, onNavigat
                 className="flex items-center space-x-2 transition-all duration-200 hover:scale-105 cursor-pointer"
                 title="AI助手"
               >
-                <img 
-                  src="/yyc3-pwa-icon.png" 
-                  alt="YYC³" 
+                <img
+                  src="/yyc3-icons/Web%20App/android-chrome-192.png"
+                  alt="YYC³"
                   className="w-8 h-8 rounded-md shadow-md"
                 />
                 <h1 style={{ color: 'var(--module-cpu-dark)' }} className="font-bold">YYC³ NAS-ECS</h1>

@@ -59,7 +59,7 @@ export default function App() {
   };
 
   return (
-    <AIWidgetProvider autoInitialize={true}>
+    <AIWidgetProvider autoInit={true}>
       <Layout currentPath={currentPath} onNavigate={handleNavigate}>
         {renderContent()}
       </Layout>

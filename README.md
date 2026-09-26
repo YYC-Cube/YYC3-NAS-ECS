@@ -1,6 +1,6 @@
 <div align="center">
 
-![YYC³ NAS-ECS](./public/git_1800_450-6.png)
+![YYC³ NAS-ECS](./public/yyc3-family.png)
 
 # YYC³ NAS-ECS 企业级智能管理平台
 
@@ -29,7 +29,7 @@ YYC³ NAS-ECS 是一个基于云原生架构的企业级智能管理平台，提
 ### 核心特性
 
 | 特性 | 说明 | 技术实现 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | 🔒 **安全管理** | 企业级认证授权、数据加密、安全审计 | JWT + RBAC + HTTPS |
 | 🌐 **内网穿透** | 基于 FRP 的稳定内网穿透服务 | FRP 0.52+ + Nginx |
 | 📡 **DDNS 服务** | 支持阿里云、腾讯云、Cloudflare 等 DNS 服务 | 定时任务 + DNS API |
@@ -50,7 +50,7 @@ graph TB
         A1 --> A3
         A1 --> A4
     end
-    
+
     subgraph "后端层 Backend"
         B1[Python 3.11]
         B2[Flask 2.x]
@@ -60,14 +60,14 @@ graph TB
         B2 --> B3
         B2 --> B4
     end
-    
+
     subgraph "数据层 Data"
         C1[PostgreSQL 14]
         C2[Redis 7]
         C3[SQLite]
         C1 -.-> C2
     end
-    
+
     subgraph "基础设施层 Infrastructure"
         D1[Docker 24+]
         D2[Nginx 1.x]
@@ -75,7 +75,7 @@ graph TB
         D4[Prometheus]
         D5[Grafana]
     end
-    
+
     A4 --> B2
     B2 --> C1
     B2 --> C2
@@ -94,7 +94,7 @@ graph TB
 ### 前置要求
 
 | 依赖 | 版本要求 | 用途 |
-|------|----------|------|
+| ------ | ---------- | ------ |
 | Node.js | >= 18.0 | 前端运行环境 |
 | Python | >= 3.10 | 后端运行环境 |
 | Docker | >= 20.10 | 容器化部署 |
@@ -208,7 +208,7 @@ YYC3-NAS-ECS/
 ### 核心配置项
 
 | 配置项 | 说明 | 占位符 | 必填 |
-|-------|------|--------|------|
+| ------- | ------ | -------- | ------ |
 | `POSTGRES_USER` | 数据库用户名 | `DB_USER_PLACEHOLDER` | ✅ |
 | `POSTGRES_PASSWORD` | 数据库密码 | `DB_PASSWORD_PLACEHOLDER` | ✅ |
 | `JWT_SECRET_KEY` | JWT 签名密钥 | `JWT_SECRET_PLACEHOLDER` | ✅ |
@@ -266,7 +266,7 @@ YYC3-NAS-ECS/
 ```mermaid
 graph LR
     User[用户]
-    
+
     subgraph "用户界面层"
         Dashboard[仪表板]
         DDNS[DDNS管理]
@@ -274,7 +274,7 @@ graph LR
         Monitor[监控中心]
         Settings[系统设置]
     end
-    
+
     subgraph "业务服务层"
         AuthService[认证服务]
         DDNSService[DDNS服务]
@@ -282,41 +282,41 @@ graph LR
         MonitorService[监控服务]
         BackupService[备份服务]
     end
-    
+
     subgraph "数据存储层"
         PG[(PostgreSQL)]
         Redis[(Redis)]
         Files[文件存储]
     end
-    
+
     subgraph "外部服务"
         Aliyun[阿里云DNS]
         Email[邮件服务]
         AI[AI服务]
     end
-    
+
     User --> Dashboard
     User --> DDNS
     User --> FRP
     User --> Monitor
     User --> Settings
-    
+
     Dashboard --> AuthService
     DDNS --> DDNSService
     FRP --> FRPService
     Monitor --> MonitorService
     Settings --> BackupService
-    
+
     AuthService --> PG
     AuthService --> Redis
     DDNSService --> Redis
     DDNSService --> Aliyun
     MonitorService --> PG
     BackupService --> Files
-    
+
     FRPService --> Email
     DDNSService --> AI
-    
+
     style Dashboard fill:#4A90E2,color:#fff
     style DDNS fill:#3B82F6,color:#fff
     style FRP fill:#10B981,color:#fff
@@ -334,7 +334,7 @@ sequenceDiagram
     participant Service as 业务服务
     participant DB as 数据库
     participant External as 外部服务
-    
+
     User->>UI: 访问系统
     UI->>API: 请求资源
     API->>Service: 调用服务
@@ -343,7 +343,7 @@ sequenceDiagram
     Service-->>API: 响应结果
     API-->>UI: 返回响应
     UI-->>User: 展示界面
-    
+
     User->>UI: DDNS更新
     UI->>API: 发起更新
     API->>Service: 处理更新
@@ -409,7 +409,7 @@ sequenceDiagram
 ### 核心文档
 
 | 文档 | 说明 | 链接 |
-|------|------|------|
+| ------ | ------ | ------ |
 | **技术架构文档** | 完整的系统架构、数据流、部署架构 | [docs/architecture.md](./docs/architecture.md) |
 | **开发者指南** | 占位符完整说明、安全最佳实践 | [docs/开发者指南-敏感信息占位符使用说明.md](./docs/开发者指南-敏感信息占位符使用说明.md) |
 | **FRP 配置指南** | FRP 内网穿透详细配置 | [docs/YYC3-NAS-ECS-FRP配置使用指南.md](./docs/YYC3-NAS-ECS-FRP配置使用指南.md) |
@@ -437,7 +437,7 @@ graph LR
     D --> E[开启 Pull Request]
     E --> F[代码审查]
     F --> G[合并到主分支]
-    
+
     style A fill:#4A90E2,color:#fff
     style B fill:#3B82F6,color:#fff
     style C fill:#10B981,color:#fff
@@ -515,7 +515,7 @@ graph LR
 ## 📞 技术支持
 
 | 支持类型 | 联系方式 |
-|----------|----------|
+| ---------- | ---------- |
 | **技术邮箱** | <admin@0379.email> |
 | **GitHub Issues** | <https://github.com/YYC-Cube/YYC3-NAS-ECS/issues> |
 | **文档中心** | <https://docs.0379.email> |
@@ -535,10 +535,10 @@ graph LR
 
 ---
 
-**项目版本**: 1.0.0  
-**最后更新**: 2026-02-13  
-**维护者**: YYC³ Team  
-**许可协议**: MIT  
+**项目版本**: 1.0.0
+**最后更新**: 2026-02-13
+**维护者**: YYC³ Team
+**许可协议**: MIT
 **项目地址**: <https://github.com/YYC-Cube/YYC3-NAS-ECS>
 
 ---

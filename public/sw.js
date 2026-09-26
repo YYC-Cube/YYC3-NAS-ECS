@@ -14,7 +14,8 @@ const STATIC_CACHE_URLS = [
   '/',
   '/index.html',
   '/manifest.json',
-  '/yyc3-pwa-icon.png',
+  '/yyc3-icons/Web%20App/favicon-32.png',
+  '/yyc3-icons/Web%20App/android-chrome-192.png',
 ];
 
 const API_CACHE_URLS = [
@@ -123,8 +124,8 @@ self.addEventListener('message', (event) => {
 self.addEventListener('push', (event) => {
   const options = {
     body: event.data ? event.data.text() : 'New notification',
-    icon: '/yyc3-pwa-icon.png',
-    badge: '/yyc3-pwa-icon.png',
+    icon: '/yyc3-icons/Web%20App/android-chrome-192.png',
+    badge: '/yyc3-icons/Web%20App/favicon-32.png',
     vibrate: [100, 50, 100],
     data: {
       dateOfArrival: Date.now(),
