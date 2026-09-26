@@ -27,7 +27,9 @@
       "@utils/*": ["./src/utils/*", "./services/utils/*"]
     }
   },
-  "include": ["src", "services"],
+  // P0-2a: services/ 为独立子工程（含自身 tsconfig），不纳入前端根类型检查，
+  // 避免其 1223 个历史错误污染 src 的类型门禁
+  "include": ["src"],
   "exclude": [
     "node_modules",
     "dist",
