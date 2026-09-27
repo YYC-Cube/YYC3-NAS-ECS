@@ -20,12 +20,12 @@ NAS_API_KEY = os.getenv('NAS_API_KEY', '')
 def call_nas_api(endpoint, method='GET', data=None):
     """
     调用NAS API
-    
+
     Args:
         endpoint: API端点
         method: HTTP方法
         data: 请求数据
-        
+
     Returns:
         dict: API响应
     """
@@ -34,10 +34,10 @@ def call_nas_api(endpoint, method='GET', data=None):
         headers = {
             'Content-Type': 'application/json',
         }
-        
+
         if NAS_API_KEY:
             headers['Authorization'] = f'Bearer {NAS_API_KEY}'
-        
+
         if method == 'GET':
             response = requests.get(url, headers=headers, timeout=10)
         elif method == 'POST':
@@ -48,7 +48,7 @@ def call_nas_api(endpoint, method='GET', data=None):
             response = requests.delete(url, headers=headers, timeout=10)
         else:
             raise ValueError(f"Unsupported method: {method}")
-        
+
         response.raise_for_status()
         return response.json()
     except requests.exceptions.RequestException as e:
@@ -76,9 +76,9 @@ MOCK_NAS_VOLUMES = [
         'id': 'vol1',
         'name': 'Volume 1',
         'type': 'Btrfs',
-        'total': 16000,
-        'used': 8750,
-        'available': 7250,
+        'total': 16 * 1024 ** 4,
+        'used': int(16 * 1024 ** 4 * 0.55),
+        'available': 16 * 1024 ** 4 - int(16 * 1024 ** 4 * 0.55),
         'health': 'healthy',
         'mountPoint': '/volume1'
     },
@@ -86,9 +86,9 @@ MOCK_NAS_VOLUMES = [
         'id': 'vol2',
         'name': 'Volume 2',
         'type': 'EXT4',
-        'total': 8000,
-        'used': 3200,
-        'available': 4800,
+        'total': 8 * 1024 ** 4,
+        'used': int(8 * 1024 ** 4 * 0.4),
+        'available': 8 * 1024 ** 4 - int(8 * 1024 ** 4 * 0.4),
         'health': 'healthy',
         'mountPoint': '/volume2'
     }
@@ -154,17 +154,22 @@ MOCK_NAS_FILES = [
 def get_nas_info():
     """
     获取NAS完整信息（系统信息、存储卷、服务状态）
-    
+
     返回:
         JSON: NAS完整信息
     """
     try:
         # 尝试调用真实NAS API
         result = call_nas_api('/info')
-        
+
         if 'error' in result:
-            # API不可用，返回模拟数据
+            # API不可用，返回模拟数据（顶层字段对齐前端 NasStatus 契约，容量单位为字节）
             nas_info = {
+                'running': True,
+                'uptime': 1300000,
+                'activeConnections': 8,
+                'totalStorage': 24 * 1024 ** 4,
+                'usedStorage': int(24 * 1024 ** 4 * 0.52),
                 'system': MOCK_NAS_STATUS,
                 'volumes': MOCK_NAS_VOLUMES,
                 'shares': MOCK_NAS_SHARES,
@@ -196,13 +201,13 @@ def get_nas_info():
                 'data': nas_info,
                 'source': 'mock'
             }), 200
-        
+
         return jsonify({
             'success': True,
             'data': result,
             'source': 'api'
         }), 200
-        
+
     except Exception as e:
         return jsonify({
             'success': False,
@@ -215,14 +220,14 @@ def get_nas_info():
 def get_nas_status():
     """
     获取NAS服务状态
-    
+
     返回:
         JSON: NAS服务状态信息
     """
     try:
         # 尝试调用真实NAS API
         result = call_nas_api('/status')
-        
+
         if 'error' in result:
             # API不可用，返回模拟数据
             return jsonify({
@@ -230,13 +235,13 @@ def get_nas_status():
                 'data': MOCK_NAS_STATUS,
                 'source': 'mock'
             }), 200
-        
+
         return jsonify({
             'success': True,
             'data': result,
             'source': 'api'
         }), 200
-        
+
     except Exception as e:
         return jsonify({
             'success': False,
@@ -249,24 +254,24 @@ def get_nas_status():
 def start_nas():
     """
     启动NAS服务
-    
+
     返回:
         JSON: 操作结果
     """
     try:
         result = call_nas_api('/start', method='POST')
-        
+
         if 'error' in result:
             return jsonify({
                 'success': True,
                 'message': 'NAS服务启动命令已发送（模拟）'
             }), 200
-        
+
         return jsonify({
             'success': True,
             'data': result
         }), 200
-        
+
     except Exception as e:
         return jsonify({
             'success': False,
@@ -279,24 +284,24 @@ def start_nas():
 def stop_nas():
     """
     停止NAS服务
-    
+
     返回:
         JSON: 操作结果
     """
     try:
         result = call_nas_api('/stop', method='POST')
-        
+
         if 'error' in result:
             return jsonify({
                 'success': True,
                 'message': 'NAS服务停止命令已发送（模拟）'
             }), 200
-        
+
         return jsonify({
             'success': True,
             'data': result
         }), 200
-        
+
     except Exception as e:
         return jsonify({
             'success': False,
@@ -311,14 +316,14 @@ def stop_nas():
 def get_nas_volumes():
     """
     获取存储卷列表
-    
+
     返回:
         JSON: 存储卷列表
     """
     try:
         # 尝试调用真实NAS API
         result = call_nas_api('/volumes')
-        
+
         if 'error' in result:
             # API不可用，返回模拟数据
             return jsonify({
@@ -326,13 +331,13 @@ def get_nas_volumes():
                 'data': MOCK_NAS_VOLUMES,
                 'source': 'mock'
             }), 200
-        
+
         return jsonify({
             'success': True,
             'data': result,
             'source': 'api'
         }), 200
-        
+
     except Exception as e:
         return jsonify({
             'success': False,
@@ -345,16 +350,16 @@ def get_nas_volumes():
 def get_nas_volume(volume_id):
     """
     获取单个存储卷详情
-    
+
     Args:
         volume_id: 存储卷ID
-        
+
     返回:
         JSON: 存储卷详情
     """
     try:
         result = call_nas_api(f'/volumes/{volume_id}')
-        
+
         if 'error' in result:
             # 从模拟数据中查找
             volume = next((v for v in MOCK_NAS_VOLUMES if v['id'] == volume_id), None)
@@ -369,12 +374,12 @@ def get_nas_volume(volume_id):
                     'success': False,
                     'error': 'Volume not found'
                 }), 404
-        
+
         return jsonify({
             'success': True,
             'data': result
         }), 200
-        
+
     except Exception as e:
         return jsonify({
             'success': False,
@@ -389,14 +394,14 @@ def get_nas_volume(volume_id):
 def get_nas_shares():
     """
     获取文件共享列表
-    
+
     返回:
         JSON: 文件共享列表
     """
     try:
         # 尝试调用真实NAS API
         result = call_nas_api('/shares')
-        
+
         if 'error' in result:
             # API不可用，返回模拟数据
             return jsonify({
@@ -404,13 +409,13 @@ def get_nas_shares():
                 'data': MOCK_NAS_SHARES,
                 'source': 'mock'
             }), 200
-        
+
         return jsonify({
             'success': True,
             'data': result,
             'source': 'api'
         }), 200
-        
+
     except Exception as e:
         return jsonify({
             'success': False,
@@ -423,16 +428,16 @@ def get_nas_shares():
 def get_nas_share(share_id):
     """
     获取单个文件共享详情
-    
+
     Args:
         share_id: 共享ID
-        
+
     返回:
         JSON: 文件共享详情
     """
     try:
         result = call_nas_api(f'/shares/{share_id}')
-        
+
         if 'error' in result:
             # 从模拟数据中查找
             share = next((s for s in MOCK_NAS_SHARES if s['id'] == share_id), None)
@@ -447,12 +452,12 @@ def get_nas_share(share_id):
                     'success': False,
                     'error': 'Share not found'
                 }), 404
-        
+
         return jsonify({
             'success': True,
             'data': result
         }), 200
-        
+
     except Exception as e:
         return jsonify({
             'success': False,
@@ -465,10 +470,10 @@ def get_nas_share(share_id):
 def toggle_nas_share(share_id):
     """
     切换文件共享状态
-    
+
     Args:
         share_id: 共享ID
-        
+
     返回:
         JSON: 操作结果
     """
@@ -478,10 +483,10 @@ def toggle_nas_share(share_id):
         if share:
             share['enabled'] = not share['enabled']
             share['status'] = 'active' if share['enabled'] else 'inactive'
-        
+
         # 尝试调用真实NAS API
         result = call_nas_api(f'/shares/{share_id}/toggle', method='POST')
-        
+
         if 'error' in result:
             # API不可用，返回模拟结果
             if share:
@@ -496,12 +501,12 @@ def toggle_nas_share(share_id):
                     'success': False,
                     'error': 'Share not found'
                 }), 404
-        
+
         return jsonify({
             'success': True,
             'data': result
         }), 200
-        
+
     except Exception as e:
         return jsonify({
             'success': False,
@@ -516,19 +521,19 @@ def toggle_nas_share(share_id):
 def get_nas_files():
     """
     获取文件列表
-    
+
     查询参数:
         parent_id: 父文件夹ID
-        
+
     返回:
         JSON: 文件列表
     """
     try:
         parent_id = request.args.get('parent_id')
-        
+
         # 尝试调用真实NAS API
         result = call_nas_api('/files', params={'parent_id': parent_id})
-        
+
         if 'error' in result:
             # API不可用，返回模拟数据
             if parent_id:
@@ -537,19 +542,19 @@ def get_nas_files():
             else:
                 # 返回根目录文件
                 files = [f for f in MOCK_NAS_FILES if not f.get('parentId')]
-            
+
             return jsonify({
                 'success': True,
                 'data': files,
                 'source': 'mock'
             }), 200
-        
+
         return jsonify({
             'success': True,
             'data': result,
             'source': 'api'
         }), 200
-        
+
     except Exception as e:
         return jsonify({
             'success': False,

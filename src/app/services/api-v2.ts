@@ -81,6 +81,18 @@ class ApiClient {
       }
 
       const data = await response.json();
+
+      // 统一契约：后端以 {success, data} 包装响应，此处解包为裸数据（对齐前端 ApiService 类型）
+      if (
+        data &&
+        typeof data === 'object' &&
+        !Array.isArray(data) &&
+        'success' in data &&
+        'data' in data
+      ) {
+        return sanitizeObject((data as { data: Record<string, unknown> }).data) as T;
+      }
+
       return sanitizeObject(data);
     } catch (error) {
       clearTimeout(timeoutId);
@@ -525,9 +537,36 @@ class MockDataService {
 
 class RealApiService {
   private client: ApiClient;
+  private mock: MockDataService;
 
   constructor() {
     this.client = new ApiClient();
+    this.mock = new MockDataService();
+    // auth/mail/llm/logs 后端尚未提供端点（404），统一降级为模拟数据并明示告警
+    this.auth = this.withFallback('auth', this.auth, this.mock.auth);
+    this.mail = this.withFallback('mail', this.mail, this.mock.mail);
+    this.llm = this.withFallback('llm', this.llm, this.mock.llm);
+    this.logs = this.withFallback('logs', this.logs, this.mock.logs);
+  }
+
+  /**
+   * 为领域服务包装 Mock 降级：真实请求失败时回退到 MockDataService 并输出告警
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private withFallback<D extends Record<string, any>>(domain: string, real: D, mock: D): D {
+    const wrapped: Record<string, unknown> = {};
+    for (const key of Object.keys(real) as Array<keyof D & string>) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      wrapped[key] = async (...args: any[]) => {
+        try {
+          return await real[key](...args);
+        } catch (error) {
+          logger.warn(`[API] ${domain}.${key} 后端不可用，已降级为模拟数据（mock fallback）`, error);
+          return mock[key](...args);
+        }
+      };
+    }
+    return wrapped as D;
   }
 
   public auth = {
@@ -541,7 +580,8 @@ class RealApiService {
 
   public system = {
     getStats: async (): Promise<SystemStats> => {
-      return this.client.get<SystemStats>('/system/stats');
+      // 后端真实数据端点（原 /system/stats 不存在，曾致真实模式 404）
+      return this.client.get<SystemStats>('/api/v2/monitoring/stats');
     },
 
     getDetailedStats: async (): Promise<DetailedSystemStats> => {
@@ -574,7 +614,8 @@ class RealApiService {
       return this.client.get<DdnsStatus>('/api/v2/ddns/status');
     },
     updateConfig: async (config: DdnsConfig): Promise<DdnsConfig> => {
-      return this.client.post<DdnsConfig>('/api/v2/ddns/config', config);
+      // 后端为 PUT /config（原 POST 不存在，曾致 405/404）
+      return this.client.put<DdnsConfig>('/api/v2/ddns/config', config);
     },
     updateDDNS: async (): Promise<void> => {
       await this.client.post('/api/v2/ddns/update', {});
@@ -594,16 +635,17 @@ class RealApiService {
     },
     getFiles: async (parentId?: string): Promise<NasFile[]> => {
       const params = parentId ? `?parentId=${parentId}` : '';
-      return this.client.get<NasFile[]>(`/nas/files${params}`);
+      return this.client.get<NasFile[]>(`/api/v2/nas/files${params}`);
     },
     getShares: async (): Promise<any[]> => {
       return this.client.get('/api/v2/nas/shares');
     },
     startService: async (): Promise<void> => {
-      await this.client.post('/api/v2/nas/service/start', {});
+      // 后端路由为 /nas/start|stop（原 /nas/service/* 不存在）
+      await this.client.post('/api/v2/nas/start', {});
     },
     stopService: async (): Promise<void> => {
-      await this.client.post('/api/v2/nas/service/stop', {});
+      await this.client.post('/api/v2/nas/stop', {});
     },
     toggleShare: async (shareId: string): Promise<void> => {
       await this.client.post(`/api/v2/nas/shares/${shareId}/toggle`, {});

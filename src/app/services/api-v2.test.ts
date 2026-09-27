@@ -493,7 +493,7 @@ describe('RealApiService', () => {
       const stats = await realService.system.getStats();
       expect(stats).toEqual(mockStats);
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/system/stats'),
+        expect.stringContaining('/api/v2/monitoring/stats'),
         expect.objectContaining({ method: 'GET' })
       );
     });
@@ -522,17 +522,16 @@ describe('RealApiService', () => {
 
   describe('FRP服务', () => {
     it('应该调用FRP状态API', async () => {
+      // 契约对齐：后端以 {success, data} 包装，data 为扁平的 FrpStatus 结构
       const mockStatus = {
         success: true,
         data: {
-          client: {
-            running: true,
-            connected: true,
-            serverAddr: '203.0.113.1',
-            serverPort: 7001,
-            proxyCount: 5,
-            uptime: '15天 3小时 45分钟'
-          },
+          running: true,
+          uptime: 1300000,
+          connections: 12,
+          bytesIn: 1073741824,
+          bytesOut: 536870912,
+          lastError: '',
           proxies: [],
           timestamp: new Date().toISOString()
         }
@@ -543,7 +542,7 @@ describe('RealApiService', () => {
       });
 
       const status = await realService.frp.getStatus();
-      expect(status).toEqual(mockStatus);
+      expect(status).toEqual(mockStatus.data);
     });
 
     it('应该调用FRP配置API', async () => {
@@ -614,7 +613,7 @@ describe('RealApiService', () => {
       });
 
       const status = await realService.ddns.getStatus();
-      expect(status).toEqual(mockStatus);
+      expect(status).toEqual(mockStatus.data);
     });
 
     it('应该调用DDNS更新配置API', async () => {
@@ -631,7 +630,11 @@ describe('RealApiService', () => {
       });
 
       const result = await realService.ddns.updateConfig(mockConfig);
-      expect(result).toEqual({ success: true, data: mockConfig });
+      expect(result).toEqual(mockConfig);
+      expect(mockFetch).toHaveBeenCalledWith(
+        expect.stringContaining('/api/v2/ddns/config'),
+        expect.objectContaining({ method: 'PUT' })
+      );
     });
 
     it('应该调用DDNS更新API', async () => {
@@ -688,7 +691,7 @@ describe('RealApiService', () => {
       });
 
       const status = await realService.nas.getStatus();
-      expect(status).toEqual(mockStatus);
+      expect(status).toEqual(mockStatus.data);
     });
 
     it('应该调用NAS卷列表API', async () => {
@@ -713,7 +716,7 @@ describe('RealApiService', () => {
       });
 
       const volumes = await realService.nas.getVolumes();
-      expect(volumes).toEqual(mockVolumes);
+      expect(volumes).toEqual(mockVolumes.data);
     });
 
     it('应该调用NAS文件列表API', async () => {
@@ -755,7 +758,7 @@ describe('RealApiService', () => {
 
       await realService.nas.startService();
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/v2/nas/service/start'),
+        expect.stringContaining('/api/v2/nas/start'),
         expect.objectContaining({ method: 'POST' })
       );
     });
@@ -768,7 +771,7 @@ describe('RealApiService', () => {
 
       await realService.nas.stopService();
       expect(mockFetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/v2/nas/service/stop'),
+        expect.stringContaining('/api/v2/nas/stop'),
         expect.objectContaining({ method: 'POST' })
       );
     });
@@ -806,19 +809,14 @@ describe('RealApiService', () => {
       });
 
       const stats = await realService.monitoring.getStats();
-      expect(stats).toEqual(mockStats);
+      expect(stats).toEqual(mockStats.data);
     });
 
     it('应该调用进程列表API', async () => {
-      const mockProcesses = {
-        success: true,
-        data: {
-          processes: [
-            { pid: 1000, name: 'nginx', cpu_percent: 5.2, memory_percent: 2.1 }
-          ],
-          total: 20
-        }
-      };
+      // 契约对齐：后端返回裸数组 ProcessInfo[]（camelCase 字段）
+      const mockProcesses = [
+        { pid: 1000, name: 'nginx', cpu: 5.2, memory: 2.1, user: 'www-data', status: 'running', uptime: 3600 }
+      ];
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: async () => mockProcesses,

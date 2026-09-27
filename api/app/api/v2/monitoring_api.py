@@ -18,37 +18,45 @@ def get_system_stats():
     try:
         # CPU使用率
         cpu_usage = psutil.cpu_percent(interval=1)
-        
+
         # 内存使用情况
         memory = psutil.virtual_memory()
         memory_usage = memory.percent
         memory_total = memory.total / (1024 ** 3)  # GB
         memory_used = memory.used / (1024 ** 3)  # GB
         memory_available = memory.available / (1024 ** 3)  # GB
-        
+
         # 磁盘使用情况
         disk = psutil.disk_usage('/')
         disk_usage = disk.percent
         disk_total = disk.total / (1024 ** 3)  # GB
         disk_used = disk.used / (1024 ** 3)  # GB
         disk_available = disk.free / (1024 ** 3)  # GB
-        
+
         # 网络IO
         net_io = psutil.net_io_counters()
         network_in = net_io.bytes_recv / (1024 ** 2)  # MB
         network_out = net_io.bytes_sent / (1024 ** 2)  # MB
-        
+
         # 系统运行时间
         uptime = datetime.now().timestamp() - psutil.boot_time()
         uptime_days = int(uptime // 86400)
         uptime_hours = int((uptime % 86400) // 3600)
         uptime_minutes = int((uptime % 3600) // 60)
         uptime_str = f"{uptime_days}天 {uptime_hours}小时 {uptime_minutes}分钟"
-        
+
         # 系统负载
         load_avg = os.getloadavg() if hasattr(os, 'getloadavg') else [0, 0, 0]
-        
+
+        # 顶层扁平字段对齐前端 SystemStats 契约（cpuUsage/memoryUsage/diskUsage/networkIn/networkOut/uptime）
         return {
+            'cpuUsage': round(cpu_usage, 2),
+            'memoryUsage': round(memory_usage, 2),
+            'diskUsage': round(disk_usage, 2),
+            'networkIn': round(network_in, 2),
+            'networkOut': round(network_out, 2),
+            'uptime': int(uptime),
+            'timestamp': datetime.now().isoformat(),
             'cpu': {
                 'usage': round(cpu_usage, 2),
                 'cores': psutil.cpu_count(),
@@ -97,7 +105,7 @@ def get_system_stats():
 def get_stats():
     """
     获取系统监控数据
-    
+
     返回:
         JSON: 系统CPU、内存、磁盘、网络等监控数据
     """
@@ -119,22 +127,22 @@ def get_stats():
 def get_cpu_stats():
     """
     获取CPU详细统计信息
-    
+
     查询参数:
         interval (int): 采样间隔，默认1秒
-        
+
     返回:
         JSON: CPU使用率和核心信息
     """
     try:
         interval = request.args.get('interval', 1, type=int)
-        
+
         cpu_percent = psutil.cpu_percent(interval=interval)
         cpu_count = psutil.cpu_count()
         cpu_count_logical = psutil.cpu_count(logical=True)
-        
+
         per_cpu_percent = psutil.cpu_percent(interval=interval, percpu=True)
-        
+
         return jsonify({
             'success': True,
             'data': {
@@ -156,17 +164,17 @@ def get_cpu_stats():
 def get_memory_stats():
     """
     获取内存详细统计信息
-    
+
     返回:
         JSON: 内存使用情况，包括虚拟内存和交换内存
     """
     try:
         # 物理内存
         memory = psutil.virtual_memory()
-        
+
         # 交换内存
         swap = psutil.swap_memory()
-        
+
         return jsonify({
             'success': True,
             'data': {
@@ -197,13 +205,13 @@ def get_memory_stats():
 def get_disk_stats():
     """
     获取磁盘详细统计信息
-    
+
     返回:
         JSON: 所有磁盘分区的使用情况
     """
     try:
         disk_partitions = []
-        
+
         for partition in psutil.disk_partitions():
             try:
                 usage = psutil.disk_usage(partition.mountpoint)
@@ -218,7 +226,7 @@ def get_disk_stats():
                 })
             except PermissionError:
                 continue
-        
+
         return jsonify({
             'success': True,
             'data': {
@@ -237,14 +245,14 @@ def get_disk_stats():
 def get_network_stats():
     """
     获取网络详细统计信息
-    
+
     返回:
         JSON: 网络IO和接口信息
     """
     try:
         # 网络IO统计
         net_io = psutil.net_io_counters()
-        
+
         # 网络接口
         net_interfaces = {}
         for interface, addrs in psutil.net_if_addrs().items():
@@ -259,14 +267,14 @@ def get_network_stats():
                     for addr in addrs
                 ]
             }
-        
+
         # 网络连接统计
         net_connections = {
             'total': 0,
             'established': 0,
             'listen': 0,
         }
-        
+
         try:
             connections = psutil.net_connections(kind='inet')
             net_connections['total'] = len(connections)
@@ -274,7 +282,7 @@ def get_network_stats():
             net_connections['listen'] = sum(1 for c in connections if c.status == 'LISTEN')
         except psutil.AccessDenied:
             pass
-        
+
         return jsonify({
             'success': True,
             'data': {
@@ -304,44 +312,45 @@ def get_network_stats():
 def get_processes():
     """
     获取运行中的进程列表
-    
+
     查询参数:
         limit (int): 返回的进程数量限制，默认20
         sort_by (str): 排序字段，默认'cpu'
-        
+
     返回:
         JSON: 进程列表
     """
     try:
         limit = request.args.get('limit', 20, type=int)
         sort_by = request.args.get('sort_by', 'cpu')
-        
+
         processes = []
-        
-        for proc in psutil.process_iter(['pid', 'name', 'username', 'cpu_percent', 'memory_percent']):
+
+        # 字段对齐前端 ProcessInfo 契约：pid/name/user/cpu/memory/status/uptime
+        for proc in psutil.process_iter(['pid', 'name', 'username', 'cpu_percent', 'memory_percent', 'create_time']):
             try:
                 processes.append({
                     'pid': proc.info['pid'],
                     'name': proc.info['name'],
-                    'username': proc.info['username'],
-                    'cpu_percent': round(proc.info['cpu_percent'], 2),
-                    'memory_percent': round(proc.info['memory_percent'], 2),
+                    'user': proc.info['username'] or 'unknown',
+                    'cpu': round(proc.info['cpu_percent'], 2),
+                    'memory': round(proc.info['memory_percent'], 2),
+                    'status': 'running',
+                    'uptime': int(datetime.now().timestamp() - proc.info['create_time']),
                 })
-            except (psutil.NoSuchProcess, psutil.AccessDenied):
+            except (psutil.NoSuchProcess, psutil.AccessDenied, TypeError):
                 continue
-        
+
         # 排序
         processes.sort(key=lambda x: x.get(sort_by, 0), reverse=True)
-        
+
         # 限制数量
         processes = processes[:limit]
-        
+
         return jsonify({
             'success': True,
-            'data': {
-                'processes': processes,
-                'total': len(processes),
-            }
+            'data': processes,
+            'total': len(processes),
         }), 200
     except Exception as e:
         return jsonify({
@@ -355,13 +364,13 @@ def get_processes():
 def get_system_info():
     """
     获取系统信息
-    
+
     返回:
         JSON: 系统详细信息
     """
     try:
         boot_time = datetime.fromtimestamp(psutil.boot_time())
-        
+
         return jsonify({
             'success': True,
             'data': {
@@ -391,13 +400,13 @@ def get_system_info():
 def get_stats_legacy():
     """
     兼容旧版本的系统统计接口
-    
+
     返回:
         JSON: 系统监控数据（旧格式）
     """
     try:
         stats = get_system_stats()
-        
+
         # 转换为旧格式
         legacy_stats = {
             'cpuUsage': stats['cpu']['usage'],
@@ -408,7 +417,7 @@ def get_stats_legacy():
             'uptime': stats['system']['uptime_seconds'],
             'timestamp': stats['timestamp'],
         }
-        
+
         return jsonify(legacy_stats), 200
     except Exception as e:
         return jsonify({
