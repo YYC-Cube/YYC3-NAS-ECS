@@ -7,7 +7,7 @@ import os
 import subprocess
 import toml
 from datetime import datetime
-from flask import Blueprint, jsonify, request, current_app
+from flask import Blueprint, jsonify, request
 from flask_cors import cross_origin
 
 frp_bp = Blueprint('frp', __name__)
@@ -224,7 +224,7 @@ def stop_frp_client():
     """
     try:
         # 杀死FRP进程
-        result = subprocess.run(['pkill', '-f', 'frpc'], capture_output=True, text=True)
+        subprocess.run(['pkill', '-f', 'frpc'], capture_output=True, text=True)
 
         return jsonify({
             'success': True,

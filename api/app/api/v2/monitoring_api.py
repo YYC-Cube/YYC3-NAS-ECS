@@ -13,7 +13,7 @@ from flask_cors import cross_origin
 monitoring_bp = Blueprint('monitoring', __name__)
 
 
-def get_system_stats():
+def get_system_stats() -> dict:
     """获取系统基础统计信息"""
     try:
         # CPU使用率

@@ -4,9 +4,7 @@ NAS管理API模块
 """
 
 import os
-import subprocess
 import requests
-from datetime import datetime
 from flask import Blueprint, jsonify, request
 from flask_cors import cross_origin
 
@@ -17,7 +15,7 @@ NAS_API_URL = os.getenv('NAS_API_URL', 'http://localhost:6009')
 NAS_API_KEY = os.getenv('NAS_API_KEY', '')
 
 
-def call_nas_api(endpoint, method='GET', data=None):
+def call_nas_api(endpoint, method='GET', data=None, params=None):
     """
     调用NAS API
 
@@ -25,6 +23,7 @@ def call_nas_api(endpoint, method='GET', data=None):
         endpoint: API端点
         method: HTTP方法
         data: 请求数据
+        params: URL查询参数（可选）
 
     Returns:
         dict: API响应
@@ -39,13 +38,13 @@ def call_nas_api(endpoint, method='GET', data=None):
             headers['Authorization'] = f'Bearer {NAS_API_KEY}'
 
         if method == 'GET':
-            response = requests.get(url, headers=headers, timeout=10)
+            response = requests.get(url, headers=headers, params=params, timeout=10)
         elif method == 'POST':
-            response = requests.post(url, headers=headers, json=data, timeout=10)
+            response = requests.post(url, headers=headers, json=data, params=params, timeout=10)
         elif method == 'PUT':
-            response = requests.put(url, headers=headers, json=data, timeout=10)
+            response = requests.put(url, headers=headers, json=data, params=params, timeout=10)
         elif method == 'DELETE':
-            response = requests.delete(url, headers=headers, timeout=10)
+            response = requests.delete(url, headers=headers, params=params, timeout=10)
         else:
             raise ValueError(f"Unsupported method: {method}")
 

@@ -4,10 +4,7 @@ DDNS管理API模块
 """
 
 import os
-import subprocess
 import requests
-import hmac
-import hashlib
 from datetime import datetime
 from flask import Blueprint, jsonify, request
 from flask_cors import cross_origin
@@ -312,14 +309,13 @@ def get_ddns_history():
 
             # 解析日志行
             history = []
-            for i, line in enumerate(reversed(log_lines[-limit:])):
+            for line in reversed(log_lines[-limit:]):
                 try:
                     # 简单解析日志格式
                     if 'DDNS更新:' in line:
                         parts = line.split('DDNS更新:')
                         timestamp = parts[0].strip('[]').strip()
                         domain_ip = parts[1].strip().split('->')
-                        domain = domain_ip[0].strip()
                         ip = domain_ip[1].strip()
 
                         history.append({
